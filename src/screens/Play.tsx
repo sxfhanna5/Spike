@@ -197,7 +197,7 @@ function TurnCard() {
   return (
     <div className="absolute inset-0 bg-white">
       <GameHeader chip={false} onWhite />
-      <div className="card-in absolute top-[184px] left-[23px] h-[480px] w-[344px] rounded-[28px] shadow-[0_12px_30px_rgba(0,0,0,.14)]" style={{ background: teacher ? 'linear-gradient(180deg,#EBC2FF,#E7B3FF)' : color }}>
+      <div className="card-in absolute top-[184px] inset-x-4 mx-auto h-[480px] max-w-[344px] rounded-[28px] shadow-[0_12px_30px_rgba(0,0,0,.14)]" style={{ background: teacher ? 'linear-gradient(180deg,#EBC2FF,#E7B3FF)' : color }}>
         {/* the child's cards carry no sentences: only avatar and pictogram */}
         {!kid && (
           <div className="flex flex-col items-center pt-[44px]" style={{ color: fg }}>
@@ -233,7 +233,7 @@ function SignParent() {
     <Screen bg="#45C1FF">
       <CloudsBlue />
       <GameHeader />
-      <div className="absolute top-[232px] left-[23px] h-[342px] w-[344px] rounded-[28px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
+      <div className="absolute top-[232px] inset-x-4 mx-auto h-[342px] max-w-[344px] rounded-[28px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
         <div className="absolute -top-[34px] left-1/2 -translate-x-1/2"><Avatar who="papa" size={68} halo /></div>
         <div className="absolute top-[50px] left-[17px] h-[190px] w-[310px] overflow-hidden rounded-[22px] bg-[#4A5A8C]">
           <img src="/assets/110ea.png" alt="" className="size-full object-cover opacity-95" draggable={false} />
@@ -260,7 +260,7 @@ function SignKid() {
     <Screen bg="#FF8001">
       <CloudsOrange />
       <GameHeader />
-      <div className="absolute top-[232px] left-[23px] flex h-[342px] w-[344px] items-center justify-center rounded-[56px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
+      <div className="absolute top-[232px] inset-x-4 mx-auto flex h-[342px] max-w-[344px] items-center justify-center rounded-[56px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
         <div className="absolute -top-[34px] left-1/2 -translate-x-1/2"><Avatar who="nino" size={68} halo /></div>
         <ContentBig c={c} />
       </div>
@@ -287,7 +287,7 @@ export function GuessScreen() {
     <Screen bg="#BCEDFF">
       <SkyHills />
       <GameHeader />
-      <div className="absolute top-[226px] left-5 flex w-[350px] flex-col gap-3.5">
+      <div className="absolute top-[226px] inset-x-5 mx-auto flex max-w-[350px] flex-col gap-3.5">
         {who === 'papa' && <p className="text-center font-display text-[20px] font-medium text-white drop-shadow-[0_2px_0_rgba(0,123,185,.55)]">¿Qué señaló tu hijo?</p>}
         {c.options.map((_, k) => (
           <OptionCard key={k} index={k} c={c} selected={s.selected === k} dim={s.selected !== null && s.selected !== k} onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })} />
@@ -346,7 +346,7 @@ export function AlmostScreen() {
     <div role="button" tabIndex={0} aria-label="Seguir" onClick={() => dispatch({ type: 'AUTO_NEXT' })} onKeyDown={(e) => e.key === 'Enter' && dispatch({ type: 'AUTO_NEXT' })} className="absolute inset-0 cursor-pointer outline-none">
       <Screen bg="#BCEDFF">
         <SkyHills />
-        <div className="card-in absolute top-[150px] left-5 flex w-[350px] flex-col items-center rounded-[28px] bg-white px-5 pt-6 pb-6 shadow-[0_10px_28px_rgba(0,0,0,.14)]">
+        <div className="card-in absolute top-[150px] inset-x-5 mx-auto flex max-w-[350px] flex-col items-center rounded-[28px] bg-white px-5 pt-6 pb-6 shadow-[0_10px_28px_rgba(0,0,0,.14)]">
           <h1 className="pop font-display text-[56px] leading-[60px] font-bold text-[#FF8001]" style={{ textShadow: '0 3px 0 rgb(255 79 26 / .25)' }}>¡Casi!</h1>
           <div className="mt-1 mb-2"><Spike stage={stageOf(s.done)} mood="confused" size={170} /></div>
           <div className="pop mt-1" style={{ animationDelay: '200ms' }}><Avatar who={who} size={96} halo question /></div>

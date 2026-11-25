@@ -97,7 +97,7 @@ export function DisconnectedSheet() {
   const { state, start } = useConnectFlow()
   return (
     <div className="fade-in absolute inset-0 z-[60] flex items-end bg-[#4A5A8C]/50" role="alertdialog" aria-label="Huevo desconectado" aria-modal>
-      <div className="sheet-up w-full rounded-t-[32px] bg-white px-5 pt-6 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.2)]">
+      <div className="sheet-up w-full rounded-t-[32px] bg-white px-5 pt-6 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.2)]" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}>
         <div className="flex flex-col items-center">
           <BigEgg state={state === 'searching' ? 'searching' : 'idle'} size={150} blue />
           <h2 className="mt-1 font-display text-[28px] leading-8 font-semibold">Huevo desconectado</h2>

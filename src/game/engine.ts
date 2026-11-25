@@ -7,7 +7,6 @@ export type Screen =
   | 'map' | 'album' | 'profile' | 'investigator'
   | 'sign' | 'guess' | 'good' | 'almost' | 'master' | 'write' | 'hatch'
 export type Overlay = 'tutorials' | 'reto' | 'module' | 'exit' | null
-export type ScreenId = `S${number}`
 
 export const ENTRY_SCREENS: Screen[] = ['loader', 'welcome', 'login', 'register', 'connect']
 export const TAB_SCREENS: Screen[] = ['map', 'album', 'profile']
@@ -93,7 +92,6 @@ export type Action =
   | { type: 'AUTO_NEXT' } | { type: 'TEACHER_NEXT' } | { type: 'TYPE'; letter: string } | { type: 'ERASE' }
   | { type: 'LETTER_STEP'; dir: 1 | -1 }
   | { type: 'TOGGLE_KEYBOARD' } | { type: 'TOGGLE_SIMFAIL' } | { type: 'RESET' }
-  | { type: 'JUMP'; screen: ScreenId } | { type: 'DEMO'; step: number }
 
 let key = 1
 let logId = 1
@@ -438,134 +436,6 @@ export function reducer(s: GameState, a: Action): GameState {
       return { ...s, simFail: !s.simFail, failedOnce: false, link: 'idle' }
     case 'RESET':
       return { ...initialState(), screen: 'investigator', connected: s.connected, account: s.account, session: s.session }
-    case 'JUMP':
-      return reviewState(s, a.screen)
-    case 'DEMO':
-      return reviewState(s, DEMO_STEPS[a.step].to)
-  }
-}
-
-/* ============================== reviewer index and demo ============================== */
-
-export interface ScreenEntry { id: ScreenId; name: string; group: string; note?: string }
-export const SCREENS: ScreenEntry[] = [
-  { id: 'S1', group: 'Entrada', name: 'Loader', note: '2,5 s y pasa sola' },
-  { id: 'S2', group: 'Entrada', name: 'Bienvenida' },
-  { id: 'S3', group: 'Entrada', name: 'Inicio de sesión' },
-  { id: 'S4', group: 'Entrada', name: 'Registro' },
-  { id: 'S5', group: 'Entrada', name: 'Conectar huevo', note: 'Obligatorio' },
-  { id: 'S6', group: 'Tutoriales', name: 'Tutorial del niño', note: 'Solo video LSC' },
-  { id: 'S7', group: 'Tutoriales', name: 'Tutorial del padre' },
-  { id: 'S8', group: 'Mapa', name: 'Mapa de niveles', note: '46 casillas · Home' },
-  { id: 'S9', group: 'Mapa', name: 'Hoja de tutoriales', note: 'Botón «?»' },
-  { id: 'S10', group: 'Mapa', name: 'Hoja de reto', note: 'Jugar / Jugar otra vez' },
-  { id: 'S11', group: 'Reto', name: 'Tarjeta de nivel', note: '≈ 2 s' },
-  { id: 'S12', group: 'Reto', name: 'Tarjeta de turno', note: '≈ 1,8 s' },
-  { id: 'S13', group: 'Reto', name: 'Padre hace la seña' },
-  { id: 'S14', group: 'Reto', name: 'Niño adivina', note: 'Color o «?»' },
-  { id: 'S15', group: 'Reto', name: 'Niño hace la seña' },
-  { id: 'S16', group: 'Reto', name: 'Padre adivina', note: 'Color o «?»' },
-  { id: 'S17', group: 'Reto', name: '¡Bien!', note: '+1 de calor' },
-  { id: 'S18', group: 'Reto', name: '¡Casi!', note: 'Pasa al Modo maestro' },
-  { id: 'S19', group: 'Modo maestro', name: 'Maestro niño', note: 'Falla el padre' },
-  { id: 'S20', group: 'Modo maestro', name: 'Maestro padre', note: 'Falla el niño' },
-  { id: 'S21', group: 'Reto', name: 'Escribir (módulo 5)' },
-  { id: 'S22', group: 'Cierre', name: 'Eclosión · ¡Spike creció!' },
-  { id: 'S23', group: 'Cuenta', name: 'Progreso' },
-  { id: 'S24', group: 'Cuenta', name: 'Perfil' },
-  { id: 'S25', group: 'Cuenta', name: 'Modo investigador', note: 'Pulsación larga en la versión' },
-  { id: 'S26', group: 'Hojas', name: 'Salir del reto', note: 'Botón X' },
-  { id: 'S27', group: 'Hojas', name: 'Huevo desconectado', note: 'Pausa' },
-]
-
-const clean = (s: GameState): GameState => ({
-  ...s, intro: null, overlay: null, errorActor: null, teacherPhase: 'show', selected: null, mapAnim: null, link: 'idle', teacherLoops: 0, teacherSelected: null,
-})
-const demoReto = (s: GameState, casilla: number, screen: Screen, extra: Partial<GameState> = {}): GameState => {
-  const n = startReto(clean(s), casilla, { fixed: true, showLevel: false })
-  return { ...n, intro: null, screen: n.level === 5 && screen === 'sign' ? 'write' : screen, ...extra }
-}
-const reviewState = (s0: GameState, id: ScreenId): GameState => {
-  const s = clean(s0)
-  const app: GameState = { ...s, connected: true }
-  switch (id) {
-    case 'S1': return { ...s, screen: 'loader', connected: false }
-    case 'S2': return { ...s, screen: 'welcome', connected: false }
-    case 'S3': return { ...s, screen: 'login', connected: false }
-    case 'S4': return { ...s, screen: 'register', connected: false }
-    case 'S5': return { ...s, screen: 'connect', connected: false }
-    case 'S6': return { ...app, screen: 'tutorialKid' }
-    case 'S7': return { ...app, screen: 'tutorialParent' }
-    case 'S8': return { ...app, screen: 'map', inLevel: false }
-    case 'S9': return { ...app, screen: 'map', overlay: 'tutorials', inLevel: false }
-    case 'S10': return { ...app, screen: 'map', overlay: 'reto', selectedCasilla: activeCasilla(s.done), inLevel: false }
-    case 'S11': return { ...startReto(app, 1, { fixed: true, showLevel: true }), intro: { kind: 'level', who: 'papa', arrow: false } }
-    case 'S12': return startReto(app, 1, { fixed: true, showLevel: false })
-    case 'S13': return demoReto(app, 1, 'sign', { facing: 'papa' })
-    case 'S14': return demoReto(app, 1, 'guess', { facing: 'nino' })
-    case 'S15': return demoReto(app, 2, 'sign', { facing: 'nino' })
-    case 'S16': return demoReto(app, 2, 'guess', { facing: 'papa' })
-    case 'S17': return demoReto(app, 1, 'good', { heat: 5 })
-    case 'S18': return demoReto(app, 1, 'almost', { errorActor: 'nino', errorKind: 'wrong', fx: fx('teacher') })
-    case 'S19': return demoReto(app, 1, 'master', { errorActor: 'papa', errorKind: 'help', facing: 'nino', fx: fx('teacher') })
-    case 'S20': return demoReto(app, 1, 'master', { errorActor: 'nino', errorKind: 'wrong', facing: 'nino', fx: fx('teacher') })
-    case 'S21': return demoReto(app, 41, 'write', { facing: 'papa' })
-    case 'S22': return { ...app, screen: 'hatch', level: 1, casilla: 8, done: Math.max(app.done, 8), heat: 12, masterSeals: app.masterSeals.length ? app.masterSeals : ['A', 'E', 'M'], masterCount: Math.max(app.masterCount, 3), taught: app.masterCount ? app.taught : { nino: 2, papa: 1 }, learned: { ...app.learned, 1: MODULES[1].contents }, fx: fx('hatch'), inLevel: false }
-    case 'S23': return { ...app, screen: 'album', taught: app.masterCount ? app.taught : { nino: 2, papa: 1 }, masterCount: Math.max(app.masterCount, 3), playSeconds: Math.max(app.playSeconds, 1260), days: app.days.length ? app.days : [new Date().toISOString().slice(0, 10)] }
-    case 'S24': return { ...app, screen: 'profile' }
-    case 'S25': return { ...app, screen: 'investigator' }
-    case 'S26': return { ...demoReto(app, 1, 'sign', { facing: 'papa' }), overlay: 'exit' }
-    case 'S27': return { ...app, connected: false, screen: 'map' }
-  }
-  return s
-}
-
-export const DEMO_STEPS: { title: string; detail: string; to: ScreenId }[] = [
-  { title: 'Loader', detail: 'Spike rebota y el huevo se calienta', to: 'S1' },
-  { title: 'Registro', detail: 'Usuario, correo y contraseña', to: 'S4' },
-  { title: 'Conectar huevo', detail: 'Usa «Conectar huevo»', to: 'S5' },
-  { title: 'Tutorial del niño', detail: 'Marco de video en LSC', to: 'S6' },
-  { title: 'Mapa', detail: '46 casillas, camino amarillo', to: 'S8' },
-  { title: 'Reto de Letras · acierto', detail: 'Padre hace la seña · niño adivina', to: 'S13' },
-  { title: '¡Casi! → Maestro niño', detail: 'Pulsa «?» en la caja', to: 'S14' },
-  { title: '¡Casi! → Maestro padre', detail: 'Elige una tarjeta equivocada', to: 'S14' },
-  { title: 'Cierre de módulo', detail: 'Eclosión y ¡Spike creció!', to: 'S22' },
-  { title: 'Progreso', detail: 'Crecimiento, módulos y estadísticas', to: 'S23' },
-  { title: 'Perfil', detail: 'Cuenta y conexión', to: 'S24' },
-  { title: 'Pausa de salida', detail: 'Seguir · Reiniciar · Salir', to: 'S26' },
-]
-
-const colorWord = (s: GameState) => {
-  const c = current(s)
-  const k = c.correct
-  return { k, name: OPTION_META[k].label, shape: OPTION_META[k].shape === 'circle' ? '●' : OPTION_META[k].shape === 'triangle' ? '▲' : '■' }
-}
-
-export const reviewerHint = (s: GameState): string => {
-  const r = isPlay(s) ? ROUND_INFO[current(s).round] : null
-  switch (s.screen) {
-    case 'loader': return 'Dura 2,5 s y pasa sola a Bienvenida (o a Conectar si ya hay sesión).'
-    case 'welcome': return 'Dos botones: «Iniciar sesión» y «Registrarse».'
-    case 'login': return 'Cualquier correo con @ y 4+ letras de contraseña entra (si no hay cuenta, se crea una de prueba). Prueba enviarlo vacío para ver los errores amables.'
-    case 'register': return 'Usuario, correo y contraseña. Los errores salen en texto corto, en naranja fuerte y con ícono.'
-    case 'connect': return 'No hay «jugar sin caja». Usa «Conectar huevo»; con «Simular fallo» (Modo investigador) verás el estado de error. La caja de la derecha es el huevo.'
-    case 'tutorialKid': return 'Solo marco de video y controles. Cuando exista el video en LSC se inserta en el marco.'
-    case 'tutorialParent': return 'Íconos y textos cortos, en el azul del padre.'
-    case 'map': return s.overlay === 'tutorials' ? 'La hoja ofrece Tutorial del niño y del padre.' : s.overlay === 'reto' ? 'Los dos avatares muestran quién hace la seña y quién adivina.' : 'Toca la casilla activa. Una bloqueada tiembla. Desconecta el huevo (caja) para ver la pausa.'
-    case 'album': return 'Spike en su etapa, avance total y tres tarjetas: Crecimiento, Mis módulos y Estadísticas (una abierta a la vez).'
-    case 'profile': return 'Mantén pulsada la versión para abrir el Modo investigador.'
-    case 'investigator': return 'Exporta el CSV, activa el modo teclado o simula un fallo de conexión.'
-    case 'sign': return s.intro ? 'Toca la tarjeta para saltarla.' : `${r!.detail}. «Listo» abre la tarjeta de turno de quien adivina.`
-    case 'write': return s.write.stage === 'sign' ? 'Quien deletrea ve la palabra grande y una imagen.' : 'Quien escribe ve casillas vacías y el abecedario. «?» sigue en la caja.'
-    case 'guess': {
-      const k = colorWord(s)
-      return `${r!.detail}. La correcta es el botón ${k.shape} ${k.name.toLowerCase()}; «?» lleva al Modo maestro del que hizo la seña.`
-    }
-    case 'good': return s.teacherPhase === 'learned' ? 'Cierra el Modo maestro con «¡Aprendimos!» y guarda el sello.' : 'Acierto automático: +1 de calor, el huevo avanza en el mapa.'
-    case 'almost': return `Sin X ni rojo; dice con calma quién necesita ayuda y pasa solo al Modo maestro.`
-    case 'master': return teacherMode(s) === 'write' ? 'Se repite letra por letra. Máximo 2 vueltas.' : `Maestro ${teacherOf(s) === 'nino' ? 'niño' : 'padre'}. Máximo 2 vueltas; siempre avanza.`
-    case 'hatch': return 'Grietas y destello en el color del módulo, luego «¡Spike creció!».'
-    default: return ''
   }
 }
 

@@ -121,12 +121,12 @@ export function Login() {
   }
   return (
     <SkyScreen>
-      <div className="absolute top-[26px] left-5">
+      <div className="absolute left-5" style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}>
         <button type="button" onClick={() => dispatch({ type: 'GOTO', screen: 'welcome' })} aria-label="Volver" className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}>
           <Icon name="arrowLeft" size={24} />
         </button>
       </div>
-      <div className="absolute top-[136px] left-5 w-[320px]">
+      <div className="absolute top-[136px] inset-x-5 mx-auto max-w-[340px]">
         <div className="pointer-events-none absolute -top-[84px] -right-[78px] z-0"><Spike stage={4} mood="happy" size={140} /></div>
         <form className="card relative z-10 flex flex-col gap-4 p-6" onSubmit={(e) => { e.preventDefault(); submit() }} noValidate>
           <h1 className="font-display text-[28px] leading-8 font-semibold">¡Hola otra vez!</h1>
@@ -171,12 +171,12 @@ export function Register() {
   }
   return (
     <SkyScreen>
-      <div className="absolute top-[26px] left-5">
+      <div className="absolute left-5" style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}>
         <button type="button" onClick={() => dispatch({ type: 'GOTO', screen: 'welcome' })} aria-label="Volver" className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}>
           <Icon name="arrowLeft" size={24} />
         </button>
       </div>
-      <div className="absolute top-[96px] left-5 w-[350px]">
+      <div className="absolute top-[96px] inset-x-5 mx-auto max-w-[350px]">
         <div className="pointer-events-none absolute -top-[66px] right-3 z-0"><Spike stage={3} mood="happy" size={104} /></div>
         <form className="card relative z-10 flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); submit() }} noValidate>
           <h1 className="font-display text-[28px] leading-8 font-semibold">Crea tu cuenta</h1>
@@ -243,7 +243,7 @@ export function Connect() {
   }[state]
   return (
     <SkyScreen>
-      <div className="absolute top-[26px] left-5 right-5 flex items-center justify-between">
+      <div className="absolute right-5 left-5 flex items-center justify-between" style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}>
         <button type="button" onClick={() => dispatch({ type: 'LOGOUT' })} aria-label="Cerrar sesión" className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}>
           <Icon name="arrowLeft" size={24} />
         </button>
@@ -251,7 +251,7 @@ export function Connect() {
       </div>
       <div className="absolute top-[110px] left-0 flex w-full flex-col items-center">
         <BigEgg state={state} size={220} />
-        <div className="card mt-4 flex w-[320px] flex-col items-center gap-1 px-5 pt-5 pb-5" aria-live="polite">
+        <div className="card mt-4 flex w-[calc(100%-40px)] max-w-[320px] flex-col items-center gap-1 px-5 pt-5 pb-5" aria-live="polite">
           <h1 className="font-display text-[28px] leading-8 font-semibold">{copy.t}</h1>
           <p className="min-h-6 text-center font-sans text-[16px] leading-6 font-semibold text-ink2">{copy.d}</p>
           <div className="mt-3 w-full">

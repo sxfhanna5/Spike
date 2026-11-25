@@ -48,7 +48,7 @@ export function Dock({ children, className = '' }: { children: ReactNode; classN
 }
 
 /** Round icon button (back, close, play…): white disc, soft lip, gradient glyph. */
-export function RoundBtn({ icon, label, onClick, size = 52, bg = '#FFFFFF', fg = '#FF8001', edge = '#FFD2A8', className = '' }: {
+export function RoundBtn({ icon, label, onClick, size = 52, bg = '#FFFFFF', fg = '#FF8001', edge = '#FFD2A8', className = '', style }: {
   icon: IconName
   label: string
   onClick: () => void
@@ -57,6 +57,7 @@ export function RoundBtn({ icon, label, onClick, size = 52, bg = '#FFFFFF', fg =
   fg?: string
   edge?: string
   className?: string
+  style?: CSSProperties
 }) {
   return (
     <button
@@ -64,7 +65,7 @@ export function RoundBtn({ icon, label, onClick, size = 52, bg = '#FFFFFF', fg =
       aria-label={label}
       onClick={onClick}
       className={`btn3d grid shrink-0 place-items-center rounded-full ${className}`}
-      style={{ '--bg': bg, '--edge': edge, '--fg': fg, width: size, height: size, minHeight: size, padding: 0 } as CSSProperties}
+      style={{ '--bg': bg, '--edge': edge, '--fg': fg, width: size, height: size, minHeight: size, padding: 0, ...style } as CSSProperties}
     >
       <Icon name={icon} size={size * 0.5} />
     </button>
@@ -78,8 +79,8 @@ export function XButton({ light = true }: { light?: boolean }) {
       type="button"
       aria-label="Salir del reto"
       onClick={() => dispatch({ type: 'OVERLAY', overlay: 'exit' })}
-      className="btn3d absolute top-5 left-5 z-30 grid size-14 place-items-center rounded-full"
-      style={{ '--bg': light ? '#FFFFFF' : '#4A5A8C', '--edge': '#FFD2A8', '--fg': light ? '#FF8001' : '#fff', padding: 0, minHeight: 56 } as CSSProperties}
+      className="btn3d absolute left-5 z-30 grid size-14 place-items-center rounded-full"
+      style={{ '--bg': light ? '#FFFFFF' : '#4A5A8C', '--edge': '#FFD2A8', '--fg': light ? '#FF8001' : '#fff', padding: 0, minHeight: 56, top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' } as CSSProperties}
     >
       <Icon name="close" size={28} />
     </button>
@@ -155,7 +156,7 @@ export function Screen({ children, bg = '#FFFFFF', className = '' }: { children:
 export function Sheet({ children, onClose, label }: { children: ReactNode; onClose?: () => void; label: string }) {
   return (
     <div className="fade-in absolute inset-0 z-50 flex items-end bg-[#4A5A8C]/45" onClick={onClose} role="dialog" aria-label={label} aria-modal>
-      <div className="sheet-up w-full rounded-t-[32px] bg-white px-5 pt-3 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.16)]" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet-up w-full rounded-t-[32px] bg-white px-5 pt-3 pb-8 shadow-[0_-12px_40px_rgba(0,0,0,0.16)]" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }} onClick={(e) => e.stopPropagation()}>
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#D9DEE7]" />
         {children}
       </div>
@@ -325,7 +326,7 @@ export function NavBar() {
   const idx = Math.max(0, TABS.findIndex((t) => t.id === s.screen))
   const cx = TABS[idx].cx
   return (
-    <nav className="absolute bottom-5 left-1/2 z-40 -translate-x-1/2 drop-shadow-[0_10px_20px_rgba(74,90,140,.25)]" style={{ width: NAV_W * NAV_K, height: NAV_H * NAV_K }} aria-label="Navegación">
+    <nav className="absolute left-1/2 z-40 -translate-x-1/2 drop-shadow-[0_10px_20px_rgba(74,90,140,.25)]" style={{ width: NAV_W * NAV_K, height: NAV_H * NAV_K, bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }} aria-label="Navegación">
       <div className="card-in absolute top-0 left-0 origin-top-left rounded-[111px] bg-white" style={{ width: NAV_W, height: NAV_H, transform: `scale(${NAV_K})` }}>
         {/* Mapa */}
         <div className={`absolute overflow-clip transition-transform duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] ${idx === 0 ? '-translate-y-2 scale-105' : ''}`} style={{ left: 139, top: 35, width: 111, height: 122 }}>

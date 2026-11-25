@@ -40,8 +40,8 @@ export function TutorialKid() {
     <Screen bg="#FF8001">
       <CloudsOrange />
       {/* the child's tutorial has no sentences: icon buttons only */}
-      <RoundBtn icon="arrowLeft" label="Volver" size={56} onClick={() => dispatch({ type: 'GOTO', screen: 'map' })} className="absolute top-5 left-5 z-20" />
-      <RoundBtn icon="chevronRight" label="Saltar" size={56} onClick={next} className="absolute top-5 right-5 z-20" />
+      <RoundBtn icon="arrowLeft" label="Volver" size={56} onClick={() => dispatch({ type: 'GOTO', screen: 'map' })} className="absolute left-5 z-20" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' } as CSSProperties} />
+      <RoundBtn icon="chevronRight" label="Saltar" size={56} onClick={next} className="absolute right-5 z-20" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' } as CSSProperties} />
       <div className="absolute top-[92px] left-1/2 h-[404px] w-[228px] -translate-x-1/2 overflow-hidden rounded-[28px] bg-[#4A5A8C] shadow-[0_16px_36px_rgba(0,0,0,.28)]" role="region" aria-label="Video del tutorial en LSC">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#3A4A73,#4A5A8C_70%)]" />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-5">
@@ -60,7 +60,7 @@ export function TutorialKid() {
           <Icon name="repeat" size={30} />
         </button>
       </div>
-      <div className="absolute right-5 bottom-[38px] left-5"><Dock><Btn icon="check" onClick={next}>Listo</Btn></Dock></div>
+      <div className="absolute right-5 left-5 mx-auto max-w-[350px]" style={{ bottom: 'calc(2.375rem + env(safe-area-inset-bottom, 0px))' }}><Dock><Btn icon="check" onClick={next}>Listo</Btn></Dock></div>
     </Screen>
   )
 }
@@ -88,7 +88,7 @@ export function TutorialParent() {
         <Avatar who="papa" size={84} halo />
         <h1 className="mt-4 font-display text-[28px] leading-8 font-semibold text-white drop-shadow-[0_2px_0_rgba(0,123,185,.5)]">Tutorial del padre</h1>
       </div>
-      <div className="card absolute top-[238px] left-5 w-[350px] px-4 py-3">
+      <div className="card absolute top-[238px] inset-x-5 mx-auto max-w-[350px] px-4 py-3">
         <ul>
           {ROWS.map((r) => (
             <li key={r.text} className="flex min-h-[60px] items-center gap-4 py-1.5">
@@ -98,7 +98,7 @@ export function TutorialParent() {
           ))}
         </ul>
       </div>
-      <div className="absolute right-5 bottom-[46px] left-5"><Btn icon="check" onClick={() => dispatch({ type: 'TUTORIAL_PARENT_DONE' })}>Listo</Btn></div>
+      <div className="absolute inset-x-5 mx-auto max-w-[350px]" style={{ bottom: 'calc(2.875rem + env(safe-area-inset-bottom, 0px))' }}><Btn icon="check" onClick={() => dispatch({ type: 'TUTORIAL_PARENT_DONE' })}>Listo</Btn></div>
     </Screen>
   )
 }

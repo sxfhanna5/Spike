@@ -15,7 +15,7 @@ import { ContentBig, HelpButton, OptionCard } from './Play'
 function SealChip() {
   const { s } = useGame()
   return (
-    <span className="absolute top-5 right-5 z-30 flex h-14 items-center gap-1.5 rounded-full bg-white pr-4 pl-2 shadow-[0_6px_16px_rgba(0,0,0,.14)]" aria-label={`${s.masterCount} sellos de maestro`}>
+    <span className="absolute right-5 z-30 flex h-14 items-center gap-1.5 rounded-full bg-white pr-4 pl-2 shadow-[0_6px_16px_rgba(0,0,0,.14)]" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }} aria-label={`${s.masterCount} sellos de maestro`}>
       <img src="/art/spike-medal.png" alt="" width={36} draggable={false} />
       <span className="font-display text-[22px] font-semibold">{s.masterCount}</span>
     </span>
@@ -60,7 +60,7 @@ export function MasterScreen() {
 
       {show ? (
         <>
-          <div className="card-in absolute top-[390px] left-5 flex h-[196px] w-[350px] items-center justify-center gap-4 rounded-[28px] bg-white px-4 shadow-[0_10px_26px_rgba(112,40,160,.18)]">
+          <div className="card-in absolute top-[390px] inset-x-5 mx-auto flex h-[196px] max-w-[350px] items-center justify-center gap-4 rounded-[28px] bg-white px-4 shadow-[0_10px_26px_rgba(112,40,160,.18)]">
             <div className="relative h-[150px] w-[140px] shrink-0 overflow-hidden rounded-[20px] bg-[#4A5A8C]">
               <img src="/assets/110ea.png" alt="" className="size-full object-cover" draggable={false} />
               <span className="absolute right-2 bottom-2 left-2 truncate rounded-full bg-[#4A5A8C]/80 px-2 py-0.5 text-center font-sans text-[14px] font-extrabold text-white">Video LSC</span>
@@ -88,14 +88,14 @@ export function MasterScreen() {
               {mode === 'write' ? 'Letra por letra, despacio' : 'Repítela despacio'}
             </p>
           )}
-          <div className="absolute top-[664px] left-5 w-[350px]"><Btn icon="check" onClick={() => dispatch({ type: 'TEACHER_NEXT' })}>Listo</Btn></div>
+          <div className="absolute top-[664px] inset-x-5 mx-auto max-w-[350px]"><Btn icon="check" onClick={() => dispatch({ type: 'TEACHER_NEXT' })}>Listo</Btn></div>
         </>
       ) : mode === 'write' ? (
-        <div className="absolute top-[372px] left-5 w-[350px]"><WriteBoard compact /></div>
+        <div className="absolute top-[372px] inset-x-5 mx-auto max-w-[350px]"><WriteBoard compact /></div>
       ) : (
         <>
           <p className="absolute top-[378px] left-0 flex w-full items-center justify-center gap-2 font-display text-[20px] font-medium text-ink"><Avatar who={picker} size={36} />{picker === 'papa' ? 'Padre, elige otra vez' : ''}</p>
-          <div className="absolute top-[428px] left-5 flex w-[350px] flex-col gap-3">
+          <div className="absolute top-[428px] inset-x-5 mx-auto flex max-w-[350px] flex-col gap-3">
             {two.map((k) => <OptionCard key={k} index={k} c={c} compact onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })} />)}
           </div>
           <div className="absolute top-[640px] left-0 flex w-full justify-center"><HelpButton label={picker === 'papa' ? 'Otra vez' : ''} /></div>

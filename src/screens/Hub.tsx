@@ -9,6 +9,7 @@ import { Bar, Btn, ConnDot, CountUp, ModuleBadge, NavBar, ProfileFace, Screen, S
 import { Badge, Icon, type IconName } from '../components/glyphs'
 import { egg } from '../egg'
 import { useConnectFlow } from './Entry'
+import { EggBox } from '../components/EggBox'
 
 function Card({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
   return (
@@ -286,6 +287,7 @@ export function Profile() {
 export function Investigator() {
   const { s, dispatch } = useGame()
   const [flash, setFlash] = useState(false)
+  const [showEgg, setShowEgg] = useState(false)
   const exportCSV = () => {
     const u = URL.createObjectURL(new Blob([toCSV(s.log)], { type: 'text/csv' }))
     const a = document.createElement('a')
@@ -297,7 +299,7 @@ export function Investigator() {
   }
   const sample = [{ id: 0, hora: '10:12', modulo: 'Palabras', turno: 'Padre hace la seña', actor: 'Niño' as const, accion: 'Elige Amarillo', contenido: 'HAMBRE', correcto: 'Sí' as const, intento: 1, calor: 6 }]
   const rows = s.log.length ? s.log : sample
-  const tgl = (icon: 'download' | 'keyboard' | 'bluetoothOff' | 'refresh', label: string, on: boolean, click: () => void) => (
+  const tgl = (icon: 'download' | 'keyboard' | 'bluetoothOff' | 'bluetooth' | 'refresh', label: string, on: boolean, click: () => void) => (
     <button type="button" onClick={click} className={`flex min-h-16 items-center gap-3 rounded-[20px] px-3 text-left font-display text-[16px] leading-5 font-semibold shadow-[0_4px_12px_rgba(0,0,0,.08)] transition-colors ${on ? 'bg-[#F7E8FF]' : 'bg-white'}`}>
       <span className={`grid size-10 shrink-0 place-items-center rounded-full text-white ${on ? 'bg-[#D06BFF]' : 'bg-[#9AA5B1]'}`}><Icon name={icon} size={22} /></span>
       {label}
@@ -317,8 +319,14 @@ export function Investigator() {
           {tgl('download', flash ? 'CSV descargado' : 'Exportar CSV', flash, exportCSV)}
           {tgl('keyboard', 'Modo teclado', s.keyboard, () => dispatch({ type: 'TOGGLE_KEYBOARD' }))}
           {tgl('bluetoothOff', 'Simular fallo al conectar', s.simFail, () => dispatch({ type: 'TOGGLE_SIMFAIL' }))}
+          {tgl('bluetooth', showEgg ? 'Ocultar huevo' : 'Simulador huevo', showEgg, () => setShowEgg(!showEgg))}
           {tgl('refresh', 'Reiniciar datos', false, () => dispatch({ type: 'RESET' }))}
         </div>
+        {showEgg && (
+          <div className="mt-4 overflow-hidden rounded-[32px] shadow-lg">
+            <EggBox />
+          </div>
+        )}
         <div className="mt-4"><Card title={s.log.length ? `Registro · ${s.log.length} filas` : 'Registro · ejemplo'}>
           <div className="max-h-[210px] overflow-auto rounded-[16px]">
             <table className="w-full text-left font-sans text-[14px] leading-5">

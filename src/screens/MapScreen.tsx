@@ -197,7 +197,7 @@ export function MapScreen() {
   return (
     <Screen bg="#45C1FF">
       <div ref={scroller} onScroll={onScroll} className="no-scrollbar absolute inset-0 overflow-x-hidden overflow-y-auto" aria-label="Mapa de niveles">
-        <div ref={layers} className="relative bg-[#45C1FF]" style={{ width: 390, height: MAP_H, '--py': '0px' } as CSSProperties}>
+        <div ref={layers} className="relative mx-auto bg-[#45C1FF]" style={{ width: 390, height: MAP_H, '--py': '0px' } as CSSProperties}>
           <MapArt />
           {/* top of the map: Spike in his current stage, neutral, breathing */}
           <div className="pointer-events-none absolute z-[5]" style={{ left: 195 - 88, top: 132 }}>
@@ -245,7 +245,7 @@ export function MapScreen() {
       </div>
 
       {/* top: current module chip, and the tutorials button */}
-      <div className="pointer-events-none absolute top-5 right-5 left-5 z-30 flex items-start justify-between">
+      <div className="pointer-events-none absolute right-5 left-5 z-30 flex items-start justify-between" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
         <div className="pointer-events-auto card-in flex h-14 items-center gap-2 rounded-full bg-white py-1 pr-4 pl-3 shadow-[0_6px_16px_rgba(0,0,0,.14)]" role="status">
           <ModuleBadge id={m.id} size={36} />
           <span className="font-display text-[18px] font-semibold whitespace-nowrap text-ink">{m.name} {doneInModule}/{m.challenges.length}</span>
