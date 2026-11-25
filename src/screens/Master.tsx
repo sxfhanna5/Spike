@@ -47,7 +47,7 @@ export function MasterScreen() {
   return (
     <Screen bg="#E7B3FF">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,#F3D6FF,#E7B3FF_65%)]" />
-      <div className="absolute inset-0"><LevelRays opacity={0.5} /></div>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden"><LevelRays opacity={0.5} /></div>
       <Sparkles color="#fff" className="opacity-70" />
       <XButton />
       <SealChip />
@@ -60,7 +60,7 @@ export function MasterScreen() {
 
       {show ? (
         <>
-          <div className="card-in absolute top-[390px] inset-x-5 mx-auto flex h-[196px] max-w-[350px] items-center justify-center gap-4 rounded-[28px] bg-white px-4 shadow-[0_10px_26px_rgba(112,40,160,.18)]">
+          <div className="card-in absolute top-[clamp(320px,44vh,390px)] inset-x-5 mx-auto flex h-[196px] max-w-[350px] items-center justify-center gap-4 rounded-[28px] bg-white px-4 shadow-[0_10px_26px_rgba(112,40,160,.18)]">
             <div className="relative h-[150px] w-[140px] shrink-0 overflow-hidden rounded-[20px] bg-[#4A5A8C]">
               <img src="/assets/110ea.png" alt="" className="size-full object-cover" draggable={false} />
               <span className="absolute right-2 bottom-2 left-2 truncate rounded-full bg-[#4A5A8C]/80 px-2 py-0.5 text-center font-sans text-[14px] font-extrabold text-white">Video LSC</span>

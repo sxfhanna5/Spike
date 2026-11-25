@@ -4,6 +4,7 @@ import { SkyHills } from '../art/SkyHills'
 import { Btn, ProfileFace, Screen, Spike, usePausedTimeout } from '../components/ui'
 import { Icon } from '../components/glyphs'
 import { egg, virtualEgg } from '../egg'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
 /* ============================== shared bits ============================== */
 
@@ -53,8 +54,8 @@ export function Loader() {
   }, [dispatch])
   return (
     <Screen bg="#FF8001">
-      <div className="absolute inset-0 overflow-hidden" aria-hidden>
-        <div className="ray-spin absolute top-1/2 left-1/2 size-[1000px] -translate-x-1/2 -translate-y-[48%] opacity-70 mix-blend-screen" style={{ background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,.34) 0deg 12deg, rgba(255,255,255,0) 12deg 30deg)', maskImage: 'radial-gradient(circle, #000 12%, transparent 62%)', WebkitMaskImage: 'radial-gradient(circle, #000 12%, transparent 62%)' }} />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="ray-spin absolute top-1/2 left-1/2 size-[clamp(700px,120vw,1000px)] -translate-x-1/2 -translate-y-[48%] opacity-70 mix-blend-screen" style={{ background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,.34) 0deg 12deg, rgba(255,255,255,0) 12deg 30deg)', maskImage: 'radial-gradient(circle, #000 12%, transparent 62%)', WebkitMaskImage: 'radial-gradient(circle, #000 12%, transparent 62%)' }} />
       </div>
       <div className="relative flex h-full flex-col items-center justify-center px-8">
         <Spike stage={5} mood="happy" size={190} className="-mb-1" />
@@ -83,14 +84,14 @@ export function Welcome() {
   const { dispatch } = useGame()
   return (
     <Screen bg="#FFFFFF">
-      <div className="absolute top-0 left-0 h-[500px] w-full overflow-hidden rounded-b-[120px] bg-[#FF8001]">
-        <div className="ray-spin absolute top-[56%] left-1/2 size-[900px] -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,.3) 0deg 10deg, rgba(255,255,255,0) 10deg 24deg)', maskImage: 'radial-gradient(circle, #000 8%, transparent 60%)', WebkitMaskImage: 'radial-gradient(circle, #000 8%, transparent 60%)' }} />
+      <div className="pointer-events-none absolute top-0 left-0 h-[clamp(360px,56vh,500px)] w-full overflow-hidden rounded-b-[clamp(60px,18vw,120px)] bg-[#FF8001]">
+        <div className="ray-spin absolute top-[56%] left-1/2 size-[clamp(640px,120vw,900px)] -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,.3) 0deg 10deg, rgba(255,255,255,0) 10deg 24deg)', maskImage: 'radial-gradient(circle, #000 8%, transparent 60%)', WebkitMaskImage: 'radial-gradient(circle, #000 8%, transparent 60%)' }} />
       </div>
-      <div className="relative flex h-full flex-col items-center px-5">
-        <div className="mt-[72px]"><Spike stage={5} mood="happy" size={250} /></div>
-        <h1 className="-mt-1 font-display text-[64px] leading-[64px] font-bold tracking-wide text-white drop-shadow-[0_5px_0_#FF4F1A]">SPIKE</h1>
-        <p className="mt-[132px] max-w-[290px] text-center font-sans text-[16px] leading-6 font-semibold text-ink2">Aprende con tu familia: señas en LSC y palabras en español.</p>
-        <div className="mt-auto flex w-full flex-col gap-4 pb-10">
+      <div className="relative flex h-full flex-col items-center px-5 py-[clamp(20px,3.5vh,32px)]">
+        <div className="mt-[clamp(16px,5.5vh,72px)] shrink-0"><Spike stage={5} mood="happy" size={230} className="max-h-[28vh] max-w-[60vw]" /></div>
+        <h1 className="-mt-1 font-display text-[clamp(48px,12vw,64px)] leading-[1.05] font-bold tracking-wide text-white drop-shadow-[0_5px_0_#FF4F1A]">SPIKE</h1>
+        <p className="mt-[clamp(40px,11vh,110px)] max-w-[290px] text-center font-sans text-[clamp(14px,3.8vw,16px)] leading-6 font-semibold text-ink2">Aprende con tu familia: señas en LSC y palabras en español.</p>
+        <div className="mt-auto flex w-full flex-col gap-3.5 pb-[clamp(12px,3vh,32px)]">
           <Btn onClick={() => dispatch({ type: 'GOTO', screen: 'login' })}>Iniciar sesión</Btn>
           <Btn onClick={() => dispatch({ type: 'GOTO', screen: 'register' })}>Registrarse</Btn>
         </div>
@@ -108,8 +109,9 @@ export function Login() {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [show, setShow] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [errs, setErrs] = useState<{ email?: string; pass?: string }>({})
-  const submit = () => {
+  const submit = async () => {
     const e: typeof errs = {}
     if (!email.trim()) e.email = 'Escribe tu correo'
     else if (!validEmail(email)) e.email = 'Revisa tu correo: falta la @'
@@ -117,7 +119,36 @@ export function Login() {
     else if (pass.length < 4) e.pass = 'Usa 4 letras o más'
     setErrs(e)
     if (e.email || e.pass) return
-    dispatch({ type: 'LOGIN', email: email.trim(), password: pass })
+
+    if (isSupabaseConfigured) {
+      setLoading(true)
+      dispatch({ type: 'CLEAR_AUTH_ERROR' })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: pass,
+      })
+      setLoading(false)
+      if (error) {
+        const msg = error.message.includes('Invalid login credentials')
+          ? 'Correo o contraseña incorrectos'
+          : error.message.includes('Email not confirmed')
+          ? 'Por favor confirma tu correo electrónico'
+          : error.message
+        dispatch({ type: 'SET_AUTH_ERROR', error: msg })
+        return
+      }
+      if (data.user) {
+        const name = (data.user.user_metadata?.name as string) || data.user.email?.split('@')[0] || 'Familia'
+        dispatch({
+          type: 'SET_ACCOUNT',
+          account: { id: data.user.id, name, email: data.user.email || '' },
+          session: true,
+        })
+        dispatch({ type: 'GOTO', screen: 'connect' })
+      }
+    } else {
+      dispatch({ type: 'LOGIN', email: email.trim(), password: pass })
+    }
   }
   return (
     <SkyScreen>
@@ -126,9 +157,9 @@ export function Login() {
           <Icon name="arrowLeft" size={24} />
         </button>
       </div>
-      <div className="absolute top-[136px] inset-x-5 mx-auto max-w-[340px]">
-        <div className="pointer-events-none absolute -top-[84px] -right-[78px] z-0"><Spike stage={4} mood="happy" size={140} /></div>
-        <form className="card relative z-10 flex flex-col gap-4 p-6" onSubmit={(e) => { e.preventDefault(); submit() }} noValidate>
+      <div className="absolute top-[clamp(90px,15vh,136px)] inset-x-5 mx-auto max-w-[340px]">
+        <div className="pointer-events-none absolute -top-[72px] right-1 sm:-right-4 z-0"><Spike stage={4} mood="happy" size={130} /></div>
+        <form className="card relative z-10 flex flex-col gap-4 p-6" onSubmit={(e) => { e.preventDefault(); void submit() }} noValidate>
           <h1 className="font-display text-[28px] leading-8 font-semibold">¡Hola otra vez!</h1>
           <Field label="Correo" error={errs.email}>
             <input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrs({ ...errs, email: undefined }); dispatch({ type: 'CLEAR_AUTH_ERROR' }) }} placeholder="tucorreo@mail.com" className={inputCls(errs.email)} />
@@ -141,7 +172,7 @@ export function Login() {
               </button>
             </span>
           </Field>
-          <Btn type="submit" className="mt-1">Ingresar</Btn>
+          <Btn type="submit" disabled={loading} className="mt-1">{loading ? 'Ingresando…' : 'Ingresar'}</Btn>
           <button type="button" onClick={() => dispatch({ type: 'GOTO', screen: 'register' })} className="mx-auto min-h-[48px] px-4 font-display text-[18px] font-semibold text-ink underline decoration-[#FF8001] decoration-[3px] underline-offset-4">Crear cuenta</button>
         </form>
       </div>
@@ -157,17 +188,51 @@ export function Register() {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [show, setShow] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [errs, setErrs] = useState<{ name?: string; email?: string; pass?: string }>({})
-  const submit = () => {
+  const submit = async () => {
     const e: typeof errs = {}
     if (!name.trim()) e.name = 'Escribe un nombre de usuario'
     if (!email.trim()) e.email = 'Escribe tu correo'
     else if (!validEmail(email)) e.email = 'Revisa tu correo: falta la @'
     if (!pass) e.pass = 'Crea una contraseña'
-    else if (pass.length < 4) e.pass = 'Usa 4 letras o más'
+    else if (pass.length < 6) e.pass = 'Usa 6 letras o más'
     setErrs(e)
     if (e.name || e.email || e.pass) return
-    dispatch({ type: 'REGISTER', account: { name: name.trim(), email: email.trim(), password: pass } })
+
+    if (isSupabaseConfigured) {
+      setLoading(true)
+      dispatch({ type: 'CLEAR_AUTH_ERROR' })
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: pass,
+        options: {
+          data: { name: name.trim() },
+        },
+      })
+      setLoading(false)
+      if (error) {
+        const msg = error.message.includes('User already registered')
+          ? 'Ya existe una cuenta con este correo'
+          : error.message.includes('Password should be')
+          ? 'La contraseña debe tener al menos 6 caracteres'
+          : error.message.includes('rate limit')
+          ? 'Límite de correos alcanzado en Supabase (desactiva "Confirm email" en el panel)'
+          : error.message
+        setErrs({ ...errs, email: msg })
+        return
+      }
+      if (data.user) {
+        dispatch({
+          type: 'SET_ACCOUNT',
+          account: { id: data.user.id, name: name.trim(), email: data.user.email || '' },
+          session: true,
+        })
+        dispatch({ type: 'GOTO', screen: 'connect' })
+      }
+    } else {
+      dispatch({ type: 'REGISTER', account: { name: name.trim(), email: email.trim(), password: pass } })
+    }
   }
   return (
     <SkyScreen>
@@ -176,9 +241,9 @@ export function Register() {
           <Icon name="arrowLeft" size={24} />
         </button>
       </div>
-      <div className="absolute top-[96px] inset-x-5 mx-auto max-w-[350px]">
+      <div className="absolute top-[clamp(70px,10vh,96px)] inset-x-5 mx-auto max-w-[350px]">
         <div className="pointer-events-none absolute -top-[66px] right-3 z-0"><Spike stage={3} mood="happy" size={104} /></div>
-        <form className="card relative z-10 flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); submit() }} noValidate>
+        <form className="card relative z-10 flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void submit() }} noValidate>
           <h1 className="font-display text-[28px] leading-8 font-semibold">Crea tu cuenta</h1>
           <Field label="Nombre de usuario" error={errs.name}>
             <input value={name} onChange={(e) => { setName(e.target.value); setErrs({ ...errs, name: undefined }) }} autoComplete="nickname" placeholder="Tu nombre" className={inputCls(errs.name)} />
@@ -194,7 +259,7 @@ export function Register() {
               </button>
             </span>
           </Field>
-          <Btn type="submit" className="mt-1">Registrarme</Btn>
+          <Btn type="submit" disabled={loading} className="mt-1">{loading ? 'Creando cuenta…' : 'Registrarme'}</Btn>
         </form>
       </div>
     </SkyScreen>
@@ -249,9 +314,9 @@ export function Connect() {
         </button>
         {s.account && <span className="rounded-full bg-white/90 py-1.5 pr-4 pl-1.5 font-display text-[16px] font-semibold shadow-[0_3px_8px_rgba(0,0,0,.1)]"><span className="mr-2 inline-grid size-8 place-items-center align-middle"><ProfileFace size={32} /></span>{s.account.name}</span>}
       </div>
-      <div className="absolute top-[110px] left-0 flex w-full flex-col items-center">
-        <BigEgg state={state} size={220} />
-        <div className="card mt-4 flex w-[calc(100%-40px)] max-w-[320px] flex-col items-center gap-1 px-5 pt-5 pb-5" aria-live="polite">
+      <div className="absolute top-[clamp(76px,11vh,110px)] left-0 flex w-full flex-col items-center">
+        <BigEgg state={state} size={190} />
+        <div className="card mt-3 flex w-[calc(100%-40px)] max-w-[320px] flex-col items-center gap-1 px-5 pt-4 pb-5" aria-live="polite">
           <h1 className="font-display text-[28px] leading-8 font-semibold">{copy.t}</h1>
           <p className="min-h-6 text-center font-sans text-[16px] leading-6 font-semibold text-ink2">{copy.d}</p>
           <div className="mt-3 w-full">

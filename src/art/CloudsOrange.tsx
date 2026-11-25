@@ -6,8 +6,8 @@ const imgGroup50 = '/assets/78363.svg'
 
 export function CloudsOrange() {
   return (
-    <div className="pointer-events-none absolute top-0 left-0 overflow-hidden" style={{ width: 390, height: 847 }} aria-hidden>
-      <div className="absolute top-0 left-0 origin-top-left" style={{ width: 1042, height: 2263, transform: 'scale(0.37428)' }}>
+    <div className="art-container" aria-hidden>
+      <div className="art-canvas-bottom">
       <div className="absolute inset-[80.12%_-40.1%_-6.98%_-39.02%]">
         <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgUnion} />
       </div>

@@ -19,8 +19,10 @@ const imgGroup143 = '/assets/b21b2.svg'
 
 export function SkyHills() {
   return (
-    <div className="pointer-events-none absolute top-0 left-0 overflow-hidden" style={{ width: 390, height: 847 }} aria-hidden>
-      <div className="absolute top-0 left-0 origin-top-left" style={{ width: 1042, height: 2263, transform: 'scale(0.37428)' }}>
+    <div className="art-container" aria-hidden>
+      {/* Fondo de cielo continuo que cubre el 100% de cualquier pantalla o proporción */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]" />
+      <div className="art-canvas">
       <div className="-translate-x-1/2 absolute bottom-[6.67%] left-[calc(50%-243.05px)] top-[77.67%] w-[1257.908px]">
         <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup144} />
       </div>

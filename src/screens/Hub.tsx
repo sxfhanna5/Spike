@@ -10,6 +10,7 @@ import { Badge, Icon, type IconName } from '../components/glyphs'
 import { egg } from '../egg'
 import { useConnectFlow } from './Entry'
 import { EggBox } from '../components/EggBox'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
 function Card({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
   return (
@@ -215,6 +216,34 @@ export function Profile() {
   const reconnect = () => {
     void egg.disconnect().then(() => flow.start())
   }
+  const logout = async () => {
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut()
+    }
+    dispatch({ type: 'LOGOUT' })
+  }
+  const handlePasswordChange = async () => {
+    if (!editing) {
+      setEditing(true)
+      return
+    }
+    if (pw.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres')
+      return
+    }
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.auth.updateUser({ password: pw })
+      if (error) {
+        alert(`Error actualizando contraseña: ${error.message}`)
+        return
+      }
+      alert('¡Contraseña actualizada exitosamente!')
+    } else {
+      dispatch({ type: 'SET_PASSWORD', password: pw })
+    }
+    setPw('')
+    setEditing(false)
+  }
   return (
     <Screen bg="#BCEDFF">
       <SkyHills />
@@ -248,7 +277,7 @@ export function Profile() {
                   <p className="font-sans text-[20px] leading-6 font-bold tracking-widest">•••••••</p>
                 )}
               </div>
-              <button type="button" onClick={() => { if (editing && pw.length >= 4) dispatch({ type: 'SET_PASSWORD', password: pw }); if (editing) setPw(''); setEditing(!editing) }} className="btn3d inline-flex min-h-12 items-center rounded-full px-5 font-display text-[16px] font-semibold" style={{ '--bg': '#fff', '--edge': '#D9DEE7', '--fg': '#4A5A8C' } as React.CSSProperties}>{editing ? 'Guardar' : 'Cambiar'}</button>
+              <button type="button" onClick={() => void handlePasswordChange()} className="btn3d inline-flex min-h-12 items-center rounded-full px-5 font-display text-[16px] font-semibold" style={{ '--bg': '#fff', '--edge': '#D9DEE7', '--fg': '#4A5A8C' } as React.CSSProperties}>{editing ? 'Guardar' : 'Cambiar'}</button>
             </div>
           </section>
 
@@ -263,7 +292,7 @@ export function Profile() {
             <div className="mt-4"><Btn icon="refresh" onClick={reconnect}>Reconectar</Btn></div>
           </section>
 
-          <Btn variant="soft" icon="exit" onClick={() => dispatch({ type: 'LOGOUT' })}>Cerrar sesión</Btn>
+          <Btn variant="soft" icon="exit" onClick={() => void logout()}>Cerrar sesión</Btn>
           <button
             type="button"
             onPointerDown={startPress}

@@ -13,8 +13,10 @@ const imgStar13 = '/assets/17ebc.svg'
 
 export function GoodScene() {
   return (
-    <div className="pointer-events-none absolute top-0 left-0 overflow-hidden" style={{ width: 390, height: 847 }} aria-hidden>
-      <div className="absolute top-0 left-0 origin-top-left" style={{ width: 1042, height: 2263, transform: 'scale(0.37428)' }}>
+    <div className="art-container" aria-hidden>
+      {/* Fondo de cielo continuo que cubre el 100% de cualquier pantalla o proporción */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]" />
+      <div className="art-canvas">
       <div className="absolute bg-linear-to-b from-[#0095ff] h-[1132px] left-0 to-[#bcedff] top-0 via-[#45c1ff] via-[34.615%] w-[1042px]" />
       <div className="-translate-x-1/2 absolute h-[1430px] left-[calc(50%-525px)] mix-blend-plus-lighter top-[-730px] w-[1500px]">
         <div className="absolute inset-[-12.2%_-11.63%]">

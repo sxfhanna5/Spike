@@ -87,7 +87,7 @@ function FinalZone({ onTap }: { onTap: () => void }) {
         <g className="cloud-cover" style={{ animationDuration: '8.5s', animationDirection: 'alternate-reverse' }}><Cloud x={-20} y={34} k={1.05} fill="#F4F8FF" /><Cloud x={170} y={30} k={1.2} fill="#F4F8FF" /></g>
         <g className="cloud-cover" style={{ animationDuration: '13s' }}><Cloud x={-70} y={74} k={1.35} fill="#FFFFFF" /><Cloud x={140} y={70} k={1.3} fill="#FFFFFF" /><Cloud x={290} y={86} k={1.1} fill="#FFFFFF" /></g>
       </svg>
-      <span className="card-in absolute top-[68px] left-5 flex w-[350px] items-center gap-4 rounded-[28px] bg-white px-4 py-3.5 shadow-[0_10px_26px_rgba(74,90,140,.2)]">
+      <span className="card-in absolute top-[68px] inset-x-4 mx-auto flex max-w-[350px] items-center gap-4 rounded-[28px] bg-white px-4 py-3.5 shadow-[0_10px_26px_rgba(74,90,140,.2)]">
         <Badge icon="lock" color="#8FA2D8" accent="#5F72B0" size={52} />
         <span className="font-display text-[20px] leading-6 font-semibold text-ink">Próximamente: nuevos niveles</span>
       </span>
@@ -245,7 +245,7 @@ export function MapScreen() {
       </div>
 
       {/* top: current module chip, and the tutorials button */}
-      <div className="pointer-events-none absolute right-5 left-5 z-30 flex items-start justify-between" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
+      <div className="pointer-events-none absolute right-3.5 left-3.5 sm:right-5 sm:left-5 z-30 flex items-start justify-between" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
         <div className="pointer-events-auto card-in flex h-14 items-center gap-2 rounded-full bg-white py-1 pr-4 pl-3 shadow-[0_6px_16px_rgba(0,0,0,.14)]" role="status">
           <ModuleBadge id={m.id} size={36} />
           <span className="font-display text-[18px] font-semibold whitespace-nowrap text-ink">{m.name} {doneInModule}/{m.challenges.length}</span>

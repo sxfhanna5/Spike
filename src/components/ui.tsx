@@ -290,7 +290,7 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
     <div className="relative z-20 flex flex-col items-center pt-[18px]">
       {x && <XButton />}
       <ModuleBadge id={s.level} size={52} />
-      <div className="mt-2 flex w-[330px] items-center gap-3">
+      <div className="mt-2 flex w-full max-w-[330px] items-center gap-3 px-3">
         <div className="flex flex-1 gap-1" aria-hidden>
           {Array.from({ length: total }, (_, k) => (
             <span key={k} className="h-[6px] flex-1 overflow-hidden rounded-full" style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}>
@@ -326,7 +326,7 @@ export function NavBar() {
   const idx = Math.max(0, TABS.findIndex((t) => t.id === s.screen))
   const cx = TABS[idx].cx
   return (
-    <nav className="absolute left-1/2 z-40 -translate-x-1/2 drop-shadow-[0_10px_20px_rgba(74,90,140,.25)]" style={{ width: NAV_W * NAV_K, height: NAV_H * NAV_K, bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }} aria-label="Navegación">
+    <nav className="absolute left-1/2 z-40 -translate-x-1/2 origin-bottom max-w-[95vw] drop-shadow-[0_10px_20px_rgba(74,90,140,.25)]" style={{ width: NAV_W * NAV_K, height: NAV_H * NAV_K, bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }} aria-label="Navegación">
       <div className="card-in absolute top-0 left-0 origin-top-left rounded-[111px] bg-white" style={{ width: NAV_W, height: NAV_H, transform: `scale(${NAV_K})` }}>
         {/* Mapa */}
         <div className={`absolute overflow-clip transition-transform duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] ${idx === 0 ? '-translate-y-2 scale-105' : ''}`} style={{ left: 139, top: 35, width: 111, height: 122 }}>

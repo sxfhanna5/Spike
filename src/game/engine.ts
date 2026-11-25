@@ -18,7 +18,7 @@ export type TeacherPhase = 'show' | 'retry' | 'learned'
 export type ErrorKind = 'wrong' | 'help'
 export type FxMode = 'none' | 'teacher' | 'hatch' | 'levelup' | 'final'
 export interface Fx { mode: FxMode; key: number }
-export interface Account { name: string; email: string; password: string }
+export interface Account { id?: string; name: string; email: string; password?: string }
 export interface MapAnim { from: number; to: number; key: number }
 export interface LogRow {
   id: number
@@ -83,6 +83,9 @@ export interface GameState {
 export type Action =
   | { type: 'LOADER_DONE' } | { type: 'GOTO'; screen: Screen } | { type: 'NAV'; screen: 'map' | 'album' | 'profile' }
   | { type: 'LOGIN'; email: string; password: string } | { type: 'REGISTER'; account: Account } | { type: 'LOGOUT' }
+  | { type: 'SET_ACCOUNT'; account: Account | null; session: boolean }
+  | { type: 'LOAD_PROGRESS'; progress: Partial<GameState> }
+  | { type: 'SET_AUTH_ERROR'; error: string | null }
   | { type: 'SET_PASSWORD'; password: string } | { type: 'CLEAR_AUTH_ERROR' }
   | { type: 'CONNECT_START' } | { type: 'CONNECT_FAIL' } | { type: 'EGG_CONNECTION'; connected: boolean } | { type: 'CONNECT_NEXT' }
   | { type: 'OVERLAY'; overlay: Overlay } | { type: 'TUTORIAL_KID_DONE' } | { type: 'TUTORIAL_PARENT_DONE' }
@@ -147,10 +150,18 @@ export function loadState(): GameState {
 export function saveState(s: GameState) {
   try {
     const out: Record<string, unknown> = {}
-    for (const k of PERSIST) out[k] = s[k]
+    for (const k of PERSIST) {
+      if (k === 'account' && s.account) {
+        // Nunca guardar contraseñas en localStorage
+        const { password: _p, ...safeAccount } = s.account as { password?: string; name: string; email: string; id?: string }
+        out[k] = safeAccount
+      } else {
+        out[k] = s[k]
+      }
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
   } catch {
-    /* the prototype keeps working in memory */
+    /* the app keeps working in memory */
   }
 }
 
@@ -294,14 +305,22 @@ export function reducer(s: GameState, a: Action): GameState {
 
     case 'LOGIN': {
       const acc = s.account
-      if (acc && (acc.email.toLowerCase() !== a.email.toLowerCase() || acc.password !== a.password)) return { ...s, authError: 'Ese correo o contraseña no coincide' }
-      const account: Account = acc ?? { name: a.email.split('@')[0], email: a.email, password: a.password }
+      if (acc && acc.password && (acc.email.toLowerCase() !== a.email.toLowerCase() || acc.password !== a.password)) return { ...s, authError: 'Ese correo o contraseña no coincide' }
+      const account: Account = acc ?? { name: a.email.split('@')[0], email: a.email }
       return { ...s, account, session: true, authError: null, screen: 'connect' }
     }
     case 'REGISTER':
       return { ...s, account: a.account, session: true, authError: null, screen: 'connect', tutorialDone: false }
+    case 'SET_ACCOUNT':
+      return { ...s, account: a.account, session: a.session, authError: null }
+    case 'LOAD_PROGRESS': {
+      const done = Math.max(0, Math.min(TOTAL_CASILLAS, a.progress.done ?? s.done))
+      return { ...s, ...a.progress, done, heat: heatFor(done) }
+    }
+    case 'SET_AUTH_ERROR':
+      return { ...s, authError: a.error }
     case 'LOGOUT':
-      return { ...s, session: false, screen: 'welcome', overlay: null, connected: false, intro: null, inLevel: false }
+      return { ...s, account: null, session: false, screen: 'welcome', overlay: null, connected: false, intro: null, inLevel: false }
     case 'SET_PASSWORD':
       return s.account ? { ...s, account: { ...s.account, password: a.password } } : s
     case 'CLEAR_AUTH_ERROR':

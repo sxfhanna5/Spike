@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, type ReactNode } from 'react'
 import { ALPHABET } from './game/data'
-import { disconnectedSheet, isPaused, isPlay, loadState, reducer, saveState, type Screen as ScreenName } from './game/engine'
+import { disconnectedSheet, isPaused, isPlay, loadState, reducer, saveState, type Account, type Screen as ScreenName } from './game/engine'
 import { GameContext } from './game/context'
 import { useEggSync } from './egg/useEggSync'
 import { IconDefs } from './components/glyphs'
@@ -11,6 +11,7 @@ import { AlmostScreen, GoodScreen, GuessScreen, IntroCard, SignScreen } from './
 import { HatchScreen, MasterScreen, WriteScreen } from './screens/Master'
 import { Album, Investigator, Profile } from './screens/Hub'
 import { DisconnectedSheet, ExitSheet, ModuleSheet, RetoSheet, TutorialsSheet } from './screens/Sheets'
+import { fetchUserProgress, isSupabaseConfigured, saveUserProgress, supabase } from './lib/supabase'
 
 const VIEWS: Record<ScreenName, () => ReactNode> = {
   loader: Loader, welcome: Welcome, login: Login, register: Register, connect: Connect,
@@ -33,6 +34,86 @@ export default function App() {
     const t = window.setInterval(() => dispatch({ type: 'TICK', seconds: 5 }), 5000)
     return () => window.clearInterval(t)
   }, [play, paused])
+
+  // Supabase Auth session listener and initial progress fetch
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const u = session.user
+        const name = (u.user_metadata?.name as string) || u.email?.split('@')[0] || 'Familia'
+        const account: Account = { id: u.id, name, email: u.email || '' }
+        dispatch({ type: 'SET_ACCOUNT', account, session: true })
+
+        fetchUserProgress(u.id).then((remote) => {
+          if (remote) {
+            dispatch({
+              type: 'LOAD_PROGRESS',
+              progress: {
+                done: remote.done,
+                masterCount: remote.master_count,
+                masterSeals: remote.master_seals || [],
+                taught: remote.taught || { nino: 0, papa: 0 },
+                playSeconds: remote.play_seconds || 0,
+                days: remote.days || [],
+                replay: remote.replay || [],
+                tutorialDone: remote.tutorial_done,
+                learned: (remote.learned as any) || {},
+              },
+            })
+          } else {
+            // First time: migrate local progress to Supabase
+            const cur = stateRef.current
+            if (cur.done > 0 || cur.masterCount > 0) {
+              void saveUserProgress(u.id, {
+                done: cur.done,
+                master_count: cur.masterCount,
+                master_seals: cur.masterSeals,
+                taught: cur.taught,
+                play_seconds: cur.playSeconds,
+                days: cur.days,
+                learned: cur.learned as Record<string, string[]>,
+                replay: cur.replay,
+                tutorial_done: cur.tutorialDone,
+              })
+            }
+          }
+        })
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const u = session.user
+        const name = (u.user_metadata?.name as string) || u.email?.split('@')[0] || 'Familia'
+        dispatch({ type: 'SET_ACCOUNT', account: { id: u.id, name, email: u.email || '' }, session: true })
+      } else {
+        dispatch({ type: 'SET_ACCOUNT', account: null, session: false })
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Sync game progress to Supabase (debounced 1s) when progress changes and user is logged in
+  useEffect(() => {
+    if (!isSupabaseConfigured || !s.account?.id || !s.session) return
+    const t = window.setTimeout(() => {
+      void saveUserProgress(s.account!.id!, {
+        done: s.done,
+        master_count: s.masterCount,
+        master_seals: s.masterSeals,
+        taught: s.taught,
+        play_seconds: s.playSeconds,
+        days: s.days,
+        learned: s.learned as Record<string, string[]>,
+        replay: s.replay,
+        tutorial_done: s.tutorialDone,
+      })
+    }, 1000)
+    return () => window.clearTimeout(t)
+  }, [s.done, s.masterCount, s.masterSeals, s.taught, s.playSeconds, s.days, s.learned, s.replay, s.tutorialDone, s.session, s.account?.id])
 
   // Keyboard mode: 1 2 3 = colours, 4 or ? = «No entendí», letters for Escribir. Esc = exit sheet.
   const stateRef = useRef(s)

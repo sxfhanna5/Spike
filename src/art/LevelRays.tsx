@@ -6,7 +6,7 @@ export function LevelRays({ opacity = 0.55 }: { opacity?: number }) {
       alt=""
       aria-hidden
       draggable={false}
-      className="ray-spin pointer-events-none absolute top-[48%] left-1/2 w-[640px] max-w-none -translate-x-1/2 -translate-y-1/2"
+      className="ray-spin pointer-events-none absolute top-[48%] left-1/2 w-[clamp(500px,140vw,720px)] max-w-none -translate-x-1/2 -translate-y-1/2"
       style={{ opacity }}
     />
   )

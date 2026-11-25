@@ -8,8 +8,8 @@ const imgGroup51 = '/assets/9bb80.svg'
 
 export function CloudsBlue() {
   return (
-    <div className="pointer-events-none absolute top-0 left-0 overflow-hidden" style={{ width: 390, height: 847 }} aria-hidden>
-      <div className="absolute top-0 left-0 origin-top-left" style={{ width: 1042, height: 2263, transform: 'scale(0.37428)' }}>
+    <div className="art-container" aria-hidden>
+      <div className="art-canvas-bottom">
       <div className="absolute flex inset-[83.08%_52.84%_-5.88%_-25.14%] items-center justify-center" style={{ containerType: "size" }}>
         <div className="flex-none h-[hypot(-3.38153cqw,92.4716cqh)] rotate-[3.06deg] w-[hypot(96.6185cqw,7.52837cqh)]">
           <div className="relative size-full">
