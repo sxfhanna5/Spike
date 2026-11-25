@@ -1,0 +1,15 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="132.001" height="143.571" viewBox="0 0 132.001 143.571" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Modulo4">
+<path id="Vector 2360" d="M0.00053891 94.2852V58.7922L132.001 58.2852V94.2852C132.001 94.2852 132.001 143.571 66.0005 143.571C-0.857143 143.571 0.00053891 94.2852 0.00053891 94.2852Z" fill="#369C00"/>
+<g id="Ellipse 154">
+<ellipse cx="66" cy="58.2857" rx="66" ry="58.2857" fill="#73D83A"/>
+<mask id="stroke0_0_4" fill="white">
+<path d="M132 58.2857C132 90.476 102.451 116.571 66 116.571C29.5492 116.571 0 90.476 0 58.2857C0 26.0954 29.5492 0 66 0C102.451 0 132 26.0954 132 58.2857Z"/>
+</mask>
+<ellipse cx="66" cy="58.2857" rx="66" ry="58.2857" stroke-width="20" stroke="white" mask="url(#stroke0_0_4)"/>
+</g>
+<g id="iconstack.io - (Message Circle)">
+<path id="Vector" d="M43.8101 67.5252L40 78.9554L53.7749 76.0246C65.378 81.6576 79.8827 78.7854 87.6963 69.3042C95.5099 59.8229 94.2203 46.6665 84.6805 38.5276C75.1406 30.3916 60.2989 29.7908 49.9648 37.1208C39.6307 44.4537 36.9988 57.4519 43.8101 67.5252Z" fill="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="white"/>
+</g>
+</g>
+</svg>

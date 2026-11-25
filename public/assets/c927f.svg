@@ -1,0 +1,50 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="140.358" height="162.165" viewBox="0 0 140.358 162.165" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Frame 13" filter="url(#filter0_d_0_655)">
+<g id="Ellipse 112">
+<use xlink:href="#stroke0_0_655" fill="#FBEDFF"/>
+<mask id="stroke1_0_655" maskUnits="userSpaceOnUse" x="17.7549" y="16.6635" width="105" height="127" fill="black">
+<rect fill="white" x="17.7549" y="16.6635" width="105" height="127"/>
+<use xlink:href="#stroke0_0_655"/>
+</mask>
+<path d="M117.603 90.8949C117.603 117.086 96.3706 138.319 70.179 138.319C43.9874 138.319 22.7549 117.086 22.7549 90.8949C22.7549 64.7032 43.9874 21.6635 70.179 21.6635C96.3706 21.6635 117.603 64.7032 117.603 90.8949Z" stroke-width="9.27658" stroke="white" mask="url(#stroke1_0_655)"/>
+</g>
+<mask id="mask0_0_655" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="22" y="21" width="96" height="118">
+<path id="Ellipse 125" d="M117.525 90.8949C117.525 117.086 96.2925 138.319 70.1009 138.319C43.9093 138.319 22.6768 117.086 22.6768 90.8949C22.6768 64.7032 43.9093 21.6635 70.1009 21.6635C96.2925 21.6635 117.525 64.7032 117.525 90.8949Z" fill="url(#paint0_radial_0_655)"/>
+</mask>
+<g mask="url(#mask0_0_655)">
+<circle id="Ellipse 126" opacity="0.62" cx="70.1878" cy="132.292" r="34.3938" fill="#F1C4FB"/>
+<circle id="Ellipse 127" opacity="0.62" cx="25.3319" cy="95.2405" r="13.6512" fill="#CC86F2"/>
+<circle id="Ellipse 128" opacity="0.17" cx="102.278" cy="44.8854" r="15.0695" fill="#CC86F2"/>
+<circle id="Ellipse 129" opacity="0.17" cx="43.2424" cy="45.776" r="4.96406" fill="#CC86F2"/>
+<circle id="Ellipse 130" opacity="0.62" cx="104.761" cy="99.1424" r="7.62338" fill="#CC86F2"/>
+<g id="Group 22">
+<ellipse id="Ellipse 117" cx="52.1073" cy="82.4625" rx="4.51493" ry="5.68007" transform="rotate(2.73197 52.1073 82.4625)" fill="#3F0055"/>
+<circle id="Ellipse 118" cx="53.4564" cy="84.8135" r="0.873857" fill="white"/>
+<circle id="Ellipse 119" cx="50.7862" cy="80.82" r="2.41436" fill="white"/>
+</g>
+<g id="Group 23">
+<ellipse id="Ellipse 117_2" cx="88.6307" cy="82.4625" rx="4.51493" ry="5.68007" transform="rotate(2.73197 88.6307 82.4625)" fill="#3F0055"/>
+<circle id="Ellipse 118_2" cx="89.976" cy="84.8135" r="0.873857" fill="white"/>
+<circle id="Ellipse 119_2" cx="87.3097" cy="80.82" r="2.41436" fill="white"/>
+</g>
+<path id="Vector 49" d="M65.0987 92.4721C68.0268 95.5313 72.6833 95.8003 75.4937 92.4721" stroke-width="3.5138" stroke-linecap="round" stroke="#DDADF7"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_0_655" x="0" y="4.76837e-07" width="140.358" height="162.165" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1.09136"/>
+<feGaussianBlur stdDeviation="9.05831"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_655"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_655" result="shape"/>
+</filter>
+<radialGradient id="paint0_radial_0_655" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(70.1009 79.9913) rotate(90) scale(58.3277 47.4241)">
+<stop stop-color="#FDFAFF"/>
+<stop offset="1" stop-color="#F9EDFF"/>
+</radialGradient>
+<path id="stroke0_0_655" d="M117.603 90.8949C117.603 117.086 96.3706 138.319 70.179 138.319C43.9874 138.319 22.7549 117.086 22.7549 90.8949C22.7549 64.7032 43.9874 21.6635 70.179 21.6635C96.3706 21.6635 117.603 64.7032 117.603 90.8949Z"/>
+</defs>
+</svg>

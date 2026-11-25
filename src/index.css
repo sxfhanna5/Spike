@@ -1,0 +1,580 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Nunito:Black';
+  src: url('https://static.figma.com/font/Nunito_wght__1') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Nunito', ui-rounded, system-ui, sans-serif;
+  --font-display: 'Fredoka', 'Nunito', ui-rounded, system-ui, sans-serif;
+  --color-ink: #4a5a8c;
+  --color-ink2: #65739f;
+  --color-brand: #ff8001;
+  --color-accent: #ff4f1a;
+  --color-kid: #ff8001;
+  --color-parent: #45c1ff;
+  --color-master: #e7b3ff;
+  --color-master-deep: #d06bff;
+  --color-path: #ffe44c;
+  --color-locked: #d9dee7;
+  --color-locked-deep: #9aa5b1;
+  --color-mod-letras: #e7b3ff;
+  --color-mod-colores: #ff8001;
+  --color-mod-numeros: #45c1ff;
+  --color-mod-palabras: #73d83a;
+  --color-mod-escribir: #c48243;
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 0.08);
+  --shadow-soft: 0 4px 14px rgb(0 0 0 / 0.08);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: #eaf6ff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  button {
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button:disabled {
+    cursor: default;
+  }
+  button:focus-visible,
+  input:focus-visible {
+    outline: 3px solid #007bb9;
+    outline-offset: 3px;
+  }
+  input::placeholder {
+    color: #65739f;
+  }
+}
+
+@layer components {
+  /* Solid pill button with a solid bottom edge in the accent colour; sinks 4px when pressed. */
+  .btn3d {
+    --bg: #ff8001;
+    --edge: #ff4f1a;
+    --fg: #ffffff;
+    background: var(--bg);
+    color: var(--fg);
+    box-shadow:
+      0 6px 0 var(--edge),
+      0 12px 22px rgb(0 0 0 / 0.12);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    text-shadow: var(--ts, none);
+    transition:
+      transform 200ms cubic-bezier(0.3, 1.5, 0.5, 1),
+      box-shadow 200ms ease-out,
+      opacity 200ms;
+  }
+  .btn3d:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow:
+      0 2px 0 var(--edge),
+      0 4px 10px rgb(0 0 0 / 0.1);
+  }
+  .btn3d:disabled {
+    --bg: #d9dee7;
+    --edge: #9aa5b1;
+    --fg: #9aa5b1;
+  }
+  .card {
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: var(--shadow-card);
+    animation: card-in 340ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  }
+}
+
+/* ---------- motion: 200–400 ms, light bounce ---------- */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+}
+.screen-in {
+  animation: screen-in 340ms cubic-bezier(0.3, 1.25, 0.5, 1) both;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.card-in {
+  animation: card-in 340ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%) scale(0.96);
+  }
+}
+.sheet-up {
+  animation: sheet-up 380ms cubic-bezier(0.25, 1.15, 0.4, 1) both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.fade-in {
+  animation: fade-in 260ms ease-out both;
+}
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+}
+.pop {
+  animation: pop 400ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+.rise {
+  animation: rise 400ms ease-out both;
+}
+
+/* Spike moods */
+@keyframes spike-breathe {
+  50% {
+    transform: scale(1.035);
+  }
+}
+.spike-breathe {
+  transform-origin: 50% 95%;
+  animation: spike-breathe 3.6s ease-in-out infinite;
+}
+@keyframes spike-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  15% {
+    transform: translateY(0) scale(1.05, 0.95);
+  }
+  45% {
+    transform: translateY(-9%) scale(0.97, 1.03);
+  }
+  75% {
+    transform: translateY(0) scale(1.03, 0.97);
+  }
+}
+.spike-bounce {
+  transform-origin: 50% 95%;
+  animation: spike-bounce 1.3s ease-in-out infinite;
+}
+@keyframes spike-wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+.spike-wiggle {
+  transform-origin: 50% 95%;
+  animation: spike-wiggle 1.8s ease-in-out infinite;
+}
+@keyframes spike-tilt {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  40%,
+  60% {
+    transform: rotate(-11deg);
+  }
+}
+.spike-tilt {
+  transform-origin: 50% 95%;
+  animation: spike-tilt 3s ease-in-out infinite;
+}
+@keyframes spike-blink {
+  0%,
+  92%,
+  100% {
+    opacity: 0;
+  }
+  95%,
+  97% {
+    opacity: 1;
+  }
+}
+@keyframes zzz {
+  0% {
+    opacity: 0;
+    transform: translate(0, 6px) scale(0.8);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(8px, -16px) scale(1.1);
+  }
+}
+.zzz {
+  animation: zzz 2.8s ease-in-out infinite;
+}
+
+/* Loader, egg and heat */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateX(-5px) rotate(-3deg);
+  }
+  40% {
+    transform: translateX(5px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-4px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(4px) rotate(2deg);
+  }
+}
+.shake {
+  animation: shake 520ms ease-in-out both;
+}
+.egg-tremble {
+  transform-origin: 50% 92%;
+  animation: shake 700ms ease-in-out infinite;
+}
+@keyframes ray-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ray-spin {
+  animation: ray-spin 60s linear infinite;
+}
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.12);
+  }
+}
+.glow-pulse {
+  animation: glow-pulse 1.9s ease-in-out infinite;
+}
+@keyframes egg-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.egg-bob {
+  animation: egg-bob 1.6s ease-in-out infinite;
+}
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+}
+.toast {
+  animation: toast-in 1.9s ease-out both;
+}
+@keyframes turn-arrow {
+  from {
+    opacity: 0;
+    transform: rotate(-30deg) scale(0.85);
+  }
+}
+.turn-arrow {
+  animation: turn-arrow 600ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes phone-turn {
+  0% {
+    transform: perspective(1400px) rotateY(0);
+  }
+  45% {
+    transform: perspective(1400px) rotateY(28deg) scale(0.97);
+  }
+  100% {
+    transform: perspective(1400px) rotateY(0);
+  }
+}
+.phone-turn {
+  animation: phone-turn 1.2s ease-in-out both;
+}
+@keyframes crack-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.crack {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: crack-draw 900ms ease-out 400ms forwards;
+}
+.crack-2 {
+  animation-delay: 1.1s;
+}
+.crack-3 {
+  animation-delay: 1.7s;
+}
+@keyframes flash {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.flash {
+  animation: flash 700ms ease-in-out both;
+}
+@keyframes load-bar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes load-heat {
+  from {
+    filter: grayscale(1) brightness(1.15);
+  }
+  to {
+    filter: grayscale(0) brightness(1);
+  }
+}
+@keyframes dash-move {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
+.dash-move {
+  animation: dash-move 0.9s linear infinite;
+}
+@keyframes dot-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.dot-bounce {
+  animation: dot-bounce 800ms ease-in-out infinite;
+}
+
+/* LED ring of the box */
+@keyframes led-breathe {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+.led-breathe {
+  animation: led-breathe 4.2s ease-in-out infinite;
+}
+@keyframes led-master {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.led-master {
+  animation: led-master 3.2s ease-in-out infinite;
+}
+@keyframes led-hatch {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.led-hatch {
+  animation: led-hatch 1.2s ease-in-out 3;
+}
+@keyframes btn-live {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.btn-live {
+  animation: btn-live 2.4s ease-in-out infinite;
+}
+
+/* Reduced motion: only short fades, nothing loops. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 1ms !important;
+  }
+  .screen-in,
+  .sheet-up,
+  .pop,
+  .rise,
+  .card-in,
+  .card,
+  .toast {
+    animation: fade-in 220ms ease-out both !important;
+  }
+  .spike-breathe,
+  .spike-bounce,
+  .spike-wiggle,
+  .spike-tilt,
+  .egg-bob,
+  .egg-tremble,
+  .glow-pulse,
+  .drift,
+  .waves,
+  .sway,
+  .shine,
+  .shimmer,
+  .zzz,
+  .sparkle-fx,
+  .ray-spin {
+    animation: none !important;
+  }
+}
+
+/* hide scrollbars inside the phone */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- map layers ---------- */
+/* Map layers live inside the art scaled to 0.37, so these distances are in design units. */
+@keyframes drift {
+  from { transform: translateX(-70px); }
+  to { transform: translateX(70px); }
+}
+.drift { animation: drift 26s ease-in-out infinite alternate; }
+@keyframes waves {
+  0%, 100% { transform: translateX(0) scaleY(1); opacity: 1; }
+  50% { transform: translateX(16px) scaleY(1.07); opacity: 0.9; }
+}
+.waves { animation: waves 5.5s ease-in-out infinite; }
+@keyframes sway {
+  from { transform: rotate(-1.6deg); }
+  to { transform: rotate(1.6deg); }
+}
+.sway { transform-origin: 50% 100%; animation: sway 4.6s ease-in-out infinite alternate; }
+.sway-s { animation-duration: 3.4s; }
+@keyframes shimmer {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.07); }
+}
+.shimmer { animation: shimmer 5s ease-in-out infinite; }
+.v1 { animation-delay: -1.7s !important; animation-duration: 5.4s; }
+.v2 { animation-delay: -3.1s !important; animation-duration: 6.2s; }
+.drift.v1 { animation-duration: 31s; }
+.drift.v2 { animation-duration: 37s; animation-direction: alternate-reverse; }
+.par { position: absolute; inset: 0; pointer-events: none; }
+.par-1 { transform: translateY(calc(var(--py, 0px) * 2.677)); }
+.par-2 { transform: translateY(calc(var(--py, 0px) * 1.34)); }
+@keyframes shine {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.12) saturate(1.12); }
+}
+.shine { animation: shine 6s ease-in-out infinite; }
+@keyframes tile-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+.tile-pulse { animation: tile-pulse 2.2s ease-in-out infinite; }
+@keyframes cloud-cover {
+  from { transform: translateX(-18px); }
+  to { transform: translateX(18px); }
+}
+.cloud-cover { animation: cloud-cover 9s ease-in-out infinite alternate; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.sparkle-fx { animation: twinkle 2.2s ease-in-out infinite; }
+@keyframes hatch-pop {
+  0% { transform: scale(0.5) rotate(-6deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+.hatch-pop { animation: hatch-pop 620ms cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+@keyframes hat-bounce {
+  0% { transform: translateY(-60px) scale(0.8); opacity: 0; }
+  55% { transform: translateY(6px) scale(1.04); opacity: 1; }
+  75% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+.hat-bounce { animation: hat-bounce 640ms cubic-bezier(0.3, 1.2, 0.5, 1) 120ms both; }
+@keyframes seal-glint {
+  0% { transform: scale(0.4); opacity: 0; filter: brightness(2); }
+  60% { transform: scale(1.1); opacity: 1; filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.seal-glint { animation: seal-glint 700ms ease-out 250ms both; }
+@keyframes accordion {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+.accordion-in { animation: accordion 300ms cubic-bezier(0.3, 1.3, 0.5, 1) both; }

@@ -1,0 +1,10 @@
+{
+  "description": "Prototipo interactivo en español para que familias y especialistas recorran y evalúen un juego colaborativo de aprendizaje de LSC y español escrito.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

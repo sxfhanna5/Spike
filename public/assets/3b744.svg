@@ -1,0 +1,51 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="277.531" height="322.601" viewBox="0 0 277.531 322.601" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Nivel 1 Confundido volver a repetir Modo maestro" filter="url(#filter0_d_0_578)">
+<g id="Union">
+<use xlink:href="#stroke0_0_578" fill="#CC86F2"/>
+<mask id="stroke1_0_578" maskUnits="userSpaceOnUse" x="15.3" y="15.3" width="247" height="293" fill="black">
+<rect fill="white" x="15.3" y="15.3" width="247" height="293"/>
+<use xlink:href="#stroke0_0_578"/>
+</mask>
+<path d="M138.849 40.3C193.183 40.3 237.231 129.586 237.231 183.92C237.231 238.255 193.183 282.301 138.849 282.301C138.821 282.301 138.793 282.3 138.765 282.3C138.737 282.3 138.709 282.301 138.681 282.301C84.3466 282.301 40.3 238.254 40.3 183.92C40.3 129.586 84.3466 40.3003 138.681 40.3H138.849Z" stroke-width="50" stroke-linecap="round" stroke="white" mask="url(#stroke1_0_578)"/>
+</g>
+<path id="Ellipse 112" d="M237.093 183.919C237.093 238.253 193.046 282.3 138.712 282.3C84.378 282.3 40.3315 238.253 40.3315 183.919C40.3315 129.585 84.378 40.3 138.712 40.3C193.046 40.3 237.093 129.585 237.093 183.919Z" fill="#F8DBFF"/>
+<mask id="mask0_0_578" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="40" y="40" width="197" height="243">
+<path id="Ellipse 125" d="M236.925 183.919C236.925 238.253 192.878 282.3 138.544 282.3C84.2098 282.3 40.1633 238.253 40.1633 183.919C40.1633 129.585 84.2098 40.3 138.544 40.3C192.878 40.3 236.925 129.585 236.925 183.919Z" fill="url(#paint0_radial_0_578)"/>
+</mask>
+<g mask="url(#mask0_0_578)">
+<circle id="Ellipse 126" opacity="0.62" cx="138.728" cy="269.796" r="71.3495" fill="#F1AFFF"/>
+<circle id="Ellipse 127" opacity="0.62" cx="45.6797" cy="192.93" r="28.3191" fill="#CC86F2"/>
+<circle id="Ellipse 128" opacity="0.17" cx="205.298" cy="88.4794" r="31.2614" fill="#CC86F2"/>
+<circle id="Ellipse 129" opacity="0.17" cx="82.8264" cy="90.3186" r="10.2979" fill="#CC86F2"/>
+<circle id="Ellipse 130" opacity="0.62" cx="210.447" cy="201.021" r="15.8146" fill="#CC86F2"/>
+<g id="Group 22">
+<ellipse id="Ellipse 117" cx="108.407" cy="85.7385" rx="9.36616" ry="11.7832" transform="rotate(39.8654 108.407 85.7385)" fill="#3F0055"/>
+<circle id="Ellipse 118" cx="107.689" cy="91.3115" r="1.8128" fill="white"/>
+<circle id="Ellipse 119" cx="108.275" cy="81.368" r="5.00856" fill="white"/>
+</g>
+<g id="Group 23">
+<ellipse id="Ellipse 117_2" cx="9.36616" cy="11.7832" rx="9.36616" ry="11.7832" transform="matrix(-0.749001 -0.662569 -0.662569 0.749001 226.48 141.153)" fill="#3F0055"/>
+<circle id="Ellipse 118_2" cx="206.256" cy="145.321" r="1.8128" fill="white"/>
+<circle id="Ellipse 119_2" cx="215.998" cy="143.247" r="5.00856" fill="white"/>
+</g>
+<path id="Vector 50" d="M110.765 135.763C111.286 135.681 114.809 135.198 118.851 134.646C124.355 133.895 129.325 138.004 129.629 143.551C129.937 149.164 135.018 153.288 140.575 152.435L148.226 151.261" stroke-width="9.13578" stroke-linecap="round" stroke="#DDADF7"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_0_578" x="-9.53674e-07" y="-9.53674e-07" width="277.531" height="322.601" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="7.65"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_578"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_578" result="shape"/>
+</filter>
+<radialGradient id="paint0_radial_0_578" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(138.544 161.3) rotate(90) scale(121 98.3806)">
+<stop stop-color="#FDFAFF"/>
+<stop offset="1" stop-color="#F9EDFF"/>
+</radialGradient>
+<path id="stroke0_0_578" d="M138.849 40.3C193.183 40.3 237.231 129.586 237.231 183.92C237.231 238.255 193.183 282.301 138.849 282.301C138.821 282.301 138.793 282.3 138.765 282.3C138.737 282.3 138.709 282.301 138.681 282.301C84.3466 282.301 40.3 238.254 40.3 183.92C40.3 129.586 84.3466 40.3003 138.681 40.3H138.849Z"/>
+</defs>
+</svg>

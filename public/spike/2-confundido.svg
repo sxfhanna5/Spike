@@ -1,0 +1,58 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="348.327" height="409.6" viewBox="0 0 348.327 409.6" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Nivel 2 Confundido volver a repetir Modo maestro" filter="url(#filter0_d_0_500)">
+<g id="Union">
+<use xlink:href="#stroke0_0_500" fill="#CC86F2"/>
+<mask id="stroke1_0_500" maskUnits="userSpaceOnUse" x="15.3" y="15.3" width="318" height="379" fill="black">
+<rect fill="white" x="15.3" y="15.3" width="318" height="379"/>
+<use xlink:href="#stroke0_0_500"/>
+</mask>
+<path d="M174.278 40.3C248.145 40.3 308.026 161.684 308.027 235.551C308.027 309.418 248.145 369.3 174.278 369.3C174.239 369.3 174.201 369.299 174.163 369.299C174.125 369.299 174.087 369.3 174.049 369.3C100.182 369.3 40.3 309.418 40.3 235.551C40.3001 161.683 100.182 40.3 174.049 40.3H174.278Z" stroke-width="50" stroke-linecap="round" stroke="white" mask="url(#stroke1_0_500)"/>
+</g>
+<path id="Ellipse 112" d="M308.026 235.551C308.026 309.419 248.145 369.3 174.278 369.3C100.41 369.3 40.5286 309.419 40.5286 235.551C40.5286 161.684 100.41 40.3 174.278 40.3C248.145 40.3 308.026 161.684 308.026 235.551Z" fill="url(#paint0_radial_0_500)"/>
+<mask id="mask0_0_500" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="40" y="40" width="268" height="330">
+<path id="Ellipse 125" d="M307.798 235.551C307.798 309.419 247.916 369.3 174.049 369.3C100.181 369.3 40.3 309.419 40.3 235.551C40.3 161.684 100.181 40.3 174.049 40.3C247.916 40.3 307.798 161.684 307.798 235.551Z" fill="url(#paint1_radial_0_500)"/>
+</mask>
+<g mask="url(#mask0_0_500)">
+<circle id="Ellipse 126" cx="174.3" cy="352.3" r="97" fill="#F1C4FB"/>
+<circle id="Ellipse 127" cx="47.8" cy="247.8" r="38.5" fill="#CC86F2"/>
+<circle id="Ellipse 128" opacity="0.55" cx="264.8" cy="105.8" r="42.5" fill="#CC86F2"/>
+<circle id="Ellipse 129" opacity="0.55" cx="98.3" cy="108.3" r="14" fill="#CC86F2"/>
+<circle id="Ellipse 130" cx="271.8" cy="258.8" r="21.5" fill="#CC86F2"/>
+<path id="Vector 47" d="M48.4675 140.189C45.8819 143.667 43.2963 147.144 40.7106 150.622C43.3202 152.427 45.9297 154.232 48.5393 156.038C58.5238 162.945 68.5084 169.852 78.4929 176.76L81.3548 179.044L84.5433 176.631C98.736 164.284 112.929 151.937 127.121 139.59L123.133 139.411C137.359 152.333 151.585 165.256 165.812 178.178L166.269 178.654L166.948 178.385C173.217 175.397 179.485 172.409 185.754 169.42C188.619 168.055 191.483 166.689 194.347 165.324C191.396 166.491 188.446 167.657 185.495 168.824C179.037 171.378 172.579 173.931 166.12 176.485L167.257 176.692C153.945 162.829 140.634 148.966 127.323 135.103L125.271 133.239L123.334 134.924C108.332 146.274 93.3298 157.624 78.3276 168.974L84.378 168.845C74.8881 161.272 65.3982 153.7 55.9083 146.127C53.428 144.148 50.9477 142.169 48.4675 140.189Z" fill="#CC86F2"/>
+<path id="Vector 48" d="M229.101 17.5491C232.505 18.0497 235.908 18.5503 239.311 19.0509C238.86 21.5291 238.408 24.0073 237.957 26.4856C236.23 35.9677 234.502 45.4498 232.775 54.9319L232.451 57.8203L229.307 58.2561C214.409 59.2921 199.511 60.328 184.613 61.364L186.752 59.0245C186.02 74.264 185.288 89.5036 184.556 104.743L184.567 105.267L184.034 105.497C178.838 107.339 173.642 109.18 168.445 111.022C166.071 111.863 163.697 112.704 161.322 113.546C163.634 112.544 165.945 111.543 168.257 110.541C173.315 108.35 178.374 106.158 183.432 103.966L182.911 104.72C182.601 89.4664 182.291 74.2124 181.982 58.9584L182.087 56.7603L184.12 56.6189C198.912 54.5687 213.705 52.5185 228.497 50.4683L225.029 53.7925C226.105 44.2146 227.181 34.6367 228.257 25.0589C228.539 22.5556 228.82 20.0524 229.101 17.5491Z" fill="#CC86F2"/>
+<g id="Group 22">
+<ellipse id="Ellipse 117" cx="88.3198" cy="211.308" rx="12.7333" ry="16.0194" transform="rotate(2.73197 88.3198 211.308)" fill="#3F0055"/>
+<circle id="Ellipse 118" cx="93.6968" cy="208.698" r="2.46452" fill="white"/>
+<circle id="Ellipse 119" cx="81.6868" cy="212.687" r="6.80915" fill="white"/>
+</g>
+<g id="Group 23">
+<ellipse id="Ellipse 117_2" cx="12.7333" cy="16.0194" rx="12.7333" ry="16.0194" transform="matrix(-0.998863 0.0476639 0.0476639 0.998863 272.316 194.702)" fill="#3F0055"/>
+<circle id="Ellipse 118_2" cx="254.698" cy="211.697" r="2.46452" fill="white"/>
+<circle id="Ellipse 119_2" cx="266.687" cy="212.687" r="6.80915" fill="white"/>
+</g>
+<path id="Vector 50" d="M143.3 219.331C143.962 218.867 148.482 215.823 153.67 212.335C160.735 207.586 170.347 209.882 174.51 217.306C178.724 224.82 188.498 227.064 195.566 222.139L205.3 215.357" stroke-width="14" stroke-linecap="round" stroke="#CC86F2"/>
+<ellipse id="Ellipse 155" opacity="0.61" cx="141.113" cy="85.2389" rx="18.3912" ry="27.5" transform="rotate(48.8853 141.113 85.2389)" fill="white"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_0_500" x="-9.53674e-07" y="-9.53674e-07" width="348.327" height="409.6" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="7.65"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_500"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_500" result="shape"/>
+</filter>
+<radialGradient id="paint0_radial_0_500" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(174.278 204.8) rotate(90) scale(164.5 133.749)">
+<stop stop-color="#DDAAE9"/>
+<stop offset="0.567308" stop-color="#E7B3FF"/>
+</radialGradient>
+<radialGradient id="paint1_radial_0_500" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(174.049 204.8) rotate(90) scale(164.5 133.749)">
+<stop stop-color="#8B6B99"/>
+<stop offset="1" stop-color="#E7B3FF"/>
+</radialGradient>
+<path id="stroke0_0_500" d="M174.278 40.3C248.145 40.3 308.026 161.684 308.027 235.551C308.027 309.418 248.145 369.3 174.278 369.3C174.239 369.3 174.201 369.299 174.163 369.299C174.125 369.299 174.087 369.3 174.049 369.3C100.182 369.3 40.3 309.418 40.3 235.551C40.3001 161.683 100.182 40.3 174.049 40.3H174.278Z"/>
+</defs>
+</svg>
