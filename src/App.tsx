@@ -139,7 +139,8 @@ export default function App() {
 
   const isFullOrange = s.screen === 'welcome' || s.screen === 'loader' || s.screen === 'tutorialKid'
   const isSkyScreen = s.screen === 'login' || s.screen === 'register' || s.screen === 'connect'
-  const isFullBleed = isFullOrange || isSkyScreen
+  const isBlueTutorial = s.screen === 'tutorialParent'
+  const isFullBleed = isFullOrange || isSkyScreen || isBlueTutorial
 
   return (
     <GameContext.Provider value={{ s, dispatch, paused }}>
@@ -148,6 +149,8 @@ export default function App() {
         className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${
           isFullOrange
             ? 'bg-[#FF8001]'
+            : isBlueTutorial
+            ? 'bg-[#45C1FF]'
             : isSkyScreen
             ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
             : 'bg-[#EAF6FF]'
@@ -156,7 +159,7 @@ export default function App() {
         <main
           className={`relative flex h-full w-full flex-col overflow-hidden ${
             isFullBleed
-              ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : 'bg-transparent'}`
+              ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : isBlueTutorial ? 'bg-[#45C1FF]' : 'bg-transparent'}`
               : 'max-w-[430px] bg-white shadow-2xl'
           }`}
         >
