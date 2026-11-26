@@ -221,13 +221,14 @@ export function IconDefs() {
   )
 }
 
-export function Icon({ name, size = 24, className = '', color }: { name: IconName; size?: number; className?: string; color?: string }) {
+export function Icon({ name, size = 24, className = '', color, solid = false }: { name: IconName; size?: number; className?: string; color?: string; solid?: boolean }) {
   const P = PATHS[name]
+  const paint = color || 'currentColor'
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={`shrink-0 ${className}`} style={color ? { color } : undefined} aria-hidden>
-      {P('currentColor')}
-      {P('url(#ico-tone)')}
-      {P('url(#ico-gloss)')}
+      {P(paint)}
+      {!solid && P('url(#ico-tone)')}
+      {!solid && P('url(#ico-gloss)')}
     </svg>
   )
 }

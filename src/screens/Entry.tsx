@@ -53,26 +53,43 @@ export function Loader() {
     return () => window.clearTimeout(t)
   }, [dispatch])
   return (
-    <Screen bg="#FF8001">
+    <Screen bg="#FF8001" className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden select-none">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        <div className="ray-spin absolute top-1/2 left-1/2 size-[clamp(700px,120vw,1000px)] -translate-x-1/2 -translate-y-[48%] opacity-70 mix-blend-screen" style={{ background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,.34) 0deg 12deg, rgba(255,255,255,0) 12deg 30deg)', maskImage: 'radial-gradient(circle, #000 12%, transparent 62%)', WebkitMaskImage: 'radial-gradient(circle, #000 12%, transparent 62%)' }} />
+        <div
+          className="ray-spin absolute top-1/2 left-1/2 size-[clamp(700px,140vw,1100px)] -translate-x-1/2 -translate-y-[48%] opacity-75 mix-blend-screen"
+          style={{
+            background:
+              'repeating-conic-gradient(from 0deg, rgba(255,255,255,.34) 0deg 12deg, rgba(255,255,255,0) 12deg 30deg)',
+            maskImage: 'radial-gradient(circle, #000 12%, transparent 62%)',
+            WebkitMaskImage: 'radial-gradient(circle, #000 12%, transparent 62%)',
+          }}
+        />
       </div>
-      <div className="relative flex h-full flex-col items-center justify-center px-8">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-8">
         <Spike stage={5} mood="happy" size={190} className="-mb-1" />
-        <h1 className="font-display text-[84px] leading-[84px] font-bold tracking-wide text-white drop-shadow-[0_6px_0_#FF4F1A]">SPIKE</h1>
-        <p className="mt-3 font-display text-[18px] font-medium text-white/90">Señas y palabras en familia</p>
-        <div className="relative mt-14 w-[260px]">
+        <img
+          src="/assets/spike-logo.svg"
+          alt="SPIKE"
+          draggable={false}
+          className="mt-1 h-auto w-[clamp(210px,58vw,265px)] object-contain drop-shadow-[0_6px_0_#FF4F1A]"
+        />
+        <div className="relative mt-12 w-[260px] max-w-[80vw]">
           <div className="h-5 w-full rounded-full bg-white/35" />
-          <div className="absolute top-0 left-0 h-5 rounded-full bg-white shadow-[0_4px_0_#FF4F1A]" style={{ animation: 'load-bar 2.4s cubic-bezier(.4,.1,.3,1) both' }} />
+          <div
+            className="absolute top-0 left-0 h-5 rounded-full bg-white shadow-[0_4px_0_#FF4F1A]"
+            style={{ animation: 'load-bar 2.4s cubic-bezier(.4,.1,.3,1) both' }}
+          />
           {/* egg that warms up from grey to orange while the bar fills */}
-          <div className="absolute -top-[14px] left-0 w-full" style={{ animation: 'load-bar 2.4s cubic-bezier(.4,.1,.3,1) both' }}>
+          <div
+            className="absolute -top-[14px] left-0 w-full"
+            style={{ animation: 'load-bar 2.4s cubic-bezier(.4,.1,.3,1) both' }}
+          >
             <div className="absolute -right-4 -top-1 size-[38px]">
               <MiniEgg color="#C9CFD8" className="absolute inset-0 drop-shadow-[0_3px_5px_rgba(0,0,0,.2)]" />
               <MiniEgg color="#FFE44C" className="absolute inset-0" style={{ animation: 'fade-in 2.4s ease-in both' }} />
             </div>
           </div>
         </div>
-        <p className="mt-6 font-sans text-[14px] font-bold text-white/90">Calentando el huevo…</p>
       </div>
     </Screen>
   )
@@ -83,18 +100,56 @@ export function Loader() {
 export function Welcome() {
   const { dispatch } = useGame()
   return (
-    <Screen bg="#FFFFFF">
-      <div className="pointer-events-none absolute top-0 left-0 h-[clamp(360px,56vh,500px)] w-full overflow-hidden rounded-b-[clamp(60px,18vw,120px)] bg-[#FF8001]">
-        <div className="ray-spin absolute top-[56%] left-1/2 size-[clamp(640px,120vw,900px)] -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ background: 'repeating-conic-gradient(from 0deg, rgba(255,255,255,.3) 0deg 10deg, rgba(255,255,255,0) 10deg 24deg)', maskImage: 'radial-gradient(circle, #000 8%, transparent 60%)', WebkitMaskImage: 'radial-gradient(circle, #000 8%, transparent 60%)' }} />
+    <Screen bg="#FF8001" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
+      {/* Background radial rays & halo glow centered behind logo */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        {/* Soft radial white glow halo */}
+        <div
+          className="absolute top-[44%] left-1/2 size-[clamp(300px,90vw,440px)] -translate-x-1/2 -translate-y-1/2 mix-blend-plus-lighter"
+          style={{
+            background: 'radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.4) 35%, rgba(255,255,255,0) 70%)',
+          }}
+        />
+        {/* Sunburst rays */}
+        <img
+          src="/assets/69866.png"
+          alt=""
+          draggable={false}
+          className="pointer-events-none absolute top-[44%] left-1/2 size-[clamp(750px,210vw,1100px)] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover opacity-90 mix-blend-screen"
+        />
       </div>
-      <div className="relative flex h-full flex-col items-center px-5 py-[clamp(20px,3.5vh,32px)]">
-        <div className="mt-[clamp(16px,5.5vh,72px)] shrink-0"><Spike stage={5} mood="happy" size={230} className="max-h-[28vh] max-w-[60vw]" /></div>
-        <h1 className="-mt-1 font-display text-[clamp(48px,12vw,64px)] leading-[1.05] font-bold tracking-wide text-white drop-shadow-[0_5px_0_#FF4F1A]">SPIKE</h1>
-        <p className="mt-[clamp(40px,11vh,110px)] max-w-[290px] text-center font-sans text-[clamp(14px,3.8vw,16px)] leading-6 font-semibold text-ink2">Aprende con tu familia: señas en LSC y palabras en español.</p>
-        <div className="mt-auto flex w-full flex-col gap-3.5 pb-[clamp(12px,3vh,32px)]">
-          <Btn onClick={() => dispatch({ type: 'GOTO', screen: 'login' })}>Iniciar sesión</Btn>
-          <Btn onClick={() => dispatch({ type: 'GOTO', screen: 'register' })}>Registrarse</Btn>
+
+      {/* Central protagonist: SPIKE dino head logo */}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pt-[clamp(20px,5vh,48px)]">
+        <div className="relative flex w-full max-w-[320px] items-center justify-center">
+          <img
+            src="/assets/spike-logo-completo.svg"
+            alt="SPIKE"
+            draggable={false}
+            className="w-[clamp(240px,70vw,310px)] max-h-[42vh] object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.12)] transition-transform duration-300 hover:scale-[1.02]"
+          />
         </div>
+      </div>
+
+      {/* Bottom action buttons */}
+      <div
+        className="relative z-10 mx-auto flex w-full max-w-[340px] flex-col gap-3.5 px-6"
+        style={{ paddingBottom: 'calc(clamp(1.75rem, 5vh, 3.25rem) + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'GOTO', screen: 'login' })}
+          className="flex h-[56px] sm:h-[60px] w-full items-center justify-center rounded-full bg-white font-display text-[20px] font-bold text-[#FF8001] shadow-[inset_0px_-6px_0px_0px_#FF4F1A] transition-all duration-150 active:translate-y-1 active:shadow-[inset_0px_-2px_0px_0px_#FF4F1A] cursor-pointer"
+        >
+          Iniciar sesión
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'GOTO', screen: 'register' })}
+          className="flex h-[56px] sm:h-[60px] w-full items-center justify-center rounded-full bg-[#FF8001] font-display text-[20px] font-bold text-white shadow-[inset_0px_-6px_0px_0px_#FF4F1A] transition-all duration-150 active:translate-y-1 active:shadow-[inset_0px_-2px_0px_0px_#FF4F1A] cursor-pointer"
+        >
+          Registrarse
+        </button>
       </div>
     </Screen>
   )
@@ -152,28 +207,81 @@ export function Login() {
   }
   return (
     <SkyScreen>
-      <div className="absolute left-5" style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}>
-        <button type="button" onClick={() => dispatch({ type: 'GOTO', screen: 'welcome' })} aria-label="Volver" className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}>
-          <Icon name="arrowLeft" size={24} />
+      <div className="absolute left-5 z-20" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'GOTO', screen: 'welcome' })}
+          aria-label="Volver"
+          className="btn3d grid size-14 place-items-center rounded-full"
+          style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}
+        >
+          <Icon name="arrowLeft" size={24} solid color="#FF8001" />
         </button>
       </div>
-      <div className="absolute top-[clamp(90px,15vh,136px)] inset-x-5 mx-auto max-w-[340px]">
-        <div className="pointer-events-none absolute -top-[72px] right-1 sm:-right-4 z-0"><Spike stage={4} mood="happy" size={130} /></div>
-        <form className="card relative z-10 flex flex-col gap-4 p-6" onSubmit={(e) => { e.preventDefault(); void submit() }} noValidate>
-          <h1 className="font-display text-[28px] leading-8 font-semibold">¡Hola otra vez!</h1>
+      <div
+        className="relative z-10 flex h-full w-full overflow-y-auto px-5 no-scrollbar"
+        style={{
+          paddingTop: 'calc(4.75rem + env(safe-area-inset-top, 0px))',
+          paddingBottom: 'calc(4.75rem + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <form
+          className="card my-auto mx-auto flex w-full max-w-[350px] flex-col gap-4 p-6"
+          onSubmit={(e) => { e.preventDefault(); void submit() }}
+          noValidate
+        >
+          <h1 className="text-left font-display text-[28px] leading-8 font-semibold text-ink px-1">
+            Iniciar sesión
+          </h1>
           <Field label="Correo" error={errs.email}>
-            <input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrs({ ...errs, email: undefined }); dispatch({ type: 'CLEAR_AUTH_ERROR' }) }} placeholder="tucorreo@mail.com" className={inputCls(errs.email)} />
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setErrs({ ...errs, email: undefined })
+                dispatch({ type: 'CLEAR_AUTH_ERROR' })
+              }}
+              placeholder="tucorreo@mail.com"
+              className={inputCls(errs.email)}
+            />
           </Field>
           <Field label="Contraseña" error={errs.pass ?? s.authError ?? undefined}>
             <span className="relative block">
-              <input type={show ? 'text' : 'password'} autoComplete="current-password" value={pass} onChange={(e) => { setPass(e.target.value); setErrs({ ...errs, pass: undefined }); dispatch({ type: 'CLEAR_AUTH_ERROR' }) }} placeholder="••••••" className={`${inputCls(errs.pass ?? s.authError ?? undefined)} pr-14`} />
-              <button type="button" aria-label={show ? 'Ocultar contraseña' : 'Ver contraseña'} onClick={() => setShow(!show)} className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-[#9AA5B1]">
+              <input
+                type={show ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={pass}
+                onChange={(e) => {
+                  setPass(e.target.value)
+                  setErrs({ ...errs, pass: undefined })
+                  dispatch({ type: 'CLEAR_AUTH_ERROR' })
+                }}
+                placeholder="••••••"
+                className={`${inputCls(errs.pass ?? s.authError ?? undefined)} pr-14`}
+              />
+              <button
+                type="button"
+                aria-label={show ? 'Ocultar contraseña' : 'Ver contraseña'}
+                onClick={() => setShow(!show)}
+                className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-[#9AA5B1]"
+              >
                 <Icon name={show ? 'eyeOff' : 'eye'} size={26} />
               </button>
             </span>
           </Field>
-          <Btn type="submit" disabled={loading} className="mt-1">{loading ? 'Ingresando…' : 'Ingresar'}</Btn>
-          <button type="button" onClick={() => dispatch({ type: 'GOTO', screen: 'register' })} className="mx-auto min-h-[48px] px-4 font-display text-[18px] font-semibold text-ink underline decoration-[#FF8001] decoration-[3px] underline-offset-4">Crear cuenta</button>
+          <Btn type="submit" disabled={loading} className="mt-1">
+            {loading ? 'Ingresando…' : 'Ingresar'}
+          </Btn>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: 'GOTO', screen: 'register' })}
+            className="mx-auto min-h-[44px] px-4 font-display text-[17px] font-semibold text-ink underline decoration-[#FF8001] decoration-[3px] underline-offset-4"
+          >
+            Crear cuenta
+          </button>
         </form>
       </div>
     </SkyScreen>
@@ -236,30 +344,75 @@ export function Register() {
   }
   return (
     <SkyScreen>
-      <div className="absolute left-5" style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}>
-        <button type="button" onClick={() => dispatch({ type: 'GOTO', screen: 'welcome' })} aria-label="Volver" className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}>
-          <Icon name="arrowLeft" size={24} />
+      <div className="absolute left-5 z-20" style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'GOTO', screen: 'welcome' })}
+          aria-label="Volver"
+          className="btn3d grid size-14 place-items-center rounded-full"
+          style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}
+        >
+          <Icon name="arrowLeft" size={24} solid color="#FF8001" />
         </button>
       </div>
-      <div className="absolute top-[clamp(70px,10vh,96px)] inset-x-5 mx-auto max-w-[350px]">
-        <div className="pointer-events-none absolute -top-[66px] right-3 z-0"><Spike stage={3} mood="happy" size={104} /></div>
-        <form className="card relative z-10 flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void submit() }} noValidate>
-          <h1 className="font-display text-[28px] leading-8 font-semibold">Crea tu cuenta</h1>
+      <div
+        className="relative z-10 flex h-full w-full overflow-y-auto px-5 no-scrollbar"
+        style={{
+          paddingTop: 'calc(4.75rem + env(safe-area-inset-top, 0px))',
+          paddingBottom: 'calc(4.75rem + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <form
+          className="card my-auto mx-auto flex w-full max-w-[350px] flex-col gap-3 p-5"
+          onSubmit={(e) => { e.preventDefault(); void submit() }}
+          noValidate
+        >
+          <h1 className="text-left font-display text-[28px] leading-8 font-semibold text-ink px-1">
+            Crea tu cuenta
+          </h1>
           <Field label="Nombre de usuario" error={errs.name}>
-            <input value={name} onChange={(e) => { setName(e.target.value); setErrs({ ...errs, name: undefined }) }} autoComplete="nickname" placeholder="Tu nombre" className={inputCls(errs.name)} />
+            <input
+              value={name}
+              onChange={(e) => { setName(e.target.value); setErrs({ ...errs, name: undefined }) }}
+              autoComplete="nickname"
+              placeholder="Tu nombre"
+              className={inputCls(errs.name)}
+            />
           </Field>
           <Field label="Correo" error={errs.email}>
-            <input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrs({ ...errs, email: undefined }) }} placeholder="tucorreo@mail.com" className={inputCls(errs.email)} />
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErrs({ ...errs, email: undefined }) }}
+              placeholder="tucorreo@mail.com"
+              className={inputCls(errs.email)}
+            />
           </Field>
           <Field label="Contraseña" error={errs.pass}>
             <span className="relative block">
-              <input type={show ? 'text' : 'password'} autoComplete="new-password" value={pass} onChange={(e) => { setPass(e.target.value); setErrs({ ...errs, pass: undefined }) }} placeholder="••••••" className={`${inputCls(errs.pass)} pr-14`} />
-              <button type="button" aria-label={show ? 'Ocultar contraseña' : 'Ver contraseña'} onClick={() => setShow(!show)} className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-[#9AA5B1]">
+              <input
+                type={show ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={pass}
+                onChange={(e) => { setPass(e.target.value); setErrs({ ...errs, pass: undefined }) }}
+                placeholder="••••••"
+                className={`${inputCls(errs.pass)} pr-14`}
+              />
+              <button
+                type="button"
+                aria-label={show ? 'Ocultar contraseña' : 'Ver contraseña'}
+                onClick={() => setShow(!show)}
+                className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-[#9AA5B1]"
+              >
                 <Icon name={show ? 'eyeOff' : 'eye'} size={26} />
               </button>
             </span>
           </Field>
-          <Btn type="submit" disabled={loading} className="mt-1">{loading ? 'Creando cuenta…' : 'Registrarme'}</Btn>
+          <Btn type="submit" disabled={loading} className="mt-1">
+            {loading ? 'Creando cuenta…' : 'Registrarme'}
+          </Btn>
         </form>
       </div>
     </SkyScreen>
@@ -281,17 +434,42 @@ export function useConnectFlow() {
   return { state, start }
 }
 
-/** Big Spike-egg that trembles, lights up in orange, or goes dark. */
+/** Big Spike-egg that trembles, lights up with a soft blue elevation shadow, or goes dark. */
 export function BigEgg({ state, size = 220, blue }: { state: 'idle' | 'searching' | 'connected' | 'error'; size?: number; blue?: boolean }) {
   const lit = state === 'connected'
   const off = state === 'error' || blue
   return (
     <div className="relative grid place-items-center" style={{ width: size, height: size * 1.1 }}>
-      <div className={`absolute inset-[6%] rounded-full blur-2xl transition-opacity duration-500 ${lit ? 'glow-pulse' : ''}`} style={{ background: blue ? '#45C1FF' : '#FF8001', opacity: lit ? 0.9 : blue ? 0.45 : 0 }} />
-      <div className={`relative transition-[filter] duration-500 ${state === 'searching' ? 'egg-tremble' : ''}`} style={{ filter: off ? 'grayscale(1) brightness(.78)' : lit ? 'saturate(1.25) drop-shadow(0 0 14px #FF8001)' : 'grayscale(.45) brightness(1.04)' }}>
+      {/* Subtle ambient light: soft blue diffuse shadow when connected, no intense orange glow */}
+      <div
+        className="absolute inset-[8%] rounded-full blur-xl transition-all duration-500"
+        style={{
+          background: lit
+            ? 'radial-gradient(circle, rgba(69, 193, 255, 0.3) 0%, rgba(69, 193, 255, 0) 70%)'
+            : blue
+              ? '#45C1FF'
+              : '#FF8001',
+          opacity: lit ? 0.6 : blue ? 0.45 : 0,
+        }}
+      />
+      <div
+        className={`relative transition-[filter] duration-500 ${state === 'searching' ? 'egg-tremble' : ''}`}
+        style={{
+          filter: off
+            ? 'grayscale(1) brightness(.78)'
+            : lit
+              ? 'drop-shadow(0 14px 22px rgba(28, 114, 184, 0.22))'
+              : 'grayscale(.45) brightness(1.04)',
+        }}
+      >
         <Spike stage={1} mood={lit ? 'happy' : 'calm'} size={size} animate={state !== 'searching'} />
       </div>
-      {blue && <div className="absolute inset-0 rounded-full mix-blend-multiply" style={{ background: 'radial-gradient(circle at 50% 56%, rgba(69,193,255,.5), transparent 62%)' }} />}
+      {blue && (
+        <div
+          className="absolute inset-0 rounded-full mix-blend-multiply"
+          style={{ background: 'radial-gradient(circle at 50% 56%, rgba(69,193,255,.5), transparent 62%)' }}
+        />
+      )}
     </div>
   )
 }
@@ -306,30 +484,73 @@ export function Connect() {
     connected: { t: '¡Conectado!', d: 'Spike despierta. Vamos…' },
     error: { t: 'No lo encontramos', d: 'Acércalo y vuelve a intentar.' },
   }[state]
+
+  const userName = s.account?.name || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screen') === 'connect' ? 'Hanna' : null)
+
   return (
     <SkyScreen>
-      <div className="absolute right-5 left-5 flex items-center justify-between" style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}>
-        <button type="button" onClick={() => dispatch({ type: 'LOGOUT' })} aria-label="Cerrar sesión" className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}>
-          <Icon name="arrowLeft" size={24} />
+      {/* Top bar: back button + user indicator */}
+      <div
+        className="absolute right-5 left-5 z-20 flex items-center justify-between"
+        style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}
+      >
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'LOGOUT' })}
+          aria-label="Cerrar sesión"
+          className="btn3d grid size-14 place-items-center rounded-full"
+          style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}
+        >
+          <Icon name="arrowLeft" size={24} solid color="#FF8001" />
         </button>
-        {s.account && <span className="rounded-full bg-white/90 py-1.5 pr-4 pl-1.5 font-display text-[16px] font-semibold shadow-[0_3px_8px_rgba(0,0,0,.1)]"><span className="mr-2 inline-grid size-8 place-items-center align-middle"><ProfileFace size={32} /></span>{s.account.name}</span>}
+        {userName && (
+          <span className="flex items-center rounded-full bg-white/90 py-1.5 pr-4 pl-1.5 font-display text-[16px] font-semibold shadow-[0_3px_8px_rgba(0,0,0,.1)]">
+            <span className="mr-2 inline-grid size-8 place-items-center align-middle overflow-hidden">
+              <img
+                src="/assets/spike-logo-miniatura.svg"
+                alt="SPIKE"
+                className="size-7 object-contain"
+                draggable={false}
+              />
+            </span>
+            {userName}
+          </span>
+        )}
       </div>
-      <div className="absolute top-[clamp(76px,11vh,110px)] left-0 flex w-full flex-col items-center">
-        <BigEgg state={state} size={190} />
-        <div className="card mt-3 flex w-[calc(100%-40px)] max-w-[320px] flex-col items-center gap-1 px-5 pt-4 pb-5" aria-live="polite">
-          <h1 className="font-display text-[28px] leading-8 font-semibold">{copy.t}</h1>
-          <p className="min-h-6 text-center font-sans text-[16px] leading-6 font-semibold text-ink2">{copy.d}</p>
-          <div className="mt-3 w-full">
-            {state === 'idle' && <Btn icon="bluetooth" onClick={start}>Conectar huevo</Btn>}
-            {state === 'searching' && (
-              <div className="flex h-[60px] items-center justify-center gap-2" aria-hidden>
-                {[0, 1, 2].map((k) => <span key={k} className="dot-bounce size-3.5 rounded-full bg-[#FF8001]" style={{ animationDelay: `${k * 140}ms` }} />)}
-              </div>
-            )}
-            {state === 'connected' && (
-              <div className="pop flex h-[60px] items-center justify-center gap-2 rounded-full bg-[#E5F8D8] font-display text-[20px] font-semibold text-[#369C00]"><Icon name="check" size={24} /> Listo</div>
-            )}
-            {state === 'error' && <Btn icon="refresh" onClick={start}>Reintentar</Btn>}
+
+      {/* Centered card and egg */}
+      <div
+        className="relative z-10 flex h-full w-full overflow-y-auto px-5 no-scrollbar"
+        style={{
+          paddingTop: 'calc(4.75rem + env(safe-area-inset-top, 0px))',
+          paddingBottom: 'calc(3rem + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <div className="my-auto mx-auto flex w-full max-w-[340px] flex-col items-center">
+          <BigEgg state={state} size={225} />
+          <div className="card mt-4 flex w-full flex-col items-center gap-1.5 px-6 pt-5 pb-6 text-center" aria-live="polite">
+            <h1 className="font-display text-[28px] leading-8 font-semibold text-ink">{copy.t}</h1>
+            <p className="min-h-6 text-center font-sans text-[16px] leading-6 font-semibold text-ink2">{copy.d}</p>
+            <div className="mt-4 w-full">
+              {state === 'idle' && <Btn icon="bluetooth" onClick={start}>Conectar huevo</Btn>}
+              {state === 'searching' && (
+                <div className="flex h-[60px] items-center justify-center gap-2" aria-hidden>
+                  {[0, 1, 2].map((k) => (
+                    <span
+                      key={k}
+                      className="dot-bounce size-3.5 rounded-full bg-[#FF8001]"
+                      style={{ animationDelay: `${k * 140}ms` }}
+                    />
+                  ))}
+                </div>
+              )}
+              {state === 'connected' && (
+                <div className="pop flex h-[60px] items-center justify-center gap-2 rounded-full bg-[#E5F8D8] font-display text-[20px] font-semibold text-[#369C00]">
+                  <Icon name="check" size={24} /> Listo
+                </div>
+              )}
+              {state === 'error' && <Btn icon="refresh" onClick={start}>Reintentar</Btn>}
+            </div>
           </div>
         </div>
       </div>

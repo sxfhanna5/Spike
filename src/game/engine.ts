@@ -138,11 +138,14 @@ const PERSIST = ['account', 'session', 'tutorialDone', 'done', 'masterSeals', 'm
 export function loadState(): GameState {
   const base = initialState()
   try {
+    const param = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('screen') : null
+    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map'].includes(param)) ? (param as Screen) : 'loader'
+    const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return base
+    if (!raw) return { ...base, screen: initialScreen, connected: paramConnected }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
-    return { ...base, ...saved, done, heat: heatFor(done), screen: 'loader', overlay: null, connected: false, intro: null, selected: null, fx: fx('none') }
+    return { ...base, ...saved, done, heat: heatFor(done), screen: initialScreen, overlay: null, connected: paramConnected, intro: null, selected: null, fx: fx('none') }
   } catch {
     return base
   }

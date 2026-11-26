@@ -137,11 +137,29 @@ export default function App() {
     return () => removeEventListener('keydown', fn)
   }, [])
 
+  const isFullOrange = s.screen === 'welcome' || s.screen === 'loader'
+  const isSkyScreen = s.screen === 'login' || s.screen === 'register' || s.screen === 'connect'
+  const isFullBleed = isFullOrange || isSkyScreen
+
   return (
     <GameContext.Provider value={{ s, dispatch, paused }}>
       <IconDefs />
-      <div className="relative flex h-dvh w-full justify-center overflow-hidden bg-[#EAF6FF] text-ink select-none">
-        <main className="relative flex h-full w-full max-w-[430px] flex-col overflow-hidden bg-white shadow-2xl">
+      <div
+        className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${
+          isFullOrange
+            ? 'bg-[#FF8001]'
+            : isSkyScreen
+            ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
+            : 'bg-[#EAF6FF]'
+        }`}
+      >
+        <main
+          className={`relative flex h-full w-full flex-col overflow-hidden ${
+            isFullBleed
+              ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : 'bg-transparent'}`
+              : 'max-w-[430px] bg-white shadow-2xl'
+          }`}
+        >
           <View />
           {s.intro && isPlay(s) && (
             <IntroCard

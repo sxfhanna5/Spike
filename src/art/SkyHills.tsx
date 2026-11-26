@@ -22,79 +22,84 @@ export function SkyHills() {
     <div className="art-container" aria-hidden>
       {/* Fondo de cielo continuo que cubre el 100% de cualquier pantalla o proporción */}
       <div className="absolute inset-0 bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]" />
-      <div className="art-canvas">
-      <div className="-translate-x-1/2 absolute bottom-[6.67%] left-[calc(50%-243.05px)] top-[77.67%] w-[1257.908px]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup144} />
-      </div>
-      <div className="-translate-x-1/2 absolute bottom-[8.97%] left-[calc(50%+546.9px)] top-[77.61%] w-[463.087px]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector} />
-      </div>
-      <div className="absolute inset-[84.36%_60.27%_-2.3%_-13.53%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector1} />
-      </div>
-      <div className="absolute inset-[83.04%_-4.45%_3.8%_39.77%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector2} />
-      </div>
-      <div className="absolute inset-[92.23%_-4.45%_-5.39%_39.77%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector3} />
-      </div>
-      <div className="absolute bg-linear-to-b from-[#0095ff] h-[1132px] left-0 to-[#bcedff] top-0 via-[#45c1ff] via-[34.615%] w-[1042px]" />
-      <div className="-translate-x-1/2 absolute h-[1430px] left-[calc(50%-525px)] mix-blend-plus-lighter top-[-730px] w-[1500px]">
-        <div className="absolute inset-[-12.2%_-11.63%]">
-          <img alt="" className="block max-w-none size-full" src={imgEllipse153} />
-        </div>
-      </div>
-      <div className="absolute flex inset-[87.85%_75.37%_2.69%_2.3%] items-center justify-center" style={{ containerType: "size" }}>
-        <div className="flex-none h-[hypot(29.8456cqw,44.6428cqh)] rotate-[-35.99deg] w-[hypot(70.1544cqw,-55.3572cqh)]">
-          <div className="relative size-full">
-            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector4} />
+
+      {/* Halo de luz superior en el cielo */}
+      <div className="art-canvas pointer-events-none">
+        <div className="-translate-x-1/2 absolute h-[1430px] left-[calc(50%-525px)] mix-blend-plus-lighter top-[-730px] w-[1500px]">
+          <div className="absolute inset-[-12.2%_-11.63%]">
+            <img alt="" className="block max-w-none size-full" src={imgEllipse153} />
           </div>
         </div>
       </div>
-      <div className="-translate-x-1/2 absolute bottom-[-809.24px] h-[1012.223px] left-[calc(50%-31px)] w-[1116px]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector50} />
-      </div>
-      <div className="absolute inset-[96.38%_26.2%_1%_63.82%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup33} />
-      </div>
-      <div className="absolute flex inset-[87.46%_20.25%_4.46%_67.37%] items-center justify-center" style={{ containerType: "size" }}>
-        <div className="-scale-x-100 flex-none h-[100cqh] w-[100cqw]">
-          <div className="relative size-full">
-            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup106} />
+
+      {/* Paisaje inferior: colinas, camino, árboles y nubes anclados a la parte baja */}
+      <div className="art-canvas-bottom pointer-events-none">
+        <div className="-translate-x-1/2 absolute bottom-[6.67%] left-[calc(50%-243.05px)] top-[77.67%] w-[1257.908px]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup144} />
+        </div>
+        <div className="-translate-x-1/2 absolute bottom-[8.97%] left-[calc(50%+546.9px)] top-[77.61%] w-[463.087px]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector} />
+        </div>
+        <div className="absolute inset-[84.36%_60.27%_-2.3%_-13.53%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector1} />
+        </div>
+        <div className="absolute inset-[83.04%_-4.45%_3.8%_39.77%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector2} />
+        </div>
+        <div className="absolute inset-[92.23%_-4.45%_-5.39%_39.77%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector3} />
+        </div>
+        <div className="absolute flex inset-[87.85%_75.37%_2.69%_2.3%] items-center justify-center" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(29.8456cqw,44.6428cqh)] rotate-[-35.99deg] w-[hypot(70.1544cqw,-55.3572cqh)]">
+            <div className="relative size-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector4} />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="absolute flex inset-[85.03%_1.51%_2.74%_79.75%] items-center justify-center" style={{ containerType: "size" }}>
-        <div className="-scale-x-100 flex-none h-[100cqh] w-[100cqw]">
-          <div className="relative size-full">
-            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup108} />
+        <div className="-translate-x-1/2 absolute bottom-[-809.24px] h-[1012.223px] left-[calc(50%-31px)] w-[1116px]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector50} />
+        </div>
+        <div className="absolute inset-[96.38%_26.2%_1%_63.82%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup33} />
+        </div>
+        <div className="absolute flex inset-[87.46%_20.25%_4.46%_67.37%] items-center justify-center" style={{ containerType: "size" }}>
+          <div className="-scale-x-100 flex-none h-[100cqh] w-[100cqw]">
+            <div className="relative size-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup106} />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="absolute flex inset-[91.79%_15.52%_2.3%_74.95%] items-center justify-center" style={{ containerType: "size" }}>
-        <div className="-scale-x-100 flex-none h-[100cqh] w-[100cqw]">
-          <div className="relative size-full">
-            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup107} />
+        <div className="absolute flex inset-[85.03%_1.51%_2.74%_79.75%] items-center justify-center" style={{ containerType: "size" }}>
+          <div className="-scale-x-100 flex-none h-[100cqh] w-[100cqw]">
+            <div className="relative size-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup108} />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="-translate-x-1/2 absolute h-[220px] left-1/2 top-[2061px] w-0">
-        <div className="absolute inset-[0_-57.5px]">
-          <img alt="" className="block max-w-none size-full" src={imgVector2364} />
+        <div className="absolute flex inset-[91.79%_15.52%_2.3%_74.95%] items-center justify-center" style={{ containerType: "size" }}>
+          <div className="-scale-x-100 flex-none h-[100cqh] w-[100cqw]">
+            <div className="relative size-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup107} />
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="absolute inset-[95.32%_74.46%_1.31%_12.09%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup19} />
-      </div>
-      <div className="absolute inset-[96.69%_91.4%_1.25%_2.3%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup119} />
-      </div>
-      <div className="absolute inset-[96.33%_65.67%_2.03%_28.69%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup142} />
-      </div>
-      <div className="absolute inset-[98.16%_58.06%_0.86%_37.72%]">
-        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup143} />
-      </div>
+        <div className="-translate-x-1/2 absolute h-[220px] left-1/2 top-[2061px] w-0">
+          <div className="absolute inset-[0_-57.5px]">
+            <img alt="" className="block max-w-none size-full" src={imgVector2364} />
+          </div>
+        </div>
+        <div className="absolute inset-[95.32%_74.46%_1.31%_12.09%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup19} />
+        </div>
+        <div className="absolute inset-[96.69%_91.4%_1.25%_2.3%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup119} />
+        </div>
+        <div className="absolute inset-[96.33%_65.67%_2.03%_28.69%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup142} />
+        </div>
+        <div className="absolute inset-[98.16%_58.06%_0.86%_37.72%]">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup143} />
+        </div>
       </div>
     </div>
   )
