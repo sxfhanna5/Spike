@@ -27,8 +27,7 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
   const label = `Reto ${n - m.first + 1} de ${m.challenges.length}, ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'siguiente' : 'completado'}`
   return (
     <button type="button" onClick={onTap} aria-label={label} className={`relative block ${shaking ? 'shake' : ''}`} style={{ width: TILE_W, height: TILE_H }}>
-      {state === 'active' && <span className="glow-pulse pointer-events-none absolute rounded-full blur-[7px]" style={{ left: -10, top: -9, width: TILE_W + 20, height: 62, background: m.accent, opacity: 0.8 }} />}
-      <svg width={TILE_W} height={TILE_H} viewBox="0 0 132 143.571" className={`relative ${state === 'active' ? 'tile-pulse' : ''}`} style={{ transformOrigin: '50% 40%' }} aria-hidden>
+      <svg width={TILE_W} height={TILE_H} viewBox="0 0 132 143.571" className={`relative ${state === 'active' ? 'active-level-pulse' : ''}`} style={{ transformOrigin: '50% 40%' }} aria-hidden>
         <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill={side} />
         <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill={top} />
         <ellipse cx="66" cy="58.286" rx="61" ry="53.3" fill="none" stroke={ring} strokeWidth="10" />
@@ -40,17 +39,45 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
   )
 }
 
-/** Start of a module: same disc as the retos, with the module icon instead of a number. Not a reto, not counted in the 46. */
+/** Start of a module: same disc as the retos, with the module icon instead of a number. Not a reto, not counted in the 46. Completely static. */
 function ModuleTile({ id, state, onTap }: { id: ModuleId; state: TileState; onTap: () => void }) {
   const m = MODULES[id]
   return (
     <button type="button" onClick={onTap} aria-label={`Módulo ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'en curso' : 'completado'}`} className="relative block" style={{ width: TILE_W, height: TILE_H }}>
-      {state === 'active' && <span className="glow-pulse pointer-events-none absolute rounded-full blur-[7px]" style={{ left: -10, top: -9, width: TILE_W + 20, height: 62, background: m.accent, opacity: 0.8 }} />}
-      <span className={`relative block ${state === 'active' ? 'tile-pulse' : ''}`} style={{ transformOrigin: '50% 40%' }}>
+      <span className="relative block" style={{ transformOrigin: '50% 40%' }}>
         <ModuleArt id={id} size={TILE_W} locked={state === 'locked'} />
       </span>
       {state === 'done' && <span className="pop pointer-events-none absolute" style={{ right: -7, top: -7 }}><Badge icon="check" color="#73D83A" accent="#369C00" size={22} /></span>}
     </button>
+  )
+}
+
+/** 3D disc matching the locked levels style on the map: grey body, white stroke, flat white lock. */
+export function LockedLevelButton({ size = 54 }: { size?: number }) {
+  const w = size
+  const h = (143.571 / 132) * w
+  const cx = w / 2
+  const cy = (58.286 / 143.571) * h
+  const iconSize = Math.round(size * 0.44)
+  return (
+    <div className="relative shrink-0" style={{ width: w, height: h }}>
+      <svg width={w} height={h} viewBox="0 0 132 143.571" className="block" aria-hidden>
+        <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill="#9AA5B1" />
+        <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill="#D9DEE7" />
+        <ellipse cx="66" cy="58.286" rx="61" ry="53.3" fill="none" stroke="#FFFFFF" strokeWidth="10" />
+      </svg>
+      <span
+        className="pointer-events-none absolute grid place-items-center"
+        style={{
+          left: cx - iconSize / 2,
+          top: cy - iconSize / 2,
+          width: iconSize,
+          height: iconSize,
+        }}
+      >
+        <Icon name="lock" size={iconSize} color="#FFFFFF" solid />
+      </span>
+    </div>
   )
 }
 
@@ -67,7 +94,7 @@ function Cloud({ x, y, k = 1, fill }: { x: number; y: number; k?: number; fill: 
   )
 }
 
-const TOTAL_MAP_H = MAP_H + 160
+const TOTAL_MAP_H = 3780
 
 export function MapScreen() {
   const { s, dispatch } = useGame()
@@ -231,12 +258,27 @@ export function MapScreen() {
               )
             })}
 
+            {/* Floating "Próximamente: nuevos niveles" card integrated with the clouds */}
+            <div className="absolute left-1/2 -translate-x-1/2 z-20 w-[92%] max-w-[350px]" style={{ top: 3540 }}>
+              <button
+                type="button"
+                onClick={() => setToast({ key: Date.now(), text: 'Próximamente: nuevos niveles', icon: 'lock' })}
+                aria-label="Próximamente: nuevos niveles"
+                className="card-in flex w-full items-center gap-3.5 rounded-[26px] bg-white px-4 py-3 shadow-[0_10px_26px_rgba(74,90,140,.16)] text-left transition-transform active:scale-95 cursor-pointer"
+              >
+                <LockedLevelButton size={54} />
+                <span className="font-display text-[18px] sm:text-[19px] leading-snug font-bold text-ink">
+                  Próximamente: nuevos niveles
+                </span>
+              </button>
+            </div>
+
             {/* Solid white background extending from the cloud base to the bottom edge */}
             <div
               className="pointer-events-none absolute inset-x-0 z-[1] bg-white"
               style={{
-                top: 3650,
-                height: TOTAL_MAP_H - 3650 + 600,
+                top: 3585,
+                height: TOTAL_MAP_H - 3585 + 400,
               }}
               aria-hidden
             />

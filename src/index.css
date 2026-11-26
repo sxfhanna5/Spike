@@ -276,19 +276,17 @@
 .ray-spin {
   animation: ray-spin 60s linear infinite;
 }
-@keyframes glow-pulse {
+@keyframes active-level-pulse {
   0%,
   100% {
-    opacity: 0.45;
-    transform: scale(0.92);
+    transform: scale(1);
   }
   50% {
-    opacity: 0.95;
-    transform: scale(1.12);
+    transform: scale(1.04);
   }
 }
-.glow-pulse {
-  animation: glow-pulse 1.9s ease-in-out infinite;
+.active-level-pulse {
+  animation: active-level-pulse 2.4s ease-in-out infinite;
 }
 @keyframes egg-bob {
   0%,

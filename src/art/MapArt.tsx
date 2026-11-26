@@ -770,8 +770,8 @@ export function MapArt() {
         </div>
       </div>
       {/* Pure solid white fill below the cloud lobes covering any dark purple mountain background */}
-      <div className="absolute inset-x-0 bg-white" style={{ top: '95.5%', bottom: 0 }} />
-      <div className="-translate-x-1/2 absolute bottom-[2.67%] left-1/2 top-[93.69%] w-[1228px]">
+      <div className="absolute inset-x-0 bg-white" style={{ top: '95.6%', bottom: 0 }} />
+      <div className="-translate-x-1/2 absolute bottom-[2.4%] left-1/2 top-[94.0%] w-[1228px]">
         <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup253} />
       </div>
       <div className="absolute flex h-[224px] items-center justify-center left-[calc(75%+132.5px)] top-[5147px] w-[258px]">
