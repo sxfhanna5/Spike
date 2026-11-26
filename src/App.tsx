@@ -31,7 +31,7 @@ export default function App() {
 
   // Pre-warm map geometry during idle time so navigating to map is instant
   useEffect(() => {
-    const fn = () => { try { getGeometry() } catch {} }
+    const fn = () => { try { getGeometry() } catch { } }
     const timer = setTimeout(fn, 300)
     return () => clearTimeout(timer)
   }, [])
@@ -156,22 +156,20 @@ export default function App() {
     <GameContext.Provider value={{ s, dispatch, paused }}>
       <IconDefs />
       <div
-        className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${
-          isFullOrange
-            ? 'bg-[#FF8001]'
-            : isBlueTutorial || isMapScreen
+        className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${isFullOrange
+          ? 'bg-[#FF8001]'
+          : isBlueTutorial || isMapScreen
             ? 'bg-[#45C1FF]'
             : isSkyScreen || isHubScreen
-            ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
-            : 'bg-[#EAF6FF]'
-        }`}
+              ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
+              : 'bg-[#EAF6FF]'
+          }`}
       >
         <main
-          className={`relative flex h-full w-full flex-col overflow-hidden ${
-            isFullBleed
-              ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : isBlueTutorial || isMapScreen ? 'bg-[#45C1FF]' : 'bg-transparent'}`
-              : 'max-w-[430px] bg-white shadow-2xl'
-          }`}
+          className={`relative flex h-full w-full flex-col overflow-hidden ${isFullBleed
+            ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : isBlueTutorial || isMapScreen ? 'bg-[#45C1FF]' : 'bg-transparent'}`
+            : 'max-w-[430px] bg-white shadow-2xl'
+            }`}
         >
           <View />
           {s.intro && isPlay(s) && (

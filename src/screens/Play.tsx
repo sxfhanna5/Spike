@@ -1,5 +1,5 @@
 import { useGame } from '../game/context'
-import { COLOR_HEX, MODULES, OPTION_META, ROUND_INFO, ROLE_COLOR, type Challenge, type Person } from '../game/data'
+import { COLOR_HEX, MODULES, OPTION_META, ROUND_INFO, ROLE_COLOR, type Challenge, type Person, type ModuleId } from '../game/data'
 import { boxControls, current, interpreter, signer, stageOf, teacherOf } from '../game/engine'
 import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
@@ -124,59 +124,122 @@ export function IntroCard() {
   const { s, dispatch } = useGame()
   const intro = s.intro!
   const done = () => dispatch({ type: 'INTRO_DONE' })
-  usePausedTimeout(done, intro.kind === 'level' ? 2000 : 1800, true, [intro.kind, s.idx, intro.who, s.teacherPhase, s.teacherLoops, s.screen])
+  const isFrozen = typeof window !== 'undefined' && window.location.search.includes('freeze=true')
+  usePausedTimeout(done, isFrozen ? 999999 : (intro.kind === 'level' ? 2000 : 1800), true, [intro.kind, s.idx, intro.who, s.teacherPhase, s.teacherLoops, s.screen])
   return (
-    <div role="button" tabIndex={0} aria-label="Toca para saltar" onClick={done} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && done()} className="screen-in absolute inset-0 z-40 cursor-pointer outline-none">
+    <div role="button" tabIndex={0} aria-label="Toca para saltar" onClick={done} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && done()} className="screen-in absolute inset-0 z-50 cursor-pointer outline-none">
       {intro.kind === 'level' ? <LevelCard /> : <TurnCard />}
     </div>
   )
 }
 
+function LevelCoverIcon({ id }: { id: ModuleId }) {
+  if (id === 1) {
+    return <span className="font-display font-black text-[96px] sm:text-[112px] leading-none text-white tracking-tight">Aa</span>
+  }
+  if (id === 2) {
+    return (
+      <span className="grid place-items-center py-1">
+        <Icon name="drop" size={90} color="#FFFFFF" solid />
+      </span>
+    )
+  }
+  if (id === 3) {
+    return <span className="font-display font-black text-[96px] sm:text-[112px] leading-none text-white tracking-tight">1</span>
+  }
+  if (id === 4) {
+    return (
+      <span className="grid place-items-center py-1">
+        <svg width="88" height="88" viewBox="0 0 24 24" fill="white" aria-hidden>
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2z" />
+        </svg>
+      </span>
+    )
+  }
+  if (id === 5) {
+    return (
+      <span className="grid place-items-center py-1">
+        <Icon name="pencil" size={84} color="#FFFFFF" solid />
+      </span>
+    )
+  }
+  return null
+}
+
 function LevelCard() {
   const { s } = useGame()
   const m = MODULES[s.level]
-  const forKid = s.facing === 'nino'
+
   return (
-    <div className="absolute inset-0 overflow-hidden" style={{ background: `linear-gradient(170deg, ${m.color} 0%, ${m.color} 45%, ${m.accent} 130%)` }}>
-      <LevelRays />
-      <div className="absolute top-[clamp(32px,5vh,52px)] left-0 flex w-full flex-col items-center text-white">
-        <div className="hatch-pop"><ModuleBadge id={m.id} size={118} /></div>
-        {!forKid && (
-          <>
-            <span className="mt-3 font-display text-[22px] leading-7 font-medium text-white/90">Nivel {m.id}</span>
-            <h1 className="font-display text-[44px] leading-[48px] font-semibold drop-shadow-[0_3px_0_rgba(0,0,0,.14)]">{m.title}</h1>
-          </>
+    <div
+      className="absolute inset-0 overflow-hidden flex flex-col justify-between items-center px-5 select-none pt-[calc(2.5rem+env(safe-area-inset-top,0px))] pb-8 sm:pt-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:pb-10"
+      style={{ backgroundColor: m.color }}
+    >
+      {/* Background light rays */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden" aria-hidden>
+        <img
+          src="/assets/rays.png"
+          alt=""
+          draggable={false}
+          className="size-[1329px] max-w-none object-cover opacity-60 mix-blend-screen pointer-events-none"
+        />
+      </div>
+
+      {/* Top Header: Icon, Nivel X, Title */}
+      <div className="relative z-10 flex flex-col items-center text-center mt-1 sm:mt-3">
+        <LevelCoverIcon id={m.id} />
+        <span className="font-sans text-[18px] sm:text-[21px] font-medium text-white/75 mt-2">
+          Nivel {m.id}
+        </span>
+        <h1 className="font-display text-[34px] sm:text-[40px] font-bold text-white leading-tight mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+          {m.title}
+        </h1>
+      </div>
+
+      {/* Center Illustration: Big Egg for Level 1, Spike for Levels 2-5 */}
+      <div className="relative z-10 my-auto flex flex-col items-center">
+        {m.id === 1 ? (
+          <div className="relative flex flex-col items-center">
+            {/* Sombra ovalada debajo del huevo */}
+            <div
+              className="absolute -bottom-2 w-[170px] sm:w-[200px] h-[30px] rounded-[50%] bg-[#C590DE] blur-[1px] opacity-90 z-0 pointer-events-none"
+              aria-hidden
+            />
+            {/* Huevo en primer plano, completamente por encima de la sombra */}
+            <img
+              src="/assets/737b7.svg"
+              alt="Huevo de Spike"
+              draggable={false}
+              className="relative z-10 w-[230px] sm:w-[260px] max-h-[36vh] object-contain drop-shadow-[0_16px_30px_rgba(0,0,0,0.18)]"
+            />
+          </div>
+        ) : (
+          <div className="relative flex flex-col items-center">
+            <div
+              className="absolute -bottom-2 w-[160px] sm:w-[190px] h-[26px] rounded-[50%] bg-black/15 blur-[2px] z-0 pointer-events-none"
+              aria-hidden
+            />
+            <div className="relative z-10">
+              <Spike
+                stage={m.stage}
+                mood="happy"
+                size={230}
+                className="max-h-[34vh] drop-shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
+              />
+            </div>
+          </div>
         )}
-        {forKid && <span className="mt-3 grid size-14 place-items-center rounded-full bg-white font-display text-[30px] font-bold shadow-[0_4px_0_rgba(0,0,0,.12)]" style={{ color: m.accent }}>{m.id}</span>}
       </div>
-      <div className="absolute top-[clamp(210px,34vh,310px)] left-1/2 flex -translate-x-1/2 flex-col items-center">
-        <Spike stage={m.stage} mood="happy" size={m.stage === 1 ? 190 : 230} className="pop max-h-[26vh]" />
-        <div className="-mt-3 h-[28px] w-[150px] rounded-[50%] bg-black/15 blur-[1px]" />
+
+      {/* Bottom Capsule: "{m.challenges.length} retos donde padre e hijo se turnan" */}
+      <div className="relative z-10 mb-2 sm:mb-4 w-full max-w-[360px] px-2">
+        <div className="rounded-full bg-white py-3.5 px-6 shadow-[0_8px_24px_rgba(0,0,0,0.1)] flex items-center justify-center text-center">
+          <span className="font-display text-[16px] sm:text-[18px] font-bold whitespace-nowrap" style={{ color: m.accent }}>
+            {m.challenges.length} retos donde padre e hijo se turnan
+          </span>
+        </div>
       </div>
-      <div className="card-in absolute bottom-[clamp(24px,5vh,54px)] left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full bg-white py-2 pr-6 pl-2 shadow-[0_6px_14px_rgba(0,0,0,.12)]" style={{ color: m.accent }}>
-        <span className="flex"><Avatar who="papa" size={40} /><Avatar who="nino" size={40} className="-ml-2" /></span>
-        <span className="font-display text-[26px] leading-none font-bold">× {m.challenges.length}</span>
-      </div>
-      <XButton />
     </div>
-  )
-}
-
-const TURN_COPY: Record<string, string> = {
-  'papa-sign': 'Haz la seña frente a tu hijo',
-  'papa-guess': 'Adivina la seña de tu hijo',
-  'papa-write': 'Escribe lo que deletrea tu hijo',
-}
-
-/** Big round pictogram that replaces the sentence on the child's cards. */
-function RolePicto({ role, color, edge }: { role: 'sign' | 'write' | 'guess' | 'teach'; color: string; edge: string }) {
-  return (
-    <span className="grid h-[84px] min-w-[84px] place-items-center rounded-full bg-white px-5 shadow-[0_6px_0_rgba(0,0,0,.14)]" style={{ color }}>
-      {role === 'sign' && <Icon name="hand" size={52} color={color} />}
-      {role === 'write' && <Icon name="pencil" size={48} color={color} />}
-      {role === 'teach' && <Icon name="book" size={50} color={edge} />}
-      {role === 'guess' && <span className="flex gap-2">{OPTION_META.map((o) => <Shape key={o.key} kind={o.shape} size={28} color={o.ink} />)}</span>}
-    </span>
   )
 }
 
@@ -184,40 +247,113 @@ function TurnCard() {
   const { s } = useGame()
   const intro = s.intro!
   const c = current(s)
+  const m = MODULES[s.level]
   const teacher = intro.kind === 'teacher'
   const who = teacher ? teacherOf(s) : intro.who
   const signing = signer(c.round) === who && (s.screen === 'sign' || (s.screen === 'write' && s.write.stage === 'sign'))
   const role = signing ? 'sign' : s.screen === 'write' ? 'write' : 'guess'
   const kid = who === 'nino'
-  const color = teacher ? '#E7B3FF' : ROLE_COLOR[who]
-  const edge = teacher ? '#D06BFF' : who === 'nino' ? '#FF4F1A' : '#007BB9'
-  const fg = teacher ? '#4A5A8C' : '#fff'
   const name = who === 'papa' ? 'padre' : 'niño'
-  const subIcon = teacher ? 'cap' : role === 'sign' ? 'hand' : role === 'write' ? 'pencil' : 'eye'
+  const roundInfo = ROUND_INFO[c.round]
+  const doneInModule = Math.max(1, Math.min(m.challenges.length, s.casilla - m.first + 1))
+  const handColor = roundInfo.signer === 'papa' ? '#45C1FF' : '#FF8001'
+
+  const cardBg = teacher ? '#E7B3FF' : kid ? '#FF8001' : '#45C1FF'
+  const title = teacher ? `Maestro ${name}` : `Turno del ${name}`
+  const subtitle = teacher
+    ? 'El que sabe, enseña'
+    : role === 'sign'
+    ? (who === 'papa' ? 'Haz la seña frente a tu hijo' : 'Haz la seña frente a papá')
+    : (who === 'nino' ? 'Adivina la seña de papá' : 'Adivina la seña de tu hijo')
+  const subIcon = teacher ? 'cap' : role === 'sign' ? 'hand' : 'eye'
+
   return (
-    <div className="absolute inset-0 bg-white">
-      <GameHeader chip={false} onWhite />
-      <div className="card-in absolute top-[clamp(110px,16vh,184px)] inset-x-4 mx-auto h-[clamp(380px,52vh,480px)] max-w-[344px] rounded-[28px] shadow-[0_12px_30px_rgba(0,0,0,.14)]" style={{ background: teacher ? 'linear-gradient(180deg,#EBC2FF,#E7B3FF)' : color }}>
-        {/* the child's cards carry no sentences: only avatar and pictogram */}
-        {!kid && (
-          <div className="flex flex-col items-center pt-[44px]" style={{ color: fg }}>
-            <h1 className="font-display text-[34px] leading-[40px] font-semibold" style={{ textShadow: teacher ? undefined : `0 3px 0 ${edge}` }}>{teacher ? `Maestro ${name}` : `Turno del ${name}`}</h1>
-            <p className="mt-2 flex items-center gap-2 px-4 text-center font-display text-[18px] leading-6 font-medium"><Icon name={subIcon} size={24} />{teacher ? 'El que sabe, enseña' : TURN_COPY[`papa-${role}`]}</p>
-          </div>
-        )}
-        <div className={`absolute left-1/2 -translate-x-1/2 ${kid ? 'top-[70px]' : 'top-[169px]'}`}>
-          {teacher ? <span className="hat-bounce block"><Avatar who={who} size={kid ? 210 : 186} halo cap /></span> : <Avatar who={who} size={kid ? 210 : 186} halo className="pop" />}
+    <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-6 sm:pt-[calc(2.75rem+env(safe-area-inset-top,0px))] sm:pb-8">
+      {/* Top Section: Level 3D disc badge + Segmented Progress Bar */}
+      <div className="flex flex-col items-center w-full">
+        <ModuleBadge id={m.id} size={50} />
+        <div className="mt-3.5 flex items-center gap-1.5 w-full max-w-[280px] sm:max-w-[320px] justify-center px-2">
+          {Array.from({ length: m.challenges.length }).map((_, i) => {
+            const isDoneOrCurrent = i < doneInModule
+            return (
+              <div
+                key={i}
+                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] rounded-full transition-colors duration-300"
+                style={{ backgroundColor: isDoneOrCurrent ? m.color : '#E6E6E6' }}
+              />
+            )
+          })}
         </div>
-        {kid && <div className="absolute bottom-[58px] left-1/2 -translate-x-1/2"><RolePicto role={teacher ? 'teach' : role} color={teacher ? '#D06BFF' : '#FF8001'} edge="#D06BFF" /></div>}
-        {!kid && <div className="absolute bottom-5 left-1/2 -translate-x-1/2"><RoundChip round={c.round} className="origin-bottom scale-[.92] shadow-[0_3px_8px_rgba(0,0,0,.12)]" /></div>}
       </div>
-      {intro.arrow && (
-        <p className="absolute bottom-[clamp(16px,3.5vh,44px)] left-0 flex w-full items-center justify-center gap-3 font-display text-[18px] font-normal text-ink2">
-          <Icon name="hand" size={26} color="#65739F" />
-          <Icon name={who === 'papa' ? 'arrowLeft' : 'arrowRight'} size={26} className="turn-arrow" color="#FF8001" />
-          <Avatar who={who} size={40} />
-        </p>
-      )}
+
+      {/* Center container holding Card and below-card prompt */}
+      <div className="my-auto flex flex-col items-center w-full max-w-[344px] sm:max-w-[360px]">
+        {/* Main Card */}
+        <div
+          className="w-full h-[clamp(430px,62vh,530px)] rounded-[32px] sm:rounded-[36px] flex flex-col items-center justify-between py-6 px-4 shadow-[0_14px_36px_rgba(0,0,0,0.12)]"
+          style={{ backgroundColor: cardBg }}
+        >
+          {/* Card Header: Title & Subtitle */}
+          <div className="flex flex-col items-center text-center">
+            <h1 className="font-display text-[28px] sm:text-[34px] font-bold text-white leading-tight">
+              {title}
+            </h1>
+            <p className="mt-1 flex items-center justify-center gap-2 text-white/95 text-[15px] sm:text-[17px] font-medium">
+              <Icon name={subIcon} size={20} color="#FFFFFF" solid />
+              <span>{subtitle}</span>
+            </p>
+          </div>
+
+          {/* Central Illustration Circle */}
+          <div
+            className="my-auto size-[190px] sm:size-[220px] rounded-full border-[8px] sm:border-[10px] border-white relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.1)] shrink-0"
+            style={{ backgroundColor: cardBg }}
+          >
+            {who === 'papa' ? (
+              <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
+                <img
+                  src="/people/padre.png"
+                  alt="Padres"
+                  draggable={false}
+                  className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+                />
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
+                <img
+                  src="/assets/dac2e.svg"
+                  alt="Niño"
+                  draggable={false}
+                  className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Capsule inside Card */}
+          <div className="w-full max-w-[316px] bg-white rounded-full py-2 px-3.5 flex items-center justify-between shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Avatar who={roundInfo.signer} size={26} />
+              <Icon name="hand" size={16} color={handColor} solid />
+              <Icon name="arrowRight" size={12} color="#65739F" />
+              <Avatar who={roundInfo.guesser} size={26} />
+            </div>
+            <span className="font-display font-bold text-[12px] sm:text-[13px] text-[#4C4949] whitespace-nowrap pl-1">
+              {roundInfo.short.replace(' · ', ' - ')}
+            </span>
+          </div>
+        </div>
+
+        {/* Prompt right below card */}
+        {kid ? (
+          <div className="mt-3.5 sm:mt-4 flex items-center justify-center gap-2 text-[#71717A] text-[15px] sm:text-[16px] font-medium select-none">
+            <span>Gira el celular hacia el niño</span>
+            <Icon name="arrowRight" size={18} color="#71717A" solid />
+          </div>
+        ) : (
+          <div className="h-[28px] mt-3.5 sm:mt-4" aria-hidden />
+        )}
+      </div>
     </div>
   )
 }

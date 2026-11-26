@@ -139,13 +139,49 @@ export function loadState(): GameState {
   const base = initialState()
   try {
     const param = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('screen') : null
-    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent'].includes(param)) ? (param as Screen) : 'loader'
+    const paramIntro = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('intro') : null
+    const paramLevel = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('level') || '1', 10) : 1
+    const initialIntro: Intro | null = paramIntro === 'level'
+      ? { kind: 'level', who: 'papa', arrow: false }
+      : paramIntro === 'turn-papa'
+      ? { kind: 'turn', who: 'papa', arrow: false }
+      : paramIntro === 'turn-nino'
+      ? { kind: 'turn', who: 'nino', arrow: true }
+      : null
+    const initialFacing: Person = paramIntro === 'turn-nino' ? 'nino' : 'papa'
+    const initialLevel = (paramLevel >= 1 && paramLevel <= 5 ? paramLevel : 1) as ModuleId
+    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess'].includes(param))
+      ? (param as Screen)
+      : paramIntro
+      ? (paramIntro === 'turn-nino' ? 'guess' : 'sign')
+      : 'loader'
+    const paramOverlay = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('overlay') : null
+    const initialOverlay: Overlay | null = (paramOverlay && ['tutorials', 'reto', 'module', 'exit'].includes(paramOverlay))
+      ? (paramOverlay as Overlay)
+      : null
+    const paramCasilla = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('casilla') || '1', 10) : 1
     const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, connected: paramConnected }
+    if (!raw) return { ...base, screen: initialScreen, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, overlay: initialOverlay, selectedCasilla: paramCasilla, casilla: paramCasilla, idx: Math.max(0, paramCasilla - 1) }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
-    return { ...base, ...saved, done, heat: heatFor(done), screen: initialScreen, overlay: null, connected: paramConnected, intro: null, selected: null, fx: fx('none') }
+    return {
+      ...base,
+      ...saved,
+      done,
+      heat: heatFor(done),
+      screen: initialScreen,
+      overlay: initialOverlay,
+      connected: paramConnected,
+      intro: initialIntro,
+      facing: paramIntro ? initialFacing : (saved.facing ?? 'nino'),
+      level: paramIntro ? initialLevel : (saved.level ?? 1),
+      selectedCasilla: paramCasilla,
+      casilla: paramCasilla,
+      idx: Math.max(0, paramCasilla - 1),
+      selected: null,
+      fx: fx('none'),
+    }
   } catch {
     return base
   }

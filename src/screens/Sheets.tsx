@@ -48,6 +48,7 @@ export function RetoSheet() {
   const round = m.challenges[j].round
   const r = ROUND_INFO[round]
   const done = n <= s.done
+  const handColor = r.signer === 'papa' ? '#45C1FF' : '#FF8001'
   return (
     <Sheet onClose={() => dispatch({ type: 'OVERLAY', overlay: null })} label={`Reto ${j + 1} de ${m.challenges.length}`}>
       <div className="flex items-center gap-4">
@@ -56,16 +57,18 @@ export function RetoSheet() {
           <span className="font-sans text-[14px] font-extrabold tracking-wide uppercase" style={{ color: m.accent }}>{m.name}</span>
           <h2 className="font-display text-[28px] leading-8 font-semibold">Reto {j + 1} de {m.challenges.length}</h2>
         </div>
-        {done && <span className="ml-auto grid size-11 place-items-center rounded-full text-white" style={{ background: m.color }}><Icon name="check" size={24} /></span>}
+        {done && <span className="ml-auto grid size-11 place-items-center rounded-full text-white" style={{ background: m.color }}><Icon name="check" size={24} solid /></span>}
       </div>
-      <div className="mt-5 flex flex-col items-center gap-3 rounded-[24px] bg-[#F6F8FB] py-4">
-        <div className="flex items-center gap-4">
-          <Avatar who={r.signer} size={64} />
-          <Icon name="hand" size={30} color={ROLE_COLOR[r.signer]} />
-          <Icon name="arrowRight" size={22} color="#4A5A8C" />
-          <Avatar who={r.guesser} size={64} />
+      <div className="mt-5 flex flex-col items-center gap-3 rounded-[24px] bg-[#F6F8FB] py-5 px-4">
+        <div className="flex items-center justify-center gap-4">
+          <Avatar who={r.signer} size={58} />
+          <Icon name="hand" size={30} color={handColor} solid />
+          <Icon name="arrowRight" size={20} color="#4A5A8C" />
+          <Avatar who={r.guesser} size={58} />
         </div>
-        <RoundChip round={round} className="shadow-none" />
+        <span className="font-sans font-bold text-[15px] sm:text-[16px] text-[#4A5A8C] text-center mt-0.5">
+          {r.short.replace(' · ', ' - ')}
+        </span>
       </div>
       <div className="mt-5">
         <Btn icon="play" onClick={() => dispatch({ type: 'PLAY' })}>{done ? 'Jugar otra vez' : 'Jugar'}</Btn>
@@ -88,8 +91,8 @@ export function ExitSheet() {
       </div>
       <div className="mt-5 flex flex-col gap-4">
         <Btn icon="play" onClick={() => dispatch({ type: 'OVERLAY', overlay: null })}>Seguir</Btn>
-        <Btn variant="secondary" icon="refresh" onClick={() => dispatch({ type: 'RESTART' })}>Reiniciar reto</Btn>
-        <Btn variant="tertiary" icon="map" onClick={() => dispatch({ type: 'EXIT_TO_MAP' })}>Salir al mapa</Btn>
+        <Btn variant="whiteOrange" icon="refresh" onClick={() => dispatch({ type: 'RESTART' })}>Reiniciar reto</Btn>
+        <Btn variant="whiteOrange" icon="map" onClick={() => dispatch({ type: 'EXIT_TO_MAP' })}>Salir al mapa</Btn>
       </div>
     </Sheet>
   )

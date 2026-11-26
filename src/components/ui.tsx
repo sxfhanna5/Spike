@@ -5,12 +5,13 @@ import { Icon, ModuleArt, type IconName } from './glyphs'
 
 /* ============================== buttons ============================== */
 
-type Variant = 'primary' | 'secondary' | 'tertiary' | 'soft'
+type Variant = 'primary' | 'secondary' | 'tertiary' | 'soft' | 'whiteOrange'
 const VARIANTS: Record<Variant, { bg: string; edge: string; fg: string; shadow?: string }> = {
   // every important action: orange with the solid accent lip and a soft text shadow
   primary: { bg: '#FF8001', edge: '#FF4F1A', fg: '#FFFFFF', shadow: '0 2px 0 rgb(255 79 26 / .4)' },
-  secondary: { bg: '#FFFFFF', edge: '#D9DEE7', fg: '#4A5A8C' },
-  tertiary: { bg: '#F1F3F8', edge: '#D9DEE7', fg: '#65739F' },
+  secondary: { bg: '#FFFFFF', edge: '#FFD2A8', fg: '#FF8001' },
+  tertiary: { bg: '#FFFFFF', edge: '#FFD2A8', fg: '#FF8001' },
+  whiteOrange: { bg: '#FFFFFF', edge: '#FFD2A8', fg: '#FF8001' },
   // gentle secondary action (log out): very light orange, no red
   soft: { bg: '#FFE6CC', edge: '#FFD2A8', fg: '#FF8001' },
 }
@@ -34,9 +35,9 @@ export function Btn({ children, onClick, variant = 'primary', icon, disabled, cl
       disabled={disabled}
       aria-label={ariaLabel}
       className={`btn3d inline-flex min-h-[60px] items-center justify-center gap-3 rounded-full px-8 ${full ? 'w-full' : ''} ${className}`}
-      style={{ '--bg': v.bg, '--edge': v.edge, '--fg': v.fg, '--ts': v.shadow ?? 'none', fontWeight: variant === 'primary' ? 700 : 600 } as CSSProperties}
+      style={{ '--bg': v.bg, '--edge': v.edge, '--fg': v.fg, '--ts': v.shadow ?? 'none', fontWeight: 700 } as CSSProperties}
     >
-      {icon && <Icon name={icon} size={26} />}
+      {icon && <Icon name={icon} size={26} solid />}
       {children}
     </button>
   )
@@ -80,9 +81,9 @@ export function XButton({ light = true }: { light?: boolean }) {
       aria-label="Salir del reto"
       onClick={() => dispatch({ type: 'OVERLAY', overlay: 'exit' })}
       className="btn3d absolute left-5 z-30 grid size-14 place-items-center rounded-full"
-      style={{ '--bg': light ? '#FFFFFF' : '#4A5A8C', '--edge': '#FFD2A8', '--fg': light ? '#FF8001' : '#fff', padding: 0, minHeight: 56, top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' } as CSSProperties}
+      style={{ '--bg': light ? '#FFFFFF' : '#4A5A8C', '--edge': '#FFD2A8', '--fg': light ? '#FF8001' : '#fff', padding: 0, minHeight: 56, top: 'calc(1.75rem + env(safe-area-inset-top, 0px))' } as CSSProperties}
     >
-      <Icon name="close" size={28} />
+      <Icon name="close" size={28} solid />
     </button>
   )
 }
@@ -224,25 +225,38 @@ export function Spike({ stage = 5, mood = 'calm', size = 160, locked, className 
 
 /* ============================== avatars ============================== */
 
-/** Round parent / child icons from the attached frames. They have no background of their own. */
+/** Round parent / child icons with solid circular backgrounds (blue for father, orange for child). */
 export function Avatar({ who, size = 56, cap, question, halo, className = '' }: { who: Person; size?: number; cap?: boolean; question?: boolean; halo?: boolean; className?: string }) {
+  const isPapa = who === 'papa'
   return (
-    <span className={`relative inline-block shrink-0 ${className}`} style={{ width: size, height: size }} aria-label={who === 'papa' ? 'Padre' : 'Niño'}>
-      <span className="absolute inset-0 overflow-hidden rounded-full" style={halo ? { filter: 'drop-shadow(0 6px 8px rgba(74,90,140,.22))' } : undefined}>
-        {who === 'papa' ? (
-          <>
-            <span className="absolute" style={{ left: 0, right: '-2.21%', top: '19.49%', bottom: '-1.81%' }}>
-              <img src="/people/padre.png" alt="" draggable={false} className="size-full max-w-none" />
-            </span>
-            <img src="/people/padre-detalle.svg" alt="" draggable={false} className="absolute max-w-none" style={{ left: '20.2%', top: '53.74%', width: '19.5%', height: '5.49%' }} />
-          </>
+    <span
+      className={`relative inline-block shrink-0 ${className}`}
+      style={{ width: size, height: size }}
+      aria-label={isPapa ? 'Padre' : 'Niño'}
+    >
+      <span
+        className={`absolute inset-0 overflow-hidden rounded-full flex items-end justify-center ${isPapa ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'}`}
+        style={halo ? { filter: 'drop-shadow(0 6px 8px rgba(74,90,140,.22))' } : undefined}
+      >
+        {isPapa ? (
+          <img
+            src="/people/padre.png"
+            alt="Padres"
+            draggable={false}
+            className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+          />
         ) : (
-          <img src="/people/hijo.svg" alt="" draggable={false} className="absolute max-w-none" style={{ left: '11.52%', top: '7.47%', width: '76.77%', height: '92.53%' }} />
+          <img
+            src="/assets/dac2e.svg"
+            alt="Niño"
+            draggable={false}
+            className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+          />
         )}
       </span>
       {cap && (
         <span className="absolute left-1/2 -translate-x-1/2 text-[#D06BFF] drop-shadow-[0_3px_0_rgba(138,63,196,.55)]" style={{ top: -size * 0.27 }}>
-          <Icon name="cap" size={size * 0.56} />
+          <Icon name="cap" size={size * 0.56} solid />
         </span>
       )}
       {question && (
@@ -269,13 +283,14 @@ export function ModuleBadge({ id, size = 52 }: { id: ModuleId; size?: number }) 
 /** Who signs → who guesses. */
 export function RoundChip({ round, className = '', textless }: { round: Round; className?: string; textless?: boolean }) {
   const r = ROUND_INFO[round]
+  const handColor = r.signer === 'papa' ? '#45C1FF' : '#FF8001'
   return (
     <span className={`card-in inline-flex items-center gap-2 rounded-full bg-white py-1.5 ${textless ? 'pr-3' : 'pr-4'} pl-1.5 text-[14px] font-bold whitespace-nowrap text-ink2 shadow-[0_3px_8px_rgba(0,0,0,.1)] ${className}`}>
       <Avatar who={r.signer} size={28} />
-      <Icon name="hand" size={20} color={r.signer === 'papa' ? '#45C1FF' : '#FF8001'} />
+      <Icon name="hand" size={20} color={handColor} solid />
       <Icon name="arrowRight" size={14} color="#4A5A8C" />
       <Avatar who={r.guesser} size={28} />
-      {!textless && <span className="ml-1 font-bold">{r.short}</span>}
+      {!textless && <span className="ml-1 font-bold">{r.short.replace(' · ', ' - ')}</span>}
     </span>
   )
 }
@@ -287,10 +302,10 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
   const total = s.queue.length
   const round = s.queue[Math.min(s.idx, total - 1)].round
   return (
-    <div className="relative z-20 flex flex-col items-center pt-[18px]">
+    <div className="relative z-20 flex flex-col items-center pt-[calc(1.75rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2.25rem+env(safe-area-inset-top,0px))]">
       {x && <XButton />}
       <ModuleBadge id={s.level} size={52} />
-      <div className="mt-2 flex w-full max-w-[330px] items-center gap-3 px-3">
+      <div className="mt-2.5 flex w-full max-w-[330px] items-center gap-3 px-3">
         <div className="flex flex-1 gap-1" aria-hidden>
           {Array.from({ length: total }, (_, k) => (
             <span key={k} className="h-[6px] flex-1 overflow-hidden rounded-full" style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}>
