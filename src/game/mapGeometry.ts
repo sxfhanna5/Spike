@@ -51,8 +51,8 @@ export function getGeometry(): MapGeometry {
     const p = path.getPointAtLength(Math.max(0, Math.min(total, arc)))
     return { x: p.x, y: p.y }
   }
-  // Dense samples of the centre line (every 2 units) so the layout maths is purely numeric.
-  const STEP = 2
+  // Dense samples of the centre line (every 4 units) so the layout maths is purely numeric and fast.
+  const STEP = 4
   const pts: { x: number; y: number }[] = []
   for (let a = 0; a <= total; a += STEP) pts.push(pointAt(a))
   const dist = (i: number, j: number) => Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y)

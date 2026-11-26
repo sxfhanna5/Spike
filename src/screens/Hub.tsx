@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useGame } from '../game/context'
 import { FULL_RULES, MODULES, MODULE_IDS, STAGES, TOTAL_CASILLAS, type ModuleId } from '../game/data'
 import { stageOf, stageUnlocked, toCSV } from '../game/engine'
@@ -7,8 +7,6 @@ import { SkyHills } from '../art/SkyHills'
 import { activeCasilla } from '../game/engine'
 import { Bar, Btn, ConnDot, CountUp, ModuleBadge, NavBar, ProfileFace, Screen, Spike } from '../components/ui'
 import { Badge, Icon, type IconName } from '../components/glyphs'
-import { egg } from '../egg'
-import { useConnectFlow } from './Entry'
 import { EggBox } from '../components/EggBox'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
@@ -99,7 +97,7 @@ function Modules() {
                 <Bar pct={(n / m.challenges.length) * 100} color={m.color} height={10} />
               </span>
               <span className="font-sans text-[16px] font-extrabold text-ink2">{n}/{m.challenges.length}</span>
-              <Icon name={open ? 'chevronDown' : 'chevronRight'} size={20} color="#FF8001" />
+              <Icon name={open ? 'chevronDown' : 'chevronRight'} size={20} solid color="#FF8001" />
             </button>
             {open && (
               <div className="accordion-in flex flex-wrap gap-1.5 px-3 pb-3">
@@ -134,8 +132,6 @@ function Stats() {
   const { s } = useGame()
   const first = s.done > 0 ? Math.round((Math.max(0, s.done - Math.min(s.done, s.masterCount)) / s.done) * 100) : 0
   const mins = Math.floor(s.playSeconds / 60)
-  const { nino, papa } = s.taught
-  const total = nino + papa
   const cells: { icon: IconName; color: string; value: number; suffix?: string; label: string }[] = [
     { icon: 'trophy', color: '#FF8001', value: s.done, label: 'Retos completados' },
     { icon: 'star', color: '#FFC800', value: first, suffix: '%', label: 'Al primer intento' },
@@ -143,42 +139,21 @@ function Stats() {
     { icon: 'calendar', color: '#73D83A', value: s.days.length, label: 'Días jugados' },
   ]
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-2.5">
-        {cells.map((c) => (
-          <div key={c.label} className="card-in flex items-center gap-2.5 rounded-[20px] bg-[#F6F8FD] p-2.5">
-            <span
-              className="grid size-[38px] shrink-0 place-items-center rounded-full text-white"
-              style={{ background: c.color }}
-            >
-              <Icon name={c.icon} size={22} solid color="#FFFFFF" />
-            </span>
-            <span className="flex min-w-0 flex-col leading-tight">
-              <span className="font-display text-[22px] leading-6 font-bold text-ink"><CountUp value={c.value} suffix={c.suffix} /></span>
-              <span className="font-sans text-[14px] leading-4 font-bold text-ink2">{c.label}</span>
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="rounded-[20px] bg-[#F7E8FF] p-3">
-        <div className="flex items-center justify-between">
-          <span className="font-display text-[18px] font-semibold text-ink">Quién enseñó</span>
-          <span className="flex items-center gap-1 rounded-full bg-white py-0.5 pr-3 pl-1.5 font-display text-[18px] font-semibold text-ink" aria-label={`${s.masterCount} sellos de maestro`}>
-            <img src="/art/spike-medal.png" alt="" width={24} /><CountUp value={s.masterCount} />
+    <div className="grid grid-cols-2 gap-2.5">
+      {cells.map((c) => (
+        <div key={c.label} className="card-in flex items-center gap-2.5 rounded-[20px] bg-[#F6F8FD] p-2.5">
+          <span
+            className="grid size-[38px] shrink-0 place-items-center rounded-full text-white"
+            style={{ background: c.color }}
+          >
+            <Icon name={c.icon} size={22} solid color="#FFFFFF" />
+          </span>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="font-display text-[22px] leading-6 font-bold text-ink"><CountUp value={c.value} suffix={c.suffix} /></span>
+            <span className="font-sans text-[14px] leading-4 font-bold text-ink2">{c.label}</span>
           </span>
         </div>
-        <div className="mt-2.5 flex h-4 overflow-hidden rounded-full bg-white" role="img" aria-label={`Niño ${nino}, padre ${papa}`}>
-          {total > 0 && <>
-            <span className="h-full" style={{ width: `${(nino / total) * 100}%`, background: '#FF8001', transition: 'width 800ms cubic-bezier(.3,1.15,.5,1)' }} />
-            <span className="h-full" style={{ width: `${(papa / total) * 100}%`, background: '#45C1FF', transition: 'width 800ms cubic-bezier(.3,1.15,.5,1)' }} />
-          </>}
-        </div>
-        <div className="mt-2 flex items-center justify-between font-sans text-[14px] font-extrabold text-ink">
-          <span className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-[#FF8001]" />Niño · {nino}</span>
-          <span className="flex items-center gap-1.5">Padre · {papa}<span className="size-3 rounded-full bg-[#45C1FF]" /></span>
-        </div>
-        <p className="mt-1.5 font-sans text-[14px] leading-5 font-bold text-ink2">{nino > 0 && papa > 0 ? '¡Los dos enseñaron!' : total > 0 ? '¡Cada sello cuenta!' : 'Los sellos aparecen cuando alguien enseña.'}</p>
-      </div>
+      ))}
     </div>
   )
 }
@@ -259,15 +234,6 @@ export function Profile() {
   const m = moduleOf(activeCasilla(s.done))
   const [editing, setEditing] = useState(false)
   const [pw, setPw] = useState('')
-  const press = useRef<number>(0)
-  const startPress = () => {
-    press.current = window.setTimeout(() => dispatch({ type: 'GOTO', screen: 'investigator' }), 700)
-  }
-  const endPress = () => window.clearTimeout(press.current)
-  const flow = useConnectFlow()
-  const reconnect = () => {
-    void egg.disconnect().then(() => flow.start())
-  }
   const logout = async () => {
     if (isSupabaseConfigured) {
       await supabase.auth.signOut()
@@ -299,8 +265,8 @@ export function Profile() {
   return (
     <Screen bg="#BCEDFF">
       <SkyHills />
-      <div className="no-scrollbar absolute inset-0 overflow-y-auto px-5 pt-6 pb-[120px]">
-        <h1 className="mb-3 px-1 font-display text-[36px] leading-10 font-bold text-white drop-shadow-[0_3px_0_rgba(0,123,185,.5)]">Perfil</h1>
+      <div className="no-scrollbar absolute inset-0 overflow-y-auto px-5 pt-8 sm:pt-9 pb-[120px]">
+        <h1 className="mb-4 px-1 font-display text-[36px] leading-10 font-bold text-white drop-shadow-[0_3px_0_rgba(0,123,185,.5)]">Perfil</h1>
         <div className="flex flex-col items-center">
           <div className="relative grid size-[150px] place-items-center rounded-full bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
             <Spike stage={stage} mood="happy" size={118} />
@@ -341,21 +307,9 @@ export function Profile() {
                 <p className="flex items-center gap-2 font-display text-[20px] leading-7 font-semibold"><ConnDot on={s.connected} />{s.connected ? 'Conectado' : 'Desconectado'}</p>
               </div>
             </div>
-            <div className="mt-4"><Btn icon="refresh" onClick={reconnect}>Reconectar</Btn></div>
           </section>
 
-          <Btn variant="soft" icon="exit" onClick={() => void logout()}>Cerrar sesión</Btn>
-          <button
-            type="button"
-            onPointerDown={startPress}
-            onPointerUp={endPress}
-            onPointerLeave={endPress}
-            onContextMenu={(e) => e.preventDefault()}
-            className="mx-auto min-h-12 rounded-full px-5 font-sans text-[14px] font-bold text-ink2 select-none"
-            aria-label="Versión 1.0.0. Mantén pulsado para abrir el Modo investigador"
-          >
-            SPIKE · versión 1.0.0
-          </button>
+          <Btn icon="exit" onClick={() => void logout()}>Cerrar sesión</Btn>
         </div>
       </div>
       <NavBar />

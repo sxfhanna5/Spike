@@ -19,11 +19,11 @@ const TILE_H = 143.571 * TILE_SCALE
 
 export const moduleState = (id: ModuleId, done: number): TileState => (done >= MODULES[id].last ? 'done' : done >= MODULES[id].first - 1 ? 'active' : 'locked')
 
-/** One reto: 3D disc. Locked = grey + lock · active and done = purple disc matching the "Aa" module button + centered flat white star. */
+/** One reto: 3D disc. Locked = grey + lock · active and done = category disc + centered flat white star. */
 function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m: ModuleDef; shaking: boolean; onTap: () => void }) {
   const isLocked = state === 'locked'
-  const top = isLocked ? '#D9DEE7' : '#E7B3FF'
-  const side = isLocked ? '#9AA5B1' : '#D06BFF'
+  const top = isLocked ? '#E4E4E4' : m.color
+  const side = isLocked ? '#CBCBCB' : m.accent
   const ring = '#FFFFFF'
   const label = `Reto ${n - m.first + 1} de ${m.challenges.length}, ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'siguiente' : 'completado'}`
   return (
@@ -32,12 +32,14 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
         <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill={side} />
         <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill={top} />
         <ellipse cx="66" cy="58.286" rx="61" ry="53.3" fill="none" stroke={ring} strokeWidth="10" />
+        {isLocked && (
+          <path
+            d="M72.5 25C79.4036 25 85 30.5964 85 37.5V49.2002C89.5645 50.1267 93 54.1621 93 59V81C93 86.5228 88.5228 91 83 91H48C42.4772 91 38 86.5228 38 81V59C38 53.8147 41.9467 49.5515 47 49.0498V37.5C47 30.5964 52.5964 25 59.5 25H72.5ZM64 63C62.3431 63 61 64.3431 61 66V68.25C61 69.3972 61.6446 70.3928 62.5908 70.8975C62.5343 71.0028 62.5 71.1221 62.5 71.25V77.25C62.5 77.6642 62.8358 78 63.25 78H67.75C68.1642 78 68.5 77.6642 68.5 77.25V71.25C68.5 71.1219 68.4648 71.0029 68.4082 70.8975C69.3548 70.3929 70 69.3975 70 68.25V66C70 64.3431 68.6569 63 67 63H64ZM61.3418 32C56.7348 32.0002 53.0002 35.7348 53 40.3418V48.6846H78.3604V40.3418C78.3602 35.7347 74.6247 32 70.0176 32H61.3418Z"
+            fill="#FFFFFF"
+          />
+        )}
       </svg>
-      {isLocked ? (
-        <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 13, top: CY - 13, width: 26, height: 26 }}>
-          <Icon name="lock" size={24} color="#FFFFFF" solid />
-        </span>
-      ) : (
+      {!isLocked && (
         <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 14, top: CY - 14, width: 28, height: 28 }}>
           <Icon name="star" size={26} color="#FFFFFF" solid />
         </span>
@@ -52,7 +54,7 @@ function ModuleTile({ id, state, onTap }: { id: ModuleId; state: TileState; onTa
   return (
     <button type="button" onClick={onTap} aria-label={`Módulo ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'en curso' : 'completado'}`} className="relative block" style={{ width: TILE_W, height: TILE_H }}>
       <span className="relative block" style={{ transformOrigin: '50% 40%' }}>
-        <ModuleArt id={id} size={TILE_W} locked={state === 'locked'} />
+        <ModuleArt id={id} size={TILE_W} locked={false} />
       </span>
       {state === 'done' && <span className="pop pointer-events-none absolute" style={{ right: -7, top: -7 }}><Badge icon="check" color="#73D83A" accent="#369C00" size={22} /></span>}
     </button>
@@ -63,27 +65,17 @@ function ModuleTile({ id, state, onTap }: { id: ModuleId; state: TileState; onTa
 export function LockedLevelButton({ size = 54 }: { size?: number }) {
   const w = size
   const h = (143.571 / 132) * w
-  const cx = w / 2
-  const cy = (58.286 / 143.571) * h
-  const iconSize = Math.round(size * 0.44)
   return (
     <div className="relative shrink-0" style={{ width: w, height: h }}>
       <svg width={w} height={h} viewBox="0 0 132 143.571" className="block" aria-hidden>
-        <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill="#9AA5B1" />
-        <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill="#D9DEE7" />
+        <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill="#CBCBCB" />
+        <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill="#E4E4E4" />
         <ellipse cx="66" cy="58.286" rx="61" ry="53.3" fill="none" stroke="#FFFFFF" strokeWidth="10" />
+        <path
+          d="M72.5 25C79.4036 25 85 30.5964 85 37.5V49.2002C89.5645 50.1267 93 54.1621 93 59V81C93 86.5228 88.5228 91 83 91H48C42.4772 91 38 86.5228 38 81V59C38 53.8147 41.9467 49.5515 47 49.0498V37.5C47 30.5964 52.5964 25 59.5 25H72.5ZM64 63C62.3431 63 61 64.3431 61 66V68.25C61 69.3972 61.6446 70.3928 62.5908 70.8975C62.5343 71.0028 62.5 71.1221 62.5 71.25V77.25C62.5 77.6642 62.8358 78 63.25 78H67.75C68.1642 78 68.5 77.6642 68.5 77.25V71.25C68.5 71.1219 68.4648 71.0029 68.4082 70.8975C69.3548 70.3929 70 69.3975 70 68.25V66C70 64.3431 68.6569 63 67 63H64ZM61.3418 32C56.7348 32.0002 53.0002 35.7348 53 40.3418V48.6846H78.3604V40.3418C78.3602 35.7347 74.6247 32 70.0176 32H61.3418Z"
+          fill="#FFFFFF"
+        />
       </svg>
-      <span
-        className="pointer-events-none absolute grid place-items-center"
-        style={{
-          left: cx - iconSize / 2,
-          top: cy - iconSize / 2,
-          width: iconSize,
-          height: iconSize,
-        }}
-      >
-        <Icon name="lock" size={iconSize} color="#FFFFFF" solid />
-      </span>
     </div>
   )
 }
@@ -146,20 +138,26 @@ export function MapScreen() {
     else el.scrollTop = top
   }
 
+  const scrollRaf = useRef(0)
   // Parallax: layers drift at most ±6 px (12 px in total) over the whole scroll.
   const onScroll = () => {
-    const el = scroller.current
-    if (!el || !layers.current) return
-    const totalH = TOTAL_MAP_H * scale
-    const t = el.scrollTop / Math.max(1, totalH - el.clientHeight)
-    layers.current.style.setProperty('--py', `${(t - 0.5) * 12}px`)
+    if (scrollRaf.current) return
+    scrollRaf.current = requestAnimationFrame(() => {
+      scrollRaf.current = 0
+      const el = scroller.current
+      if (!el || !layers.current) return
+      const totalH = TOTAL_MAP_H * scale
+      const t = el.scrollTop / Math.max(1, totalH - el.clientHeight)
+      layers.current.style.setProperty('--py', `${(t - 0.5) * 12}px`)
+    })
   }
 
   useLayoutEffect(() => {
-    scrollToArc(slotArcs[slotOfReto(anim ? anim.from : active)], false, 220)
+    scrollToArc(slotArcs[slotOfReto(anim ? anim.from : active)], false)
     onScroll()
-    const t = window.setTimeout(() => scrollToArc(slotArcs[slotOfReto(anim ? anim.from : active)], true), 80)
-    return () => window.clearTimeout(t)
+    return () => {
+      if (scrollRaf.current) cancelAnimationFrame(scrollRaf.current)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -4,6 +4,7 @@ import { disconnectedSheet, isPaused, isPlay, loadState, reducer, saveState, typ
 import { GameContext } from './game/context'
 import { useEggSync } from './egg/useEggSync'
 import { IconDefs } from './components/glyphs'
+import { getGeometry } from './game/mapGeometry'
 import { Connect, Loader, Login, Register, Welcome } from './screens/Entry'
 import { TutorialKid, TutorialParent } from './screens/Tutorials'
 import { MapScreen } from './screens/MapScreen'
@@ -27,6 +28,13 @@ export default function App() {
   useEggSync(s, dispatch)
 
   useEffect(() => saveState(s), [s])
+
+  // Pre-warm map geometry during idle time so navigating to map is instant
+  useEffect(() => {
+    const fn = () => { try { getGeometry() } catch {} }
+    const timer = setTimeout(fn, 300)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Time played: counts seconds while a reto is on screen and the game is not paused.
   useEffect(() => {
