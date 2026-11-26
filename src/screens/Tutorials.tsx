@@ -26,39 +26,26 @@ export function TutorialKid() {
     }
   }
 
-  const next = () => dispatch({ type: 'TUTORIAL_KID_DONE' })
+  const finish = () => {
+    dispatch({ type: 'GOTO', screen: 'map' })
+    dispatch({ type: 'OVERLAY', overlay: 'tutorials' })
+  }
 
   return (
     <Screen bg="#FF8001" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
       {/* Decorative bottom clouds from Figma */}
       <CloudsOrange />
 
-      {/* Top right forward arrow button only */}
-      <div
-        className="absolute right-5 z-30"
-        style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}
-      >
-        <button
-          type="button"
-          onClick={next}
-          aria-label="Continuar"
-          className="btn3d grid size-14 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_4px_10px_rgba(0,0,0,0.12)]"
-          style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as CSSProperties}
-        >
-          <Icon name="arrowRight" size={24} solid color="#FF8001" />
-        </button>
-      </div>
-
       {/* Main centered container */}
       <div
-        className="relative z-10 flex h-full w-full flex-col justify-center items-center overflow-y-auto px-5 no-scrollbar"
+        className="relative z-10 flex h-full w-full flex-col justify-between overflow-y-auto px-5 no-scrollbar"
         style={{
           paddingTop: 'calc(2.5rem + env(safe-area-inset-top, 0px))',
-          paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(3.25rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        {/* Centered white card with avatar - elevated slightly to look more centered without crowd on top */}
-        <div className="my-auto mx-auto w-full max-w-[340px] -translate-y-4 sm:-translate-y-6 pt-6 sm:pt-7">
+        {/* Centered white card with avatar */}
+        <div className="my-auto mx-auto w-full max-w-[340px] pt-6 sm:pt-7">
           <div className="relative rounded-[36px] bg-white px-4 pt-14 pb-4 shadow-[0_16px_36px_rgba(0,0,0,0.14)] sm:px-5 sm:pt-16 sm:pb-5">
             {/* Top decorative avatar perched on top edge - clean white border, no shadows */}
             <div className="absolute -top-10 left-1/2 -translate-x-1/2">
@@ -107,6 +94,18 @@ export function TutorialKid() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Bottom "Listo" button with exact Figma style */}
+        <div className="mx-auto w-full max-w-[280px] shrink-0 pt-3">
+          <button
+            type="button"
+            onClick={finish}
+            className="flex h-[58px] sm:h-[62px] w-full items-center justify-center gap-3 rounded-full bg-[#ED7600] font-display text-[22px] font-bold text-white shadow-[inset_0px_-6px_0px_0px_#D23100] transition-all duration-150 active:translate-y-1 active:shadow-[inset_0px_-2px_0px_0px_#D23100] cursor-pointer"
+          >
+            <Icon name="check" size={24} solid color="#FFFFFF" />
+            <span>Listo</span>
+          </button>
         </div>
       </div>
     </Screen>
@@ -173,29 +172,17 @@ const ROWS: { icon: React.ReactNode; text: string; tint: string }[] = [
 ]
 
 export function TutorialParent() {
-  const { s, dispatch } = useGame()
-  const first = !s.tutorialDone
+  const { dispatch } = useGame()
+
+  const finish = () => {
+    dispatch({ type: 'GOTO', screen: 'map' })
+    dispatch({ type: 'OVERLAY', overlay: 'tutorials' })
+  }
 
   return (
     <Screen bg="#45C1FF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
       {/* Decorative bottom clouds from Figma */}
       <CloudsBlue />
-
-      {/* Top left return arrow button */}
-      <div
-        className="absolute left-5 z-30"
-        style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}
-      >
-        <button
-          type="button"
-          onClick={() => dispatch(first ? { type: 'GOTO', screen: 'tutorialKid' } : { type: 'GOTO', screen: 'map' })}
-          aria-label="Regresar"
-          className="btn3d grid size-14 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_4px_10px_rgba(0,0,0,0.12)]"
-          style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as CSSProperties}
-        >
-          <Icon name="arrowLeft" size={24} solid color="#FF8001" />
-        </button>
-      </div>
 
       {/* Main centered container */}
       <div
@@ -243,7 +230,7 @@ export function TutorialParent() {
         <div className="mx-auto w-full max-w-[280px] shrink-0 pt-3">
           <button
             type="button"
-            onClick={() => dispatch({ type: 'TUTORIAL_PARENT_DONE' })}
+            onClick={finish}
             className="flex h-[58px] sm:h-[62px] w-full items-center justify-center gap-3 rounded-full bg-[#ED7600] font-display text-[22px] font-bold text-white shadow-[inset_0px_-6px_0px_0px_#D23100] transition-all duration-150 active:translate-y-1 active:shadow-[inset_0px_-2px_0px_0px_#D23100] cursor-pointer"
           >
             <Icon name="check" size={24} solid color="#FFFFFF" />

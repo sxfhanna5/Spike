@@ -32,12 +32,12 @@ const PATHS: Record<IconName, (f: string) => ReactNode> = {
     </>
   ),
   lock: (f) => (
-    <>
-      <path d="M8 11V8a4 4 0 0 1 8 0v3" {...R} stroke={f} strokeWidth={3.4} />
-      <rect x="4.2" y="10.2" width="15.6" height="11.2" rx="4.2" fill={f} />
-      <circle cx="12" cy="15" r="1.7" fill="#fff" />
-      <rect x="11.1" y="15.4" width="1.8" height="3.2" rx=".9" fill="#fff" />
-    </>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M 4 13 A 3.8 3.8 0 0 1 7.2 9.2 V 7.4 A 4.8 4.8 0 0 1 16.8 7.4 V 9.2 A 3.8 3.8 0 0 1 20 13 V 17.2 A 3.8 3.8 0 0 1 16.2 21 H 7.8 A 3.8 3.8 0 0 1 4 17.2 Z M 9.6 9.2 V 7.4 A 2.4 2.4 0 0 1 14.4 7.4 V 9.2 Z M 12 12.6 A 1.35 1.35 0 0 1 13.35 14.1 L 12.85 16.9 A 0.4 0.4 0 0 1 12.45 17.3 H 11.55 A 0.4 0.4 0 0 1 11.15 16.9 L 10.65 14.1 A 1.35 1.35 0 0 1 12 12.6 Z"
+      fill={f}
+    />
   ),
   eye: (f) => (
     <>

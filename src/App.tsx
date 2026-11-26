@@ -140,7 +140,9 @@ export default function App() {
   const isFullOrange = s.screen === 'welcome' || s.screen === 'loader' || s.screen === 'tutorialKid'
   const isSkyScreen = s.screen === 'login' || s.screen === 'register' || s.screen === 'connect'
   const isBlueTutorial = s.screen === 'tutorialParent'
-  const isFullBleed = isFullOrange || isSkyScreen || isBlueTutorial
+  const isMapScreen = s.screen === 'map'
+  const isHubScreen = s.screen === 'album' || s.screen === 'profile'
+  const isFullBleed = isFullOrange || isSkyScreen || isBlueTutorial || isMapScreen || isHubScreen
 
   return (
     <GameContext.Provider value={{ s, dispatch, paused }}>
@@ -149,9 +151,9 @@ export default function App() {
         className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${
           isFullOrange
             ? 'bg-[#FF8001]'
-            : isBlueTutorial
+            : isBlueTutorial || isMapScreen
             ? 'bg-[#45C1FF]'
-            : isSkyScreen
+            : isSkyScreen || isHubScreen
             ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
             : 'bg-[#EAF6FF]'
         }`}
@@ -159,7 +161,7 @@ export default function App() {
         <main
           className={`relative flex h-full w-full flex-col overflow-hidden ${
             isFullBleed
-              ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : isBlueTutorial ? 'bg-[#45C1FF]' : 'bg-transparent'}`
+              ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : isBlueTutorial || isMapScreen ? 'bg-[#45C1FF]' : 'bg-transparent'}`
               : 'max-w-[430px] bg-white shadow-2xl'
           }`}
         >
@@ -173,7 +175,7 @@ export default function App() {
           {s.overlay === 'reto' && <RetoSheet />}
           {s.overlay === 'module' && <ModuleSheet />}
           {s.overlay === 'exit' && <ExitSheet />}
-          {disconnectedSheet(s) && <DisconnectedSheet />}
+          {disconnectedSheet(s) && s.screen !== 'tutorialKid' && s.screen !== 'tutorialParent' && <DisconnectedSheet />}
         </main>
       </div>
     </GameContext.Provider>

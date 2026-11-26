@@ -14,8 +14,11 @@ export function TutorialsSheet() {
   const card = (who: 'nino' | 'papa', title: string, screen: 'tutorialKid' | 'tutorialParent', icon: 'play' | 'hand') => (
     <button
       type="button"
-      onClick={() => dispatch({ type: 'GOTO', screen })}
-      className="btn3d relative flex h-[132px] w-full items-center gap-4 overflow-hidden rounded-[28px] px-5 text-left"
+      onClick={() => {
+        dispatch({ type: 'OVERLAY', overlay: null })
+        dispatch({ type: 'GOTO', screen })
+      }}
+      className="btn3d relative flex h-[132px] w-full items-center gap-4 overflow-hidden rounded-[28px] px-5 text-left cursor-pointer"
       style={{ '--bg': ROLE_COLOR[who], '--edge': who === 'nino' ? '#FF4F1A' : '#007BB9', '--fg': '#fff', minHeight: 132 } as React.CSSProperties}
     >
       <Avatar who={who} size={84} halo />

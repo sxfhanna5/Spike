@@ -5,7 +5,7 @@ import { stageOf } from '../game/engine'
 import { FRAME_H, FRAME_W, K, MAP_H, PATH_D, getGeometry } from '../game/mapGeometry'
 import { MapArt } from '../art/MapArt'
 import { Badge, Icon, ModuleArt } from '../components/glyphs'
-import { ConnDot, ModuleBadge, NavBar, Screen, Spike } from '../components/ui'
+import { ModuleBadge, NavBar, Screen, Spike } from '../components/ui'
 
 type TileState = 'locked' | 'active' | 'done'
 
@@ -34,7 +34,7 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
         <ellipse cx="66" cy="58.286" rx="61" ry="53.3" fill="none" stroke={ring} strokeWidth="10" />
         {state === 'active' && <text x="66" y="76" textAnchor="middle" fontFamily="Fredoka" fontWeight="700" fontSize="46" fill={m.accent}>{n - m.first + 1}</text>}
       </svg>
-      {state === 'locked' && <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 13, top: CY - 13, width: 26, height: 26 }}><Icon name="lock" size={24} color="#9AA5B1" /></span>}
+      {state === 'locked' && <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 13, top: CY - 13, width: 26, height: 26 }}><Icon name="lock" size={24} color="#FFFFFF" solid /></span>}
       {state === 'done' && <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 14, top: CY - 14, width: 28, height: 28 }}><Icon name="check" size={28} color="#fff" /></span>}
     </button>
   )
@@ -67,45 +67,32 @@ function Cloud({ x, y, k = 1, fill }: { x: number; y: number; k?: number; fill: 
   )
 }
 
-const FINAL_TOP = 3436
-
-/** Not explorable end of the map: slow clouds cover the path and a rounded card says what is coming. */
-function FinalZone({ onTap }: { onTap: () => void }) {
-  const h = MAP_H - FINAL_TOP
-  return (
-    <button type="button" onClick={onTap} aria-label="Próximamente: nuevos niveles" className="absolute left-0 z-[15] block w-full text-left" style={{ top: FINAL_TOP, height: h }}>
-      <svg width={390} height={h} viewBox={`0 0 390 ${h}`} className="absolute inset-0 overflow-visible" aria-hidden>
-        <defs>
-          <linearGradient id="fz-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#E9F0FF" stopOpacity="0" />
-            <stop offset=".22" stopColor="#E9F0FF" />
-            <stop offset="1" stopColor="#D5E1FB" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="20" width="390" height={h - 20} fill="url(#fz-sky)" />
-        <g className="cloud-cover" style={{ animationDuration: '11s' }}><Cloud x={-50} y={4} k={1.15} fill="#DCE6FF" /><Cloud x={190} y={14} k={1.05} fill="#DCE6FF" /></g>
-        <g className="cloud-cover" style={{ animationDuration: '8.5s', animationDirection: 'alternate-reverse' }}><Cloud x={-20} y={34} k={1.05} fill="#F4F8FF" /><Cloud x={170} y={30} k={1.2} fill="#F4F8FF" /></g>
-        <g className="cloud-cover" style={{ animationDuration: '13s' }}><Cloud x={-70} y={74} k={1.35} fill="#FFFFFF" /><Cloud x={140} y={70} k={1.3} fill="#FFFFFF" /><Cloud x={290} y={86} k={1.1} fill="#FFFFFF" /></g>
-      </svg>
-      <span className="card-in absolute top-[68px] inset-x-4 mx-auto flex max-w-[350px] items-center gap-4 rounded-[28px] bg-white px-4 py-3.5 shadow-[0_10px_26px_rgba(74,90,140,.2)]">
-        <Badge icon="lock" color="#8FA2D8" accent="#5F72B0" size={52} />
-        <span className="font-display text-[20px] leading-6 font-semibold text-ink">Próximamente: nuevos niveles</span>
-      </span>
-    </button>
-  )
-}
+const TOTAL_MAP_H = MAP_H + 160
 
 export function MapScreen() {
   const { s, dispatch } = useGame()
   const geo = useMemo(() => getGeometry(), [])
   const scroller = useRef<HTMLDivElement>(null)
   const layers = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
   const active = Math.min(TOTAL_CASILLAS, s.done + 1)
   const finished = s.done >= TOTAL_CASILLAS
   const anim = s.mapAnim
   const slotArcs = geo.arcs
   const activeSlot = slotOfReto(active)
   const stage = stageOf(s.done)
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (scroller.current) {
+        const w = scroller.current.clientWidth
+        if (w > 0) setScale(w / 390)
+      }
+    }
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [])
 
   // Spike's position along the path (arc) and the hop height.
   const [pos, setPos] = useState(() => ({ arc: slotArcs[slotOfReto(anim ? anim.from : active)], hop: 0 }))
@@ -118,8 +105,9 @@ export function MapScreen() {
   const scrollToArc = (arc: number, smooth: boolean, offset = 0) => {
     const el = scroller.current
     if (!el) return
-    const y = geo.pointAt(arc).y * K
-    const top = Math.max(0, Math.min(MAP_H - el.clientHeight, y - el.clientHeight / 2 + 20 + offset))
+    const y = geo.pointAt(arc).y * K * scale
+    const totalH = TOTAL_MAP_H * scale
+    const top = Math.max(0, Math.min(totalH - el.clientHeight, y - el.clientHeight / 2 + 20 + offset * scale))
     if (smooth) el.scrollTo({ top, behavior: 'smooth' })
     else el.scrollTop = top
   }
@@ -128,7 +116,8 @@ export function MapScreen() {
   const onScroll = () => {
     const el = scroller.current
     if (!el || !layers.current) return
-    const t = el.scrollTop / Math.max(1, MAP_H - el.clientHeight)
+    const totalH = TOTAL_MAP_H * scale
+    const t = el.scrollTop / Math.max(1, totalH - el.clientHeight)
     layers.current.style.setProperty('--py', `${(t - 0.5) * 12}px`)
   }
 
@@ -197,50 +186,69 @@ export function MapScreen() {
   return (
     <Screen bg="#45C1FF">
       <div ref={scroller} onScroll={onScroll} className="no-scrollbar absolute inset-0 overflow-x-hidden overflow-y-auto" aria-label="Mapa de niveles">
-        <div ref={layers} className="relative mx-auto bg-[#45C1FF]" style={{ width: 390, height: MAP_H, '--py': '0px' } as CSSProperties}>
-          <MapArt />
-          {/* top of the map: Spike in his current stage, neutral, breathing */}
-          <div className="pointer-events-none absolute z-[5]" style={{ left: 195 - 88, top: 132 }}>
-            <Spike stage={stage} mood="calm" size={176} />
-          </div>
-          {/* path filled with the module colours */}
-          <svg className="pointer-events-none absolute top-0 left-0" width={390} height={MAP_H} viewBox={`0 0 ${FRAME_W} ${FRAME_H}`} aria-hidden>
-            {MODULE_IDS.map((id) => {
-              const mod = MODULES[id]
-              const a = slotArcs[slotOfModule(id)]
-              const b = slotArcs[slotOfReto(mod.last)]
-              const len = Math.max(0, Math.min(fillArc - a, b - a))
-              return <path key={id} d={PATH_D} fill="none" stroke={mod.color} strokeWidth={86} strokeLinecap="round" strokeDasharray={`${len} ${geo.total}`} strokeDashoffset={-a} style={{ transition: anim ? undefined : 'stroke-dasharray 600ms ease-out' }} />
-            })}
-          </svg>
+        <div style={{ width: '100%', height: TOTAL_MAP_H * scale, position: 'relative', overflow: 'hidden', background: 'linear-gradient(to bottom, #45C1FF 0%, #45C1FF 80%, #FFFFFF 92%, #FFFFFF 100%)' }}>
+          <div
+            ref={layers}
+            className="relative origin-top-left bg-[#45C1FF]"
+            style={{
+              width: 390,
+              height: TOTAL_MAP_H,
+              transform: `scale(${scale})`,
+              '--py': '0px',
+            } as CSSProperties}
+          >
+            <MapArt />
+            {/* top of the map: Spike in his current stage, neutral, breathing */}
+            <div className="pointer-events-none absolute z-[5]" style={{ left: 195 - 88, top: 132 }}>
+              <Spike stage={stage} mood="calm" size={176} />
+            </div>
+            {/* path filled with the module colours */}
+            <svg className="pointer-events-none absolute top-0 left-0" width={390} height={MAP_H} viewBox={`0 0 ${FRAME_W} ${FRAME_H}`} aria-hidden>
+              {MODULE_IDS.map((id) => {
+                const mod = MODULES[id]
+                const a = slotArcs[slotOfModule(id)]
+                const b = slotArcs[slotOfReto(mod.last)]
+                const len = Math.max(0, Math.min(fillArc - a, b - a))
+                return <path key={id} d={PATH_D} fill="none" stroke={mod.color} strokeWidth={86} strokeLinecap="round" strokeDasharray={`${len} ${geo.total}`} strokeDashoffset={-a} style={{ transition: anim ? undefined : 'stroke-dasharray 600ms ease-out' }} />
+              })}
+            </svg>
 
-          {SLOTS.map((slot, i) => {
-            const q = pts[i]
-            if (slot.kind === 'module') {
+            {SLOTS.map((slot, i) => {
+              const q = pts[i]
+              if (slot.kind === 'module') {
+                return (
+                  <div key={`m${slot.id}`} className="absolute z-10" style={{ left: q.x - CX, top: q.y - CY }}>
+                    <ModuleTile id={slot.id} state={moduleState(slot.id, s.done)} onTap={() => dispatch({ type: 'OPEN_MODULE', module: slot.id })} />
+                  </div>
+                )
+              }
+              const n = slot.n
+              const st: TileState = n <= s.done ? 'done' : n === active ? 'active' : 'locked'
               return (
-                <div key={`m${slot.id}`} className="absolute z-10" style={{ left: q.x - CX, top: q.y - CY }}>
-                  <ModuleTile id={slot.id} state={moduleState(slot.id, s.done)} onTap={() => dispatch({ type: 'OPEN_MODULE', module: slot.id })} />
+                <div key={n} className="absolute z-10" style={{ left: q.x - CX, top: q.y - CY }}>
+                  <Tile n={n} state={st} m={moduleOf(n)} shaking={shake === n} onTap={() => tap(n)} />
                 </div>
               )
-            }
-            const n = slot.n
-            const st: TileState = n <= s.done ? 'done' : n === active ? 'active' : 'locked'
-            return (
-              <div key={n} className="absolute z-10" style={{ left: q.x - CX, top: q.y - CY }}>
-                <Tile n={n} state={st} m={moduleOf(n)} shaking={shake === n} onTap={() => tap(n)} />
-              </div>
-            )
-          })}
+            })}
 
-          <FinalZone onTap={() => setToast({ key: Date.now(), text: 'Próximamente: nuevos niveles', icon: 'cloud' })} />
+            {/* Solid white background extending from the cloud base to the bottom edge */}
+            <div
+              className="pointer-events-none absolute inset-x-0 z-[1] bg-white"
+              style={{
+                top: 3650,
+                height: TOTAL_MAP_H - 3650 + 600,
+              }}
+              aria-hidden
+            />
 
-          {!finished && (
-            <div className="pointer-events-none absolute z-20" style={{ left: spikePt.x - SPIKE / 2, top: spikePt.y - CY + 16 - SPIKE - pos.hop }}>
-              <div className={anim ? '' : 'egg-bob'}>
-                <Spike stage={stage} mood="calm" size={SPIKE} animate={false} className="drop-shadow-[0_6px_6px_rgba(0,0,0,.25)]" />
+            {!finished && (
+              <div className="pointer-events-none absolute z-20" style={{ left: spikePt.x - SPIKE / 2, top: spikePt.y - CY + 16 - SPIKE - pos.hop }}>
+                <div className={anim ? '' : 'egg-bob'}>
+                  <Spike stage={stage} mood="calm" size={SPIKE} animate={false} className="drop-shadow-[0_6px_6px_rgba(0,0,0,.25)]" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -249,7 +257,6 @@ export function MapScreen() {
         <div className="pointer-events-auto card-in flex h-14 items-center gap-2 rounded-full bg-white py-1 pr-4 pl-3 shadow-[0_6px_16px_rgba(0,0,0,.14)]" role="status">
           <ModuleBadge id={m.id} size={36} />
           <span className="font-display text-[18px] font-semibold whitespace-nowrap text-ink">{m.name} {doneInModule}/{m.challenges.length}</span>
-          <ConnDot on={s.connected} />
         </div>
         <button
           type="button"
