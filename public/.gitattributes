@@ -1,2 +1,8 @@
-# AgentPlat packages this default favicon directly from source without LFS hydration.
-favicon.png -filter -diff -merge -text
+# Ensure all web image assets in public/ are tracked directly as native Git files without Git LFS hydration issues
+*.png -filter -diff -merge -text
+*.jpg -filter -diff -merge -text
+*.jpeg -filter -diff -merge -text
+*.gif -filter -diff -merge -text
+*.webp -filter -diff -merge -text
+*.ico -filter -diff -merge -text
+*.svg -filter -diff -merge text
