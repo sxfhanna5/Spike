@@ -116,12 +116,60 @@ export function TutorialKid() {
 /* ============================== S7 · Tutorial del padre ============================== */
 
 const ROWS: { icon: React.ReactNode; text: string; tint: string }[] = [
-  { icon: <Icon name="hand" size={26} />, text: 'Tú haces la seña', tint: '#45C1FF' },
-  { icon: <span className="flex gap-0.5">{OPTION_META.map((o) => <Shape key={o.key} kind={o.shape} size={15} color={o.ink} />)}</span>, text: 'Tu hijo adivina con un color', tint: '#FFE44C' },
-  { icon: <span className="font-display text-[26px] leading-none font-bold">?</span>, text: 'Si no te entiende, él te enseña', tint: '#E7B3FF' },
-  { icon: <Icon name="refresh" size={24} />, text: 'Luego cambian: él señala y tú adivinas', tint: '#FFB45E' },
-  { icon: <Icon name="eyeOff" size={24} />, text: 'Cuando señalas, él no mira', tint: '#9AD8FF' },
-  { icon: <Icon name="flame" size={24} />, text: 'El calor del huevo solo sube', tint: '#FF8001' },
+  {
+    icon: <Icon name="hand" size={24} solid color="#FFFFFF" />,
+    text: 'Tú haces la seña',
+    tint: '#45C1FF',
+  },
+  {
+    icon: (
+      <div className="flex items-center justify-center gap-1">
+        {OPTION_META.map((o) => (
+          <Shape key={o.key} kind={o.shape} size={10} color={o.ink} />
+        ))}
+      </div>
+    ),
+    text: 'Tu hijo adivina con un color',
+    tint: '#FFE44C',
+  },
+  {
+    icon: <span className="font-display text-[26px] leading-none font-bold text-white select-none">?</span>,
+    text: 'Si no te entiende, él te enseña',
+    tint: '#E7B3FF',
+  },
+  {
+    icon: <Icon name="refresh" size={22} solid color="#FFFFFF" />,
+    text: 'Luego cambian: él señala y tú adivinas',
+    tint: '#FFB45E',
+  },
+  {
+    icon: (
+      <svg
+        width={22}
+        height={22}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#FFFFFF"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="shrink-0"
+        aria-hidden
+      >
+        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+        <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+        <path d="M3 3l18 18" strokeWidth={2.6} />
+      </svg>
+    ),
+    text: 'Cuando señalas, él no mira',
+    tint: '#9AD8FF',
+  },
+  {
+    icon: <Icon name="flame" size={22} solid color="#FFFFFF" />,
+    text: 'El calor del huevo solo sube',
+    tint: '#FF8001',
+  },
 ]
 
 export function TutorialParent() {
@@ -177,11 +225,8 @@ export function TutorialParent() {
               {ROWS.map((r) => (
                 <li key={r.text} className="flex items-center gap-3.5">
                   <span
-                    className="grid size-11 shrink-0 place-items-center rounded-full shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
-                    style={{
-                      background: r.tint,
-                      color: r.tint === '#FF8001' ? '#fff' : '#4A5A8C',
-                    }}
+                    className="grid size-11 shrink-0 place-items-center rounded-full"
+                    style={{ background: r.tint }}
                   >
                     {r.icon}
                   </span>
