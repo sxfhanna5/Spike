@@ -3,7 +3,7 @@
   "description": "Prototipo interactivo en español para que familias y especialistas recorran y evalúen un juego colaborativo de aprendizaje de LSC y español escrito.",
   "language": "es",
   "icons": {
-    "icon": "/assets/spike-logo-cute.svg"
+    "icon": "/assets/spike-logo-miniatura.svg"
   },
   "robots": {
     "index": false

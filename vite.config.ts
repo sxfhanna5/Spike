@@ -90,8 +90,8 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
 
   const title = config.title ?? "SPIKE"
   const description = config.description ?? ''
-  // Favicon uses spike-logo-cute
-  const favicon = config.icons?.icon ?? '/assets/spike-logo-cute.svg'
+  // Favicon uses spike-logo-miniatura
+  const favicon = config.icons?.icon ?? '/assets/spike-logo-miniatura.svg'
   const socialImage = config.openGraph?.image ?? ''
   const language = sanitizeHtmlValue(config.language) || 'es'
   const googleAnalyticsId = sanitizeHtmlValue(config.analytics?.googleAnalyticsId)

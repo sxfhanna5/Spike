@@ -137,7 +137,7 @@ export default function App() {
     return () => removeEventListener('keydown', fn)
   }, [])
 
-  const isFullOrange = s.screen === 'welcome' || s.screen === 'loader'
+  const isFullOrange = s.screen === 'welcome' || s.screen === 'loader' || s.screen === 'tutorialKid'
   const isSkyScreen = s.screen === 'login' || s.screen === 'register' || s.screen === 'connect'
   const isFullBleed = isFullOrange || isSkyScreen
 

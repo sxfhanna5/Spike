@@ -485,11 +485,11 @@ export function Connect() {
     error: { t: 'No lo encontramos', d: 'Acércalo y vuelve a intentar.' },
   }[state]
 
-  const userName = s.account?.name || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screen') === 'connect' ? 'Hanna' : null)
+  const userName = s.account?.name || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screen') === 'connect' ? 'Sebas' : null)
 
   return (
     <SkyScreen>
-      {/* Top bar: back button + user indicator */}
+      {/* Top bar: back button + user indicator with original profile avatar */}
       <div
         className="absolute right-5 left-5 z-20 flex items-center justify-between"
         style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}
@@ -506,12 +506,7 @@ export function Connect() {
         {userName && (
           <span className="flex items-center rounded-full bg-white/90 py-1.5 pr-4 pl-1.5 font-display text-[16px] font-semibold shadow-[0_3px_8px_rgba(0,0,0,.1)]">
             <span className="mr-2 inline-grid size-8 place-items-center align-middle overflow-hidden">
-              <img
-                src="/assets/spike-logo-miniatura.svg"
-                alt="SPIKE"
-                className="size-7 object-contain"
-                draggable={false}
-              />
+              <ProfileFace size={32} />
             </span>
             {userName}
           </span>
@@ -523,11 +518,11 @@ export function Connect() {
         className="relative z-10 flex h-full w-full overflow-y-auto px-5 no-scrollbar"
         style={{
           paddingTop: 'calc(4.75rem + env(safe-area-inset-top, 0px))',
-          paddingBottom: 'calc(3rem + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
         <div className="my-auto mx-auto flex w-full max-w-[340px] flex-col items-center">
-          <BigEgg state={state} size={225} />
+          <BigEgg state={state} size={265} />
           <div className="card mt-4 flex w-full flex-col items-center gap-1.5 px-6 pt-5 pb-6 text-center" aria-live="polite">
             <h1 className="font-display text-[28px] leading-8 font-semibold text-ink">{copy.t}</h1>
             <p className="min-h-6 text-center font-sans text-[16px] leading-6 font-semibold text-ink2">{copy.d}</p>
@@ -545,8 +540,9 @@ export function Connect() {
                 </div>
               )}
               {state === 'connected' && (
-                <div className="pop flex h-[60px] items-center justify-center gap-2 rounded-full bg-[#E5F8D8] font-display text-[20px] font-semibold text-[#369C00]">
-                  <Icon name="check" size={24} /> Listo
+                <div className="pop flex h-[60px] w-full items-center justify-center gap-2 rounded-full bg-[#369C00] font-display text-[20px] font-bold text-white shadow-[0_4px_14px_rgba(54,156,0,0.35)]">
+                  <Icon name="check" size={24} solid color="#FFFFFF" />
+                  <span>Listo</span>
                 </div>
               )}
               {state === 'error' && <Btn icon="refresh" onClick={start}>Reintentar</Btn>}
