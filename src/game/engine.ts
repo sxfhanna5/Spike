@@ -139,7 +139,7 @@ export function loadState(): GameState {
   const base = initialState()
   try {
     const param = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('screen') : null
-    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'tutorialKid', 'tutorialParent'].includes(param)) ? (param as Screen) : 'loader'
+    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent'].includes(param)) ? (param as Screen) : 'loader'
     const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return { ...base, screen: initialScreen, connected: paramConnected }

@@ -26,17 +26,30 @@ function Card({ title, right, children }: { title: string; right?: ReactNode; ch
 
 /* ============================== S23 · Progreso ============================== */
 
-type SectionId = 'growth' | 'modules' | 'stats'
+type SectionId = 'modules' | 'stats'
 
-/** Collapsible card: coloured icon badge, title and a filled chevron. Only one is open at a time. */
-function Accordion({ id, open, onToggle, icon, color, accent, title, children }: { id: SectionId; open: boolean; onToggle: (id: SectionId) => void; icon: IconName; color: string; accent: string; title: string; children: ReactNode }) {
+/** Collapsible card: flat circle icon, title and 3D navigation-style chevron button. */
+function Accordion({ id, open, onToggle, icon, color, title, children }: { id: SectionId; open: boolean; onToggle: () => void; icon: IconName; color: string; title: string; children: ReactNode }) {
   return (
     <section className="card overflow-hidden">
-      <button type="button" aria-expanded={open} aria-controls={`acc-${id}`} onClick={() => onToggle(id)} className="flex min-h-[64px] w-full items-center gap-3 px-4 py-2 text-left">
-        <Badge icon={icon} color={color} accent={accent} size={40} />
+      <button type="button" aria-expanded={open} aria-controls={`acc-${id}`} onClick={onToggle} className="flex min-h-[64px] w-full items-center gap-3 px-4 py-2 text-left cursor-pointer">
+        <span
+          className="grid size-11 shrink-0 place-items-center rounded-full text-white"
+          style={{ background: color }}
+        >
+          <Icon name={icon} size={24} solid color="#FFFFFF" />
+        </span>
         <h2 className="flex-1 font-display text-[22px] leading-7 font-semibold text-ink">{title}</h2>
-        <span className="grid size-9 place-items-center rounded-full bg-[#FFF1DD] transition-transform duration-300 ease-[cubic-bezier(.3,1.5,.5,1)]" style={{ transform: open ? 'rotate(180deg)' : undefined }}>
-          <Icon name="chevronDown" size={22} color="#FF8001" />
+        <span
+          className="btn3d grid size-10 shrink-0 place-items-center rounded-full"
+          style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 40 } as CSSProperties}
+        >
+          <span
+            className="grid place-items-center transition-transform duration-300 ease-[cubic-bezier(.3,1.5,.5,1)]"
+            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          >
+            <Icon name="chevronDown" size={20} solid color="#FF8001" />
+          </span>
         </span>
       </button>
       <div id={`acc-${id}`} className="grid transition-[grid-template-rows,opacity] duration-[380ms] ease-[cubic-bezier(.3,1.1,.5,1)]" style={{ gridTemplateRows: open ? '1fr' : '0fr', opacity: open ? 1 : 0 }}>
@@ -123,18 +136,23 @@ function Stats() {
   const mins = Math.floor(s.playSeconds / 60)
   const { nino, papa } = s.taught
   const total = nino + papa
-  const cells: { icon: IconName; color: string; accent: string; value: number; suffix?: string; label: string }[] = [
-    { icon: 'trophy', color: '#FF8001', accent: '#FF4F1A', value: s.done, label: 'Retos completados' },
-    { icon: 'star', color: '#FFC800', accent: '#C99700', value: first, suffix: '%', label: 'Al primer intento' },
-    { icon: 'clock', color: '#45C1FF', accent: '#007BB9', value: mins, suffix: ' min', label: 'Tiempo jugado' },
-    { icon: 'calendar', color: '#73D83A', accent: '#369C00', value: s.days.length, label: 'Días jugados' },
+  const cells: { icon: IconName; color: string; value: number; suffix?: string; label: string }[] = [
+    { icon: 'trophy', color: '#FF8001', value: s.done, label: 'Retos completados' },
+    { icon: 'star', color: '#FFC800', value: first, suffix: '%', label: 'Al primer intento' },
+    { icon: 'clock', color: '#45C1FF', value: mins, suffix: ' min', label: 'Tiempo jugado' },
+    { icon: 'calendar', color: '#73D83A', value: s.days.length, label: 'Días jugados' },
   ]
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
         {cells.map((c) => (
           <div key={c.label} className="card-in flex items-center gap-2.5 rounded-[20px] bg-[#F6F8FD] p-2.5">
-            <Badge icon={c.icon} color={c.color} accent={c.accent} size={34} />
+            <span
+              className="grid size-[38px] shrink-0 place-items-center rounded-full text-white"
+              style={{ background: c.color }}
+            >
+              <Icon name={c.icon} size={22} solid color="#FFFFFF" />
+            </span>
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="font-display text-[22px] leading-6 font-bold text-ink"><CountUp value={c.value} suffix={c.suffix} /></span>
               <span className="font-sans text-[14px] leading-4 font-bold text-ink2">{c.label}</span>
@@ -167,14 +185,14 @@ function Stats() {
 
 export function Album() {
   const { s } = useGame()
-  const [open, setOpen] = useState<SectionId>('growth')
+  const [openModules, setOpenModules] = useState(false)
+  const [openStats, setOpenStats] = useState(false)
   const stage = stageOf(s.done)
-  const toggle = (id: SectionId) => setOpen((cur) => (cur === id ? cur : id))
   return (
     <Screen bg="#BCEDFF">
       <SkyHills />
-      <div className="no-scrollbar absolute inset-0 overflow-y-auto px-5 pt-5 pb-[120px]">
-        <h1 className="mb-3 px-1 font-display text-[34px] leading-10 font-bold text-white drop-shadow-[0_3px_0_rgba(0,123,185,.5)]">Progreso</h1>
+      <div className="no-scrollbar absolute inset-0 overflow-y-auto px-5 pt-8 sm:pt-9 pb-[120px]">
+        <h1 className="mb-4 px-1 font-display text-[34px] leading-10 font-bold text-white drop-shadow-[0_3px_0_rgba(0,123,185,.5)]">Progreso</h1>
         {/* always visible: Spike in his current stage and the overall bar */}
         <section className="card mb-3 flex items-center gap-3 p-4">
           <span className="relative grid size-[104px] shrink-0 place-items-center rounded-[24px]" style={{ background: MODULES[stage].soft }}>
@@ -188,9 +206,43 @@ export function Album() {
           </div>
         </section>
         <div className="flex flex-col gap-3">
-          <Accordion id="growth" open={open === 'growth'} onToggle={toggle} icon="growth" color="#73D83A" accent="#369C00" title="Crecimiento"><Growth /></Accordion>
-          <Accordion id="modules" open={open === 'modules'} onToggle={toggle} icon="book" color="#E7B3FF" accent="#D06BFF" title="Mis módulos"><Modules /></Accordion>
-          <Accordion id="stats" open={open === 'stats'} onToggle={toggle} icon="chart" color="#45C1FF" accent="#007BB9" title="Estadísticas"><Stats /></Accordion>
+          {/* Crecimiento: Estático, sin flecha de despliegue */}
+          <section className="card p-4 overflow-hidden">
+            <div className="flex items-center gap-3 mb-3">
+              <span
+                className="grid size-11 shrink-0 place-items-center rounded-full text-white"
+                style={{ background: '#73D83A' }}
+              >
+                <Icon name="growth" size={24} solid color="#FFFFFF" />
+              </span>
+              <h2 className="font-display text-[22px] leading-7 font-semibold text-ink">Crecimiento</h2>
+            </div>
+            <Growth />
+          </section>
+
+          {/* Mis módulos: Desplegable con animación y flecha que abre y cierra */}
+          <Accordion
+            id="modules"
+            open={openModules}
+            onToggle={() => setOpenModules((prev) => !prev)}
+            icon="book"
+            color="#E7B3FF"
+            title="Mis módulos"
+          >
+            <Modules />
+          </Accordion>
+
+          {/* Estadísticas: Desplegable con animación y flecha que abre y cierra */}
+          <Accordion
+            id="stats"
+            open={openStats}
+            onToggle={() => setOpenStats((prev) => !prev)}
+            icon="chart"
+            color="#45C1FF"
+            title="Estadísticas"
+          >
+            <Stats />
+          </Accordion>
         </div>
       </div>
       <NavBar />

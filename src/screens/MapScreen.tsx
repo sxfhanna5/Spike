@@ -19,11 +19,12 @@ const TILE_H = 143.571 * TILE_SCALE
 
 export const moduleState = (id: ModuleId, done: number): TileState => (done >= MODULES[id].last ? 'done' : done >= MODULES[id].first - 1 ? 'active' : 'locked')
 
-/** One reto: 3D disc. Locked = grey + lock · active = white with the module colour and its number · done = module colour + check. */
+/** One reto: 3D disc. Locked = grey + lock · active and done = purple disc matching the "Aa" module button + centered flat white star. */
 function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m: ModuleDef; shaking: boolean; onTap: () => void }) {
-  const top = state === 'locked' ? '#D9DEE7' : state === 'active' ? '#FFFFFF' : m.color
-  const side = state === 'locked' ? '#9AA5B1' : m.accent
-  const ring = state === 'active' ? m.color : '#FFFFFF'
+  const isLocked = state === 'locked'
+  const top = isLocked ? '#D9DEE7' : '#E7B3FF'
+  const side = isLocked ? '#9AA5B1' : '#D06BFF'
+  const ring = '#FFFFFF'
   const label = `Reto ${n - m.first + 1} de ${m.challenges.length}, ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'siguiente' : 'completado'}`
   return (
     <button type="button" onClick={onTap} aria-label={label} className={`relative block ${shaking ? 'shake' : ''}`} style={{ width: TILE_W, height: TILE_H }}>
@@ -31,10 +32,16 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
         <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill={side} />
         <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill={top} />
         <ellipse cx="66" cy="58.286" rx="61" ry="53.3" fill="none" stroke={ring} strokeWidth="10" />
-        {state === 'active' && <text x="66" y="76" textAnchor="middle" fontFamily="Fredoka" fontWeight="700" fontSize="46" fill={m.accent}>{n - m.first + 1}</text>}
       </svg>
-      {state === 'locked' && <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 13, top: CY - 13, width: 26, height: 26 }}><Icon name="lock" size={24} color="#FFFFFF" solid /></span>}
-      {state === 'done' && <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 14, top: CY - 14, width: 28, height: 28 }}><Icon name="check" size={28} color="#fff" /></span>}
+      {isLocked ? (
+        <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 13, top: CY - 13, width: 26, height: 26 }}>
+          <Icon name="lock" size={24} color="#FFFFFF" solid />
+        </span>
+      ) : (
+        <span className="pointer-events-none absolute grid place-items-center" style={{ left: CX - 14, top: CY - 14, width: 28, height: 28 }}>
+          <Icon name="star" size={26} color="#FFFFFF" solid />
+        </span>
+      )}
     </button>
   )
 }
