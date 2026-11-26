@@ -78,6 +78,8 @@ export interface GameState {
   write: { stage: 'sign' | 'write'; typed: string[]; letter: number }
   log: LogRow[]
   fx: Fx
+  tutorialMode?: 'initial' | 'standalone'
+  tutorialReturnScreen?: Screen
 }
 
 export type Action =
@@ -88,7 +90,13 @@ export type Action =
   | { type: 'SET_AUTH_ERROR'; error: string | null }
   | { type: 'SET_PASSWORD'; password: string } | { type: 'CLEAR_AUTH_ERROR' }
   | { type: 'CONNECT_START' } | { type: 'CONNECT_FAIL' } | { type: 'EGG_CONNECTION'; connected: boolean } | { type: 'CONNECT_NEXT' }
-  | { type: 'OVERLAY'; overlay: Overlay } | { type: 'TUTORIAL_KID_DONE' } | { type: 'TUTORIAL_PARENT_DONE' }
+  | { type: 'OVERLAY'; overlay: Overlay }
+  | { type: 'TUTORIAL_START_INITIAL' }
+  | { type: 'TUTORIAL_START_STANDALONE'; kind: 'kid' | 'parent'; returnScreen?: Screen }
+  | { type: 'TUTORIAL_KID_NEXT' }
+  | { type: 'TUTORIAL_SKIP' }
+  | { type: 'TUTORIAL_KID_DONE' }
+  | { type: 'TUTORIAL_PARENT_DONE' }
   | { type: 'OPEN_RETO'; casilla: number } | { type: 'OPEN_MODULE'; module: ModuleId } | { type: 'PLAY' } | { type: 'RESTART' } | { type: 'EXIT_TO_MAP' }
   | { type: 'MAP_ANIM_DONE' } | { type: 'HATCH_CONTINUE' } | { type: 'PLAY_CASILLA'; casilla: number } | { type: 'TICK'; seconds: number }
   | { type: 'SIGN_DONE' } | { type: 'INTRO_DONE' } | { type: 'COLOR'; index: number } | { type: 'HELP' } | { type: 'CHECK' }
@@ -161,8 +169,10 @@ export function loadState(): GameState {
       : null
     const paramCasilla = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('casilla') || '1', 10) : 1
     const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
+    const paramTutorialMode = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('mode') as 'initial' | 'standalone' | null) : null
+    const initialTutorialMode = paramTutorialMode ?? (param === 'tutorialKid' || param === 'tutorialParent' ? 'initial' : undefined)
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, overlay: initialOverlay, selectedCasilla: paramCasilla, casilla: paramCasilla, idx: Math.max(0, paramCasilla - 1) }
+    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, overlay: initialOverlay, selectedCasilla: paramCasilla, casilla: paramCasilla, idx: Math.max(0, paramCasilla - 1) }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
     return {
@@ -171,6 +181,7 @@ export function loadState(): GameState {
       done,
       heat: heatFor(done),
       screen: initialScreen,
+      tutorialMode: initialTutorialMode ?? saved.tutorialMode,
       overlay: initialOverlay,
       connected: paramConnected,
       intro: initialIntro,
@@ -213,9 +224,9 @@ export const interpreter = (r: Round): Person => ROUND_INFO[r].guesser
 export const signer = (r: Round): Person => ROUND_INFO[r].signer
 export const inApp = (s: GameState) => !ENTRY_SCREENS.includes(s.screen)
 export const isPlay = (s: GameState) => PLAY_SCREENS.includes(s.screen)
-/** Paused = exit sheet open, or the egg is disconnected inside the app. */
-export const isPaused = (s: GameState) => s.overlay === 'exit' || (!s.connected && inApp(s))
-export const disconnectedSheet = (s: GameState) => !s.connected && inApp(s)
+/** Paused = exit sheet open, or the egg is disconnected during an active reto. */
+export const isPaused = (s: GameState) => s.overlay === 'exit' || (!s.connected && isPlay(s))
+export const disconnectedSheet = (s: GameState) => !s.connected && isPlay(s) && s.link !== 'searching'
 const uniq = (a: string[], x: string) => (a.includes(x) ? a : [...a, x])
 
 const addLog = (s: GameState, actor: Person, action: string, ok: LogRow['correcto'] = '—'): GameState => ({
@@ -329,7 +340,7 @@ export const boxControls = (s: GameState) => {
   return { colors, help, owner, colorIndexes }
 }
 
-const afterConnect = (s: GameState): GameState => ({ ...s, screen: s.tutorialDone ? 'map' : 'tutorialKid', link: 'idle', facing: 'nino' })
+const afterConnect = (s: GameState): GameState => ({ ...s, screen: 'map', link: 'idle', facing: 'nino' })
 
 /* ============================== reducer ============================== */
 
@@ -346,10 +357,27 @@ export function reducer(s: GameState, a: Action): GameState {
       const acc = s.account
       if (acc && acc.password && (acc.email.toLowerCase() !== a.email.toLowerCase() || acc.password !== a.password)) return { ...s, authError: 'Ese correo o contraseña no coincide' }
       const account: Account = acc ?? { name: a.email.split('@')[0], email: a.email }
-      return { ...s, account, session: true, authError: null, screen: 'connect' }
+      return {
+        ...s,
+        account,
+        session: true,
+        authError: null,
+        screen: 'tutorialKid',
+        tutorialMode: 'initial',
+        tutorialReturnScreen: undefined,
+      }
     }
     case 'REGISTER':
-      return { ...s, account: a.account, session: true, authError: null, screen: 'connect', tutorialDone: false }
+      return {
+        ...s,
+        account: a.account,
+        session: true,
+        authError: null,
+        screen: 'tutorialKid',
+        tutorialMode: 'initial',
+        tutorialReturnScreen: undefined,
+        tutorialDone: false,
+      }
     case 'SET_ACCOUNT':
       return { ...s, account: a.account, session: a.session, authError: null }
     case 'LOAD_PROGRESS': {
@@ -376,10 +404,37 @@ export function reducer(s: GameState, a: Action): GameState {
 
     case 'OVERLAY':
       return { ...s, overlay: a.overlay }
+    case 'TUTORIAL_START_INITIAL':
+      return { ...s, screen: 'tutorialKid', tutorialMode: 'initial', tutorialReturnScreen: undefined, overlay: null }
+    case 'TUTORIAL_START_STANDALONE':
+      return {
+        ...s,
+        screen: a.kind === 'kid' ? 'tutorialKid' : 'tutorialParent',
+        tutorialMode: 'standalone',
+        tutorialReturnScreen: a.returnScreen ?? s.screen,
+        overlay: null,
+      }
+    case 'TUTORIAL_KID_NEXT':
+      return { ...s, screen: 'tutorialParent', tutorialMode: 'initial' }
+    case 'TUTORIAL_SKIP':
+      return { ...s, tutorialDone: true, tutorialMode: undefined, tutorialReturnScreen: undefined, screen: 'connect', overlay: null }
     case 'TUTORIAL_KID_DONE':
-      return s.tutorialDone ? { ...s, screen: 'map', overlay: null } : { ...s, screen: 'tutorialParent' }
+      return {
+        ...s,
+        screen: s.tutorialMode === 'standalone' ? (s.tutorialReturnScreen ?? 'map') : 'tutorialParent',
+        tutorialMode: s.tutorialMode === 'standalone' ? undefined : s.tutorialMode,
+        tutorialReturnScreen: s.tutorialMode === 'standalone' ? undefined : s.tutorialReturnScreen,
+        overlay: null,
+      }
     case 'TUTORIAL_PARENT_DONE':
-      return { ...s, screen: 'map', tutorialDone: true, overlay: null }
+      return {
+        ...s,
+        screen: s.tutorialMode === 'initial' ? 'connect' : (s.tutorialReturnScreen ?? 'map'),
+        tutorialDone: true,
+        tutorialMode: undefined,
+        tutorialReturnScreen: undefined,
+        overlay: null,
+      }
 
     case 'OPEN_RETO':
       return { ...s, overlay: 'reto', selectedCasilla: a.casilla }

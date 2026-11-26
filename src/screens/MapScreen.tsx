@@ -108,7 +108,7 @@ export function MapScreen() {
   const geo = useMemo(() => getGeometry(), [])
   const scroller = useRef<HTMLDivElement>(null)
   const layers = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(1)
+  const [scale, setScale] = useState(() => (typeof window !== 'undefined' ? Math.min(window.innerWidth, 440) / 390 : 1))
   const active = Math.min(TOTAL_CASILLAS, s.done + 1)
   const finished = s.done >= TOTAL_CASILLAS
   const anim = s.mapAnim
@@ -167,7 +167,17 @@ export function MapScreen() {
       if (scrollRaf.current) cancelAnimationFrame(scrollRaf.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [scale])
+
+  useEffect(() => {
+    // Settle scroll in mobile browsers after viewport/font metrics resolve
+    const timer = window.setTimeout(() => {
+      scrollToArc(slotArcs[slotOfReto(anim ? anim.from : active)], false)
+      onScroll()
+    }, 60)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active])
 
   // After a reto: Spike hops from casilla to casilla (also over a module casilla) and the path fills with the module colour.
   useEffect(() => {
@@ -224,8 +234,14 @@ export function MapScreen() {
   const SPIKE = stage === 1 ? 54 : 70
 
   return (
-    <Screen bg="#45C1FF">
-      <div ref={scroller} onScroll={onScroll} className="no-scrollbar absolute inset-0 overflow-x-hidden overflow-y-auto" aria-label="Mapa de niveles">
+    <Screen bg="#45C1FF" className="animate-none">
+      <div
+        ref={scroller}
+        onScroll={onScroll}
+        className="no-scrollbar absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y"
+        style={{ WebkitOverflowScrolling: 'touch' } as CSSProperties}
+        aria-label="Mapa de niveles"
+      >
         <div style={{ width: '100%', height: TOTAL_MAP_H * scale, position: 'relative', overflow: 'hidden', background: 'linear-gradient(to bottom, #45C1FF 0%, #45C1FF 80%, #FFFFFF 92%, #FFFFFF 100%)' }}>
           <div
             ref={layers}

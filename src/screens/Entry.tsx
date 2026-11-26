@@ -199,7 +199,7 @@ export function Login() {
           account: { id: data.user.id, name, email: data.user.email || '' },
           session: true,
         })
-        dispatch({ type: 'GOTO', screen: 'connect' })
+        dispatch({ type: 'TUTORIAL_START_INITIAL' })
       }
     } else {
       dispatch({ type: 'LOGIN', email: email.trim(), password: pass })
@@ -336,7 +336,7 @@ export function Register() {
           account: { id: data.user.id, name: name.trim(), email: data.user.email || '' },
           session: true,
         })
-        dispatch({ type: 'GOTO', screen: 'connect' })
+        dispatch({ type: 'TUTORIAL_START_INITIAL' })
       }
     } else {
       dispatch({ type: 'REGISTER', account: { name: name.trim(), email: email.trim(), password: pass } })

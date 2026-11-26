@@ -9,14 +9,13 @@ import { BigEgg, useConnectFlow } from './Entry'
 
 /** «?» on the map: two big cards. */
 export function TutorialsSheet() {
-  const { dispatch } = useGame()
+  const { s, dispatch } = useGame()
   const close = () => dispatch({ type: 'OVERLAY', overlay: null })
-  const card = (who: 'nino' | 'papa', title: string, screen: 'tutorialKid' | 'tutorialParent', icon: 'play' | 'hand') => (
+  const card = (who: 'nino' | 'papa', title: string, kind: 'kid' | 'parent', icon: 'play' | 'hand') => (
     <button
       type="button"
       onClick={() => {
-        dispatch({ type: 'OVERLAY', overlay: null })
-        dispatch({ type: 'GOTO', screen })
+        dispatch({ type: 'TUTORIAL_START_STANDALONE', kind, returnScreen: s.screen })
       }}
       className="btn3d relative flex h-[132px] w-full items-center gap-4 overflow-hidden rounded-[28px] px-5 text-left cursor-pointer"
       style={{ '--bg': ROLE_COLOR[who], '--edge': who === 'nino' ? '#FF4F1A' : '#007BB9', '--fg': '#fff', minHeight: 132 } as React.CSSProperties}
@@ -32,8 +31,8 @@ export function TutorialsSheet() {
     <Sheet onClose={close} label="Tutoriales">
       <h2 className="mb-4 font-display text-[22px] leading-7 font-medium">Tutoriales</h2>
       <div className="flex flex-col gap-4">
-        {card('nino', 'Tutorial del niño', 'tutorialKid', 'play')}
-        {card('papa', 'Tutorial del padre', 'tutorialParent', 'hand')}
+        {card('nino', 'Tutorial del niño', 'kid', 'play')}
+        {card('papa', 'Tutorial del padre', 'parent', 'hand')}
       </div>
     </Sheet>
   )

@@ -43,6 +43,41 @@ export function Btn({ children, onClick, variant = 'primary', icon, disabled, cl
   )
 }
 
+/** Canonical primary action button: unified "Listo" or "Saltar tutorial". */
+export function PrimaryActionButton({
+  label = 'Listo',
+  icon = 'check',
+  onClick,
+  disabled,
+  className = '',
+}: {
+  label?: string
+  icon?: IconName | null
+  onClick?: () => void
+  disabled?: boolean
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`btn3d mx-auto flex h-[58px] sm:h-[62px] w-full max-w-[280px] sm:max-w-[300px] items-center justify-center gap-3 rounded-full font-bold cursor-pointer select-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      style={{
+        '--bg': '#FF8001',
+        '--edge': '#FF4F1A',
+        '--fg': '#FFFFFF',
+        '--ts': '0 2px 0 rgb(255 79 26 / .4)',
+        fontSize: 22,
+        fontWeight: 700,
+      } as CSSProperties}
+    >
+      {icon && <Icon name={icon} size={24} solid color="#FFFFFF" />}
+      <span>{label}</span>
+    </button>
+  )
+}
+
 /** White dock that lets an orange button stand out on an orange scene. */
 export function Dock({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`card-in rounded-full bg-white p-2 shadow-[0_8px_20px_rgba(0,0,0,.14)] ${className}`}>{children}</div>
@@ -226,7 +261,7 @@ export function Spike({ stage = 5, mood = 'calm', size = 160, locked, className 
 /* ============================== avatars ============================== */
 
 /** Round parent / child icons with solid circular backgrounds (blue for father, orange for child). */
-export function Avatar({ who, size = 56, cap, question, halo, className = '' }: { who: Person; size?: number; cap?: boolean; question?: boolean; halo?: boolean; className?: string }) {
+export function Avatar({ who, size = 56, cap, question, halo, className = '', bg }: { who: Person; size?: number; cap?: boolean; question?: boolean; halo?: boolean; className?: string; bg?: string }) {
   const isPapa = who === 'papa'
   return (
     <span
@@ -235,8 +270,11 @@ export function Avatar({ who, size = 56, cap, question, halo, className = '' }: 
       aria-label={isPapa ? 'Padre' : 'Niño'}
     >
       <span
-        className={`absolute inset-0 overflow-hidden rounded-full flex items-end justify-center ${isPapa ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'}`}
-        style={halo ? { filter: 'drop-shadow(0 6px 8px rgba(74,90,140,.22))' } : undefined}
+        className={`absolute inset-0 overflow-hidden rounded-full flex items-end justify-center ${bg ? '' : isPapa ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'}`}
+        style={{
+          ...(bg ? { background: bg } : {}),
+          ...(halo ? { filter: 'drop-shadow(0 6px 8px rgba(74,90,140,.22))' } : {}),
+        }}
       >
         {isPapa ? (
           <img
@@ -283,17 +321,21 @@ export function ModuleBadge({ id, size = 52 }: { id: ModuleId; size?: number }) 
 /** Canonical instruction capsule: who signs → who guesses (Figma 659:2283). */
 export function InstructionStrip({ round, className = '' }: { round: Round; className?: string }) {
   const r = ROUND_INFO[round]
+  const isDirecta = round === 'directa'
+  const signerBg = isDirecta ? '#FF8001' : '#FFC700'
+  const guesserBg = isDirecta ? '#FFC700' : '#45C1FF'
+  const handColor = '#FF8001'
   return (
     <div
-      className={`inline-flex items-center gap-2 sm:gap-2.5 rounded-full bg-white px-3.5 sm:px-4 h-[46px] sm:h-[48px] shadow-[0_4px_14px_rgba(0,0,0,0.08)] select-none shrink-0 ${className}`}
+      className={`inline-flex items-center gap-1.5 sm:gap-2.5 rounded-full bg-white px-3 sm:px-4 h-[44px] sm:h-[48px] shadow-[0_4px_14px_rgba(0,0,0,0.08)] select-none shrink-0 max-w-[95%] sm:max-w-none ${className}`}
     >
-      <div className="flex items-center gap-1.5 shrink-0">
-        <Avatar who={r.signer} size={28} />
-        <Icon name="hand" size={18} color="#FF8001" solid />
-        <Icon name="arrowRight" size={14} color="#4A5A8C" />
-        <Avatar who={r.guesser} size={28} />
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        <Avatar who={r.signer} size={26} bg={signerBg} />
+        <Icon name="hand" size={17} color={handColor} solid />
+        <Icon name="arrowRight" size={13} color="#4A5A8C" />
+        <Avatar who={r.guesser} size={26} bg={guesserBg} />
       </div>
-      <span className="font-sans font-bold text-[13px] sm:text-[14px] text-[#4A5A8C] whitespace-nowrap pl-0.5">
+      <span className="font-sans font-bold text-[12px] sm:text-[13.5px] text-[#4A5A8C] whitespace-nowrap pl-0.5">
         {r.short.replace(' · ', ' - ')}
       </span>
     </div>

@@ -6,7 +6,7 @@ import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Btn, Dock, GameHeader, ModuleBadge, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
+import { Avatar, Btn, Dock, GameHeader, ModuleBadge, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, hasPictogram } from '../components/glyphs'
 import { ContentBig, HelpButton, OptionCard } from './Play'
 
@@ -88,7 +88,7 @@ export function MasterScreen() {
               {mode === 'write' ? 'Letra por letra, despacio' : 'Repítela despacio'}
             </p>
           )}
-          <div className="absolute top-[664px] inset-x-5 mx-auto max-w-[350px]"><Btn icon="check" onClick={() => dispatch({ type: 'TEACHER_NEXT' })}>Listo</Btn></div>
+          <div className="absolute top-[664px] inset-x-5 mx-auto max-w-[300px]"><PrimaryActionButton onClick={() => dispatch({ type: 'TEACHER_NEXT' })} /></div>
         </>
       ) : mode === 'write' ? (
         <div className="absolute top-[372px] inset-x-5 mx-auto max-w-[350px]"><WriteBoard compact /></div>
@@ -98,7 +98,7 @@ export function MasterScreen() {
           <div className="absolute top-[428px] inset-x-5 mx-auto flex max-w-[350px] flex-col gap-3">
             {two.map((k) => <OptionCard key={k} index={k} c={c} compact onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })} />)}
           </div>
-          <div className="absolute top-[640px] left-0 flex w-full justify-center"><HelpButton label={picker === 'papa' ? 'Otra vez' : ''} /></div>
+          <div className="absolute top-[640px] left-0 flex w-full justify-center"><HelpButton /></div>
         </>
       )}
     </Screen>
@@ -132,7 +132,7 @@ function WriteBoard({ compact }: { compact?: boolean }) {
             ))}
             <button type="button" aria-label="Borrar" onClick={() => dispatch({ type: 'ERASE' })} className="btn3d grid h-[46px] w-[46px] place-items-center rounded-[14px]" style={{ '--bg': '#fff', '--edge': '#D9DEE7', '--fg': '#4A5A8C', minHeight: 46, padding: 0 } as React.CSSProperties}><Icon name="backspace" size={26} color="#FF8001" /></button>
           </div>
-          <div className="mt-4"><HelpButton label={who === 'nino' ? '' : 'No entendí'} /></div>
+          <div className="mt-4"><HelpButton /></div>
         </>
       ) : (
         <div className="flex h-[200px] items-center justify-center"><div className="rounded-full bg-[#4A5A8C]/35 px-8"><span className="flex h-[60px] items-center gap-2">{[0, 1, 2].map((k) => <span key={k} className="dot-bounce size-3.5 rounded-full bg-white" style={{ animationDelay: `${k * 140}ms` }} />)}</span></div></div>
@@ -245,23 +245,7 @@ export function WriteScreen() {
 
         {/* Bottom Listo button */}
         <div className="w-full flex items-center justify-center pb-5 sm:pb-7 z-20 px-4">
-          {(() => {
-            const btn = (
-              <button
-                type="button"
-                onClick={() => dispatch({ type: 'SIGN_DONE' })}
-                className="btn3d inline-flex min-h-[58px] sm:min-h-[62px] w-[220px] sm:w-[240px] items-center justify-center gap-3 rounded-full font-bold cursor-pointer"
-                style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 22, fontWeight: 700 } as React.CSSProperties}
-              >
-                <Icon name="check" size={26} solid color="#FFFFFF" /> <span>Listo</span>
-              </button>
-            )
-            return papa ? btn : (
-              <div className="inline-flex items-center justify-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
-                {btn}
-              </div>
-            )
-          })()}
+          <PrimaryActionButton onClick={() => dispatch({ type: 'SIGN_DONE' })} />
         </div>
       </Screen>
     )

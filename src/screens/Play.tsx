@@ -7,7 +7,7 @@ import { CloudsOrange } from '../art/CloudsOrange'
 import { GoodScene } from '../art/GoodScene'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Dock, GameHeader, InstructionStrip, ModuleBadge, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
+import { Avatar, Dock, GameHeader, InstructionStrip, ModuleBadge, PrimaryActionButton, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 
 /* ============================== shared pieces ============================== */
@@ -77,8 +77,8 @@ export function OptionCard({ index, c, selected, dim, onClick, compact }: { inde
 }
 const NUMBER_DIGIT: Record<string, number> = { UNO: 1, DOS: 2, TRES: 3, CUATRO: 4, CINCO: 5, SEIS: 6, SIETE: 7, OCHO: 8, NUEVE: 9, DIEZ: 10 }
 
-/** The «?» button of the box, also on screen. Without label (child's turn) it is just the symbol. */
-export function HelpButton({ label = 'No entendí' }: { label?: string }) {
+/** The «No entendí» capsule button, unified across child and father turns. */
+export function HelpButton({ className = '' }: { className?: string }) {
   const { s, dispatch } = useGame()
   const live = boxControls(s).help
   return (
@@ -86,12 +86,15 @@ export function HelpButton({ label = 'No entendí' }: { label?: string }) {
       type="button"
       disabled={!live}
       onClick={() => dispatch({ type: 'HELP' })}
-      aria-label={`? ${label || 'No entendí'}`}
-      className={`btn3d mx-auto inline-flex min-h-[60px] items-center gap-3 rounded-full py-1 pl-1.5 ${label ? 'pr-7' : 'pr-1.5'} ${live ? '' : 'opacity-50'}`}
-      style={{ '--bg': '#fff', '--edge': '#D9DEE7', '--fg': '#4A5A8C' } as React.CSSProperties}
+      aria-label="No entendí"
+      className={`mx-auto inline-flex h-[54px] sm:h-[58px] items-center gap-3 rounded-full bg-white pl-2 pr-6 shadow-[0_4px_16px_rgba(74,90,140,0.14)] border border-[#E8ECF4] transition-all active:scale-[0.98] cursor-pointer select-none ${live ? '' : 'opacity-50'} ${className}`}
     >
-      <span className="grid size-12 place-items-center rounded-full bg-[#65739F] font-display text-[32px] leading-none font-bold text-white shadow-[0_4px_0_#4A5A8C]">?</span>
-      {label}
+      <span className="grid size-10 sm:size-11 place-items-center rounded-full bg-[#65739F] font-display text-[26px] sm:text-[28px] leading-none font-bold text-white shadow-[0_2px_0_#4A5A8C]">
+        ?
+      </span>
+      <span className="font-sans text-[17px] sm:text-[18px] font-bold text-[#4A5A8C]">
+        No entendí
+      </span>
     </button>
   )
 }
@@ -104,20 +107,11 @@ function Thinking() {
   )
 }
 
-/** Listo button: always orange. On orange scenes it sits on a white dock so it still reads. */
+/** Listo button: uses the canonical PrimaryActionButton shared across the app. */
 function ListoBtn({ onClick, onOrange }: { onClick: () => void; onOrange?: boolean }) {
-  const btn = (
-    <button
-      type="button"
-      onClick={onClick}
-      className="btn3d inline-flex min-h-[58px] sm:min-h-[62px] w-[220px] sm:w-[240px] items-center justify-center gap-3 rounded-full font-bold cursor-pointer"
-      style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 22, fontWeight: 700 } as React.CSSProperties}
-    >
-      <Icon name="check" size={26} solid color="#FFFFFF" /> <span>Listo</span>
-    </button>
-  )
+  const btn = <PrimaryActionButton onClick={onClick} />
   return onOrange ? (
-    <div className="inline-flex items-center justify-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
+    <div className="mx-auto inline-flex items-center justify-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
       {btn}
     </div>
   ) : btn
@@ -341,20 +335,8 @@ function TurnCard() {
             )}
           </div>
 
-          {/* Letter / content badge (matching SignScreen purple rectangle exactly) */}
-          {c.content && (
-            <div className="my-2 w-full max-w-[280px] h-[50px] sm:h-[56px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)] shrink-0">
-              <span
-                className="font-sans font-black text-[#BF5EEB] leading-none"
-                style={{ fontSize: fit(c.content, 32) }}
-              >
-                {c.content}
-              </span>
-            </div>
-          )}
-
           {/* Bottom Canonical Instruction Strip */}
-          <InstructionStrip round={c.round} className="w-full justify-between mt-auto" />
+          <InstructionStrip round={c.round} className="mx-auto mt-auto" />
         </div>
 
         {/* Prompt right below card */}
@@ -499,17 +481,32 @@ export function GuessScreen() {
   const ctl = boxControls(s)
   usePausedTimeout(() => dispatch({ type: 'CHECK' }), 850, s.selected !== null, [s.selected])
   return (
-    <Screen bg="#BCEDFF">
+    <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
       <SkyHills />
       <GameHeader />
-      <div className="absolute top-[clamp(150px,20vh,226px)] inset-x-5 mx-auto flex max-w-[350px] flex-col gap-3.5">
-        {who === 'papa' && <p className="text-center font-display text-[20px] font-medium text-white drop-shadow-[0_2px_0_rgba(0,123,185,.55)]">¿Qué señaló tu hijo?</p>}
+      <div className="relative z-10 my-auto mx-auto flex w-full max-w-[344px] sm:max-w-[364px] flex-col gap-3.5 sm:gap-4 px-4">
         {c.options.map((_, k) => (
-          <OptionCard key={k} index={k} c={c} selected={s.selected === k} dim={s.selected !== null && s.selected !== k} onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })} />
+          <OptionCard
+            key={k}
+            index={k}
+            c={c}
+            selected={s.selected === k}
+            dim={s.selected !== null && s.selected !== k}
+            onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })}
+          />
         ))}
       </div>
-      <div className="absolute bottom-[clamp(16px,3vh,44px)] left-0 flex w-full justify-center">
-        {s.selected !== null ? <div className="rounded-full bg-[#4A5A8C]/35 px-8"><Thinking /></div> : <HelpButton label={who === 'nino' ? '' : 'No entendí'} />}
+      <div
+        className="relative z-10 flex w-full justify-center pb-8 sm:pb-10"
+        style={{ paddingBottom: 'calc(2.25rem + env(safe-area-inset-bottom, 0px))' }}
+      >
+        {s.selected !== null ? (
+          <div className="rounded-full bg-[#4A5A8C]/35 px-8">
+            <Thinking />
+          </div>
+        ) : (
+          <HelpButton />
+        )}
       </div>
     </Screen>
   )

@@ -22,6 +22,10 @@ const VIEWS: Record<ScreenName, () => ReactNode> = {
 
 export default function App() {
   const [s, dispatch] = useReducer(reducer, undefined, loadState)
+  if (typeof window !== 'undefined' && import.meta.env.DEV) {
+    ;(window as any).__SPIKE_DISPATCH__ = dispatch
+    ;(window as any).__SPIKE_STATE__ = s
+  }
   const View = VIEWS[s.screen]
   const paused = isPaused(s)
   const play = isPlay(s)

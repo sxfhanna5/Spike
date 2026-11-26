@@ -3,15 +3,16 @@ import { useGame } from '../game/context'
 import { OPTION_META } from '../game/data'
 import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
-import { Screen } from '../components/ui'
+import { PrimaryActionButton, Screen } from '../components/ui'
 import { Icon, Shape } from '../components/glyphs'
 
 /* ============================== S6 · Tutorial del niño (video only) ============================== */
 
 export function TutorialKid() {
-  const { dispatch } = useGame()
+  const { s, dispatch } = useGame()
   const [playing, setPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const isInitial = s.tutorialMode === 'initial'
 
   const handlePlayToggle = () => {
     if (videoRef.current && videoRef.current.src) {
@@ -26,15 +27,28 @@ export function TutorialKid() {
     }
   }
 
-  const finish = () => {
-    dispatch({ type: 'GOTO', screen: 'map' })
-    dispatch({ type: 'OVERLAY', overlay: 'tutorials' })
-  }
-
   return (
     <Screen bg="#FF8001" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
       {/* Decorative bottom clouds from Figma */}
       <CloudsOrange />
+
+      {/* Top right navigation arrow for initial onboarding flow */}
+      {isInitial && (
+        <div
+          className="absolute right-5 z-20"
+          style={{ top: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}
+        >
+          <button
+            type="button"
+            onClick={() => dispatch({ type: 'TUTORIAL_KID_NEXT' })}
+            aria-label="Siguiente tutorial"
+            className="btn3d grid size-14 place-items-center rounded-full"
+            style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as CSSProperties}
+          >
+            <Icon name="chevronRight" size={26} solid color="#FF8001" />
+          </button>
+        </div>
+      )}
 
       {/* Main centered container */}
       <div
@@ -96,16 +110,20 @@ export function TutorialKid() {
           </div>
         </div>
 
-        {/* Bottom "Listo" button with exact Figma style */}
+        {/* Bottom button: "Saltar tutorial" for initial flow, "Listo" for standalone view */}
         <div className="mx-auto w-full max-w-[280px] shrink-0 pt-3">
-          <button
-            type="button"
-            onClick={finish}
-            className="flex h-[58px] sm:h-[62px] w-full items-center justify-center gap-3 rounded-full bg-[#ED7600] font-display text-[22px] font-bold text-white shadow-[inset_0px_-6px_0px_0px_#D23100] transition-all duration-150 active:translate-y-1 active:shadow-[inset_0px_-2px_0px_0px_#D23100] cursor-pointer"
-          >
-            <Icon name="check" size={24} solid color="#FFFFFF" />
-            <span>Listo</span>
-          </button>
+          {isInitial ? (
+            <PrimaryActionButton
+              label="Saltar tutorial"
+              icon={null}
+              onClick={() => dispatch({ type: 'TUTORIAL_SKIP' })}
+            />
+          ) : (
+            <PrimaryActionButton
+              label="Listo"
+              onClick={() => dispatch({ type: 'TUTORIAL_KID_DONE' })}
+            />
+          )}
         </div>
       </div>
     </Screen>
@@ -175,8 +193,7 @@ export function TutorialParent() {
   const { dispatch } = useGame()
 
   const finish = () => {
-    dispatch({ type: 'GOTO', screen: 'map' })
-    dispatch({ type: 'OVERLAY', overlay: 'tutorials' })
+    dispatch({ type: 'TUTORIAL_PARENT_DONE' })
   }
 
   return (
@@ -226,16 +243,9 @@ export function TutorialParent() {
           </div>
         </div>
 
-        {/* Bottom "Listo" button with exact Figma style - elevated higher over clouds */}
+        {/* Bottom "Listo" button with exact shared style */}
         <div className="mx-auto w-full max-w-[280px] shrink-0 pt-3">
-          <button
-            type="button"
-            onClick={finish}
-            className="flex h-[58px] sm:h-[62px] w-full items-center justify-center gap-3 rounded-full bg-[#ED7600] font-display text-[22px] font-bold text-white shadow-[inset_0px_-6px_0px_0px_#D23100] transition-all duration-150 active:translate-y-1 active:shadow-[inset_0px_-2px_0px_0px_#D23100] cursor-pointer"
-          >
-            <Icon name="check" size={24} solid color="#FFFFFF" />
-            <span>Listo</span>
-          </button>
+          <PrimaryActionButton onClick={finish} />
         </div>
       </div>
     </Screen>
