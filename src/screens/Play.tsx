@@ -7,7 +7,7 @@ import { CloudsOrange } from '../art/CloudsOrange'
 import { GoodScene } from '../art/GoodScene'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Dock, GameHeader, ModuleBadge, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
+import { Avatar, Dock, GameHeader, InstructionStrip, ModuleBadge, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 
 /* ============================== shared pieces ============================== */
@@ -110,13 +110,17 @@ function ListoBtn({ onClick, onOrange }: { onClick: () => void; onOrange?: boole
     <button
       type="button"
       onClick={onClick}
-      className="btn3d inline-flex min-h-[64px] w-[210px] items-center justify-center gap-3 rounded-full font-bold"
-      style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 24, fontWeight: 700 } as React.CSSProperties}
+      className="btn3d inline-flex min-h-[58px] sm:min-h-[62px] w-[220px] sm:w-[240px] items-center justify-center gap-3 rounded-full font-bold cursor-pointer"
+      style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 22, fontWeight: 700 } as React.CSSProperties}
     >
-      <Icon name="check" size={28} /> Listo
+      <Icon name="check" size={26} solid color="#FFFFFF" /> <span>Listo</span>
     </button>
   )
-  return onOrange ? <Dock>{btn}</Dock> : btn
+  return onOrange ? (
+    <div className="inline-flex items-center justify-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
+      {btn}
+    </div>
+  ) : btn
 }
 
 /* ============================== intro cards (level · turn · maestro) ============================== */
@@ -273,17 +277,23 @@ function TurnCard() {
       {/* Top Section: Level 3D disc badge + Segmented Progress Bar */}
       <div className="flex flex-col items-center w-full">
         <ModuleBadge id={m.id} size={50} />
-        <div className="mt-3.5 flex items-center gap-1.5 w-full max-w-[280px] sm:max-w-[320px] justify-center px-2">
-          {Array.from({ length: m.challenges.length }).map((_, i) => {
-            const isDoneOrCurrent = i < doneInModule
-            return (
-              <div
-                key={i}
-                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] rounded-full transition-colors duration-300"
-                style={{ backgroundColor: isDoneOrCurrent ? m.color : '#E6E6E6' }}
-              />
-            )
-          })}
+        <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
+          <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
+            {Array.from({ length: m.challenges.length }).map((_, i) => {
+              const isDoneOrCurrent = i < doneInModule
+              return (
+                <span
+                  key={i}
+                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full bg-[#E6EAF5]"
+                >
+                  <span
+                    className="block h-full rounded-full"
+                    style={{ width: isDoneOrCurrent ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
+                  />
+                </span>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -307,7 +317,7 @@ function TurnCard() {
 
           {/* Central Illustration Circle */}
           <div
-            className="my-auto size-[190px] sm:size-[220px] rounded-full border-[8px] sm:border-[10px] border-white relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.1)] shrink-0"
+            className="my-auto size-[170px] sm:size-[200px] rounded-full border-[8px] sm:border-[10px] border-white relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.1)] shrink-0"
             style={{ backgroundColor: cardBg }}
           >
             {who === 'papa' ? (
@@ -331,18 +341,20 @@ function TurnCard() {
             )}
           </div>
 
-          {/* Bottom Capsule inside Card */}
-          <div className="w-full max-w-[316px] bg-white rounded-full py-2 px-3.5 flex items-center justify-between shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Avatar who={roundInfo.signer} size={26} />
-              <Icon name="hand" size={16} color={handColor} solid />
-              <Icon name="arrowRight" size={12} color="#65739F" />
-              <Avatar who={roundInfo.guesser} size={26} />
+          {/* Letter / content badge (matching SignScreen purple rectangle exactly) */}
+          {c.content && (
+            <div className="my-2 w-full max-w-[280px] h-[50px] sm:h-[56px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)] shrink-0">
+              <span
+                className="font-sans font-black text-[#BF5EEB] leading-none"
+                style={{ fontSize: fit(c.content, 32) }}
+              >
+                {c.content}
+              </span>
             </div>
-            <span className="font-display font-bold text-[12px] sm:text-[13px] text-[#4C4949] whitespace-nowrap pl-1">
-              {roundInfo.short.replace(' · ', ' - ')}
-            </span>
-          </div>
+          )}
+
+          {/* Bottom Canonical Instruction Strip */}
+          <InstructionStrip round={c.round} className="w-full justify-between mt-auto" />
         </div>
 
         {/* Prompt right below card */}
@@ -465,7 +477,7 @@ function ChallengeScreen({ who }: { who: 'papa' | 'nino' }) {
       </div>
 
       {/* Bottom Listo button */}
-      <div className="mx-auto w-full max-w-[280px] shrink-0 pb-4 sm:pb-6 z-20">
+      <div className="w-full flex items-center justify-center pb-5 sm:pb-7 z-20 px-4">
         <ListoBtn onClick={() => dispatch({ type: 'SIGN_DONE' })} onOrange={!isPapa} />
       </div>
     </Screen>

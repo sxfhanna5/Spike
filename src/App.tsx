@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, type ReactNode } from 'react'
 import { ALPHABET } from './game/data'
-import { disconnectedSheet, isPaused, isPlay, loadState, reducer, saveState, type Account, type Screen as ScreenName } from './game/engine'
+import { disconnectedSheet, isPaused, isPlay, loadState, reducer, saveState, signer, type Account, type Screen as ScreenName } from './game/engine'
 import { GameContext } from './game/context'
 import { useEggSync } from './egg/useEggSync'
 import { IconDefs } from './components/glyphs'
@@ -149,27 +149,37 @@ export default function App() {
   const isSkyScreen = s.screen === 'login' || s.screen === 'register' || s.screen === 'connect'
   const isBlueTutorial = s.screen === 'tutorialParent'
   const isMapScreen = s.screen === 'map'
-  const isHubScreen = s.screen === 'album' || s.screen === 'profile'
-  const isFullBleed = isFullOrange || isSkyScreen || isBlueTutorial || isMapScreen || isHubScreen
+  const isHubScreen = s.screen === 'album' || s.screen === 'profile' || s.screen === 'investigator'
+
+  const currentChallenge = s.queue[Math.min(s.idx, Math.max(0, s.queue.length - 1))]
+  const isPapaSigner = currentChallenge ? signer(currentChallenge.round) === 'papa' : true
+
+  const screenBgClass = isFullOrange
+    ? 'bg-[#FF8001]'
+    : isBlueTutorial || isMapScreen
+      ? 'bg-[#45C1FF]'
+      : isSkyScreen || isHubScreen
+        ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
+        : s.screen === 'sign'
+          ? isPapaSigner ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'
+          : s.screen === 'guess' || s.screen === 'good' || s.screen === 'almost'
+            ? 'bg-[#BCEDFF]'
+            : s.screen === 'write'
+              ? s.write.stage === 'sign'
+                ? isPapaSigner ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'
+                : 'bg-[#BCEDFF]'
+              : s.screen === 'master' || s.screen === 'hatch'
+                ? 'bg-[#E7B3FF]'
+                : 'bg-[#45C1FF]'
 
   return (
     <GameContext.Provider value={{ s, dispatch, paused }}>
       <IconDefs />
       <div
-        className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${isFullOrange
-          ? 'bg-[#FF8001]'
-          : isBlueTutorial || isMapScreen
-            ? 'bg-[#45C1FF]'
-            : isSkyScreen || isHubScreen
-              ? 'bg-linear-to-b from-[#0095ff] via-[#45c1ff] via-[35%] to-[#bcedff]'
-              : 'bg-[#EAF6FF]'
-          }`}
+        className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${screenBgClass}`}
       >
         <main
-          className={`relative flex h-full w-full flex-col overflow-hidden ${isFullBleed
-            ? `max-w-none shadow-none ${isFullOrange ? 'bg-[#FF8001]' : isBlueTutorial || isMapScreen ? 'bg-[#45C1FF]' : 'bg-transparent'}`
-            : 'max-w-[430px] bg-white shadow-2xl'
-            }`}
+          className={`relative flex h-full w-full flex-col overflow-hidden max-w-none shadow-none sm:max-w-[440px] ${screenBgClass}`}
         >
           <View />
           {s.intro && isPlay(s) && (

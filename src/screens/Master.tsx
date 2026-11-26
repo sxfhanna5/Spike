@@ -244,19 +244,23 @@ export function WriteScreen() {
         </div>
 
         {/* Bottom Listo button */}
-        <div className="mx-auto w-full max-w-[280px] shrink-0 pb-4 sm:pb-6 z-20">
+        <div className="w-full flex items-center justify-center pb-5 sm:pb-7 z-20 px-4">
           {(() => {
             const btn = (
               <button
                 type="button"
                 onClick={() => dispatch({ type: 'SIGN_DONE' })}
-                className="btn3d inline-flex min-h-[60px] sm:min-h-[64px] w-full items-center justify-center gap-3 rounded-full font-bold cursor-pointer"
+                className="btn3d inline-flex min-h-[58px] sm:min-h-[62px] w-[220px] sm:w-[240px] items-center justify-center gap-3 rounded-full font-bold cursor-pointer"
                 style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 22, fontWeight: 700 } as React.CSSProperties}
               >
                 <Icon name="check" size={26} solid color="#FFFFFF" /> <span>Listo</span>
               </button>
             )
-            return papa ? btn : <Dock>{btn}</Dock>
+            return papa ? btn : (
+              <div className="inline-flex items-center justify-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
+                {btn}
+              </div>
+            )
           })()}
         </div>
       </Screen>

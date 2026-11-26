@@ -280,22 +280,32 @@ export function ModuleBadge({ id, size = 52 }: { id: ModuleId; size?: number }) 
   return <ModuleArt id={id} size={size} />
 }
 
-/** Who signs → who guesses. */
-export function RoundChip({ round, className = '', textless }: { round: Round; className?: string; textless?: boolean }) {
+/** Canonical instruction capsule: who signs → who guesses (Figma 659:2283). */
+export function InstructionStrip({ round, className = '' }: { round: Round; className?: string }) {
   const r = ROUND_INFO[round]
-  const handColor = r.signer === 'papa' ? '#45C1FF' : '#FF8001'
   return (
-    <span className={`card-in inline-flex items-center gap-2 rounded-full bg-white py-1.5 ${textless ? 'pr-3' : 'pr-4'} pl-1.5 text-[14px] font-bold whitespace-nowrap text-ink2 shadow-[0_3px_8px_rgba(0,0,0,.1)] ${className}`}>
-      <Avatar who={r.signer} size={28} />
-      <Icon name="hand" size={20} color={handColor} solid />
-      <Icon name="arrowRight" size={14} color="#4A5A8C" />
-      <Avatar who={r.guesser} size={28} />
-      {!textless && <span className="ml-1 font-bold">{r.short.replace(' · ', ' - ')}</span>}
-    </span>
+    <div
+      className={`inline-flex items-center gap-2 sm:gap-2.5 rounded-full bg-white px-3.5 sm:px-4 h-[46px] sm:h-[48px] shadow-[0_4px_14px_rgba(0,0,0,0.08)] select-none shrink-0 ${className}`}
+    >
+      <div className="flex items-center gap-1.5 shrink-0">
+        <Avatar who={r.signer} size={28} />
+        <Icon name="hand" size={18} color="#FF8001" solid />
+        <Icon name="arrowRight" size={14} color="#4A5A8C" />
+        <Avatar who={r.guesser} size={28} />
+      </div>
+      <span className="font-sans font-bold text-[13px] sm:text-[14px] text-[#4A5A8C] whitespace-nowrap pl-0.5">
+        {r.short.replace(' · ', ' - ')}
+      </span>
+    </div>
   )
 }
 
-/** In-reto header: X, module badge, progress bar «3 de 8» and the round chip. */
+/** Backwards-compatible alias for InstructionStrip. */
+export function RoundChip({ round, className = '', textless }: { round: Round; className?: string; textless?: boolean }) {
+  return <InstructionStrip round={round} className={className} />
+}
+
+/** In-reto header: X, module badge, progress bar and the canonical instruction strip. */
 export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: boolean; x?: boolean; onWhite?: boolean }) {
   const { s } = useGame()
   const m = MODULES[s.level]
@@ -321,7 +331,7 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
           ))}
         </div>
       </div>
-      {chip && <RoundChip round={round} className="mt-3" textless={s.facing === 'nino'} />}
+      {chip && <InstructionStrip round={round} className="mt-3" />}
     </div>
   )
 }
