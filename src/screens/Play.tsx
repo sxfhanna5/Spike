@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react'
 import { useGame } from '../game/context'
 import { COLOR_HEX, MODULES, OPTION_META, ROUND_INFO, ROLE_COLOR, type Challenge, type Person, type ModuleId } from '../game/data'
 import { boxControls, current, interpreter, signer, stageOf, teacherOf } from '../game/engine'
@@ -358,57 +359,123 @@ function TurnCard() {
   )
 }
 
-/* ============================== signs ============================== */
+/* ============================== signs / unified challenge screen ============================== */
 
-/** Padre hace la seña: the parent sees the LSC video (placeholder) and the word; the child does not look. */
-function SignParent() {
+function ChallengeScreen({ who }: { who: 'papa' | 'nino' }) {
   const { s, dispatch } = useGame()
   const c = current(s)
-  const m = MODULES[s.level]
-  return (
-    <Screen bg="#45C1FF">
-      <CloudsBlue />
-      <GameHeader />
-      <div className="absolute top-[clamp(150px,22vh,232px)] inset-x-4 mx-auto h-[clamp(280px,38vh,342px)] max-w-[344px] rounded-[28px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
-        <div className="absolute -top-[34px] left-1/2 -translate-x-1/2"><Avatar who="papa" size={68} halo /></div>
-        <div className="absolute top-[50px] left-[17px] right-[17px] h-[clamp(140px,20vh,190px)] overflow-hidden rounded-[22px] bg-[#4A5A8C]">
-          <img src="/assets/110ea.png" alt="" className="size-full object-cover opacity-95" draggable={false} />
-          <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-[#4A5A8C]/80 py-1 pr-4 pl-1 font-sans text-[14px] font-extrabold text-white">
-            <span className="grid size-7 place-items-center rounded-full bg-white text-[#FF8001]"><Icon name="play" size={14} /></span>
-            Video LSC: {c.content}
-          </span>
-        </div>
-        <div className="absolute right-[17px] bottom-[18px] left-[17px] grid h-[62px] place-items-center rounded-full" style={{ background: m.color }}>
-          <span className="font-display leading-none font-bold" style={{ color: m.accent, fontSize: fit(c.content, 38) }}>{c.content}</span>
-        </div>
-      </div>
-      <p className="absolute bottom-[clamp(76px,11vh,96px)] left-0 flex w-full items-center justify-center gap-2 font-display text-[18px] font-medium text-white drop-shadow-[0_2px_0_rgba(0,123,185,.55)]"><Icon name="hand" size={26} /> Haz la seña frente a tu hijo</p>
-      <div className="absolute bottom-[clamp(16px,2.5vh,32px)] left-0 flex w-full justify-center"><ListoBtn onClick={() => dispatch({ type: 'SIGN_DONE' })} /></div>
-    </Screen>
-  )
-}
+  const isPapa = who === 'papa'
+  const [playing, setPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
-/** Niño hace la seña: the child sees the content, big, with the hand icon. */
-function SignKid() {
-  const { s, dispatch } = useGame()
-  const c = current(s)
+  const handlePlayToggle = () => {
+    if (videoRef.current && videoRef.current.src) {
+      if (playing) {
+        videoRef.current.pause()
+        setPlaying(false)
+      } else {
+        videoRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(true))
+      }
+    } else {
+      setPlaying((prev) => !prev)
+    }
+  }
+
+  const instruction = isPapa ? 'Haz la seña frente a tu hijo' : 'Haz la seña frente a papá'
+
   return (
-    <Screen bg="#FF8001">
-      <CloudsOrange />
+    <Screen bg={isPapa ? '#45C1FF' : '#FF8001'} className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
+      {isPapa ? <CloudsBlue /> : <CloudsOrange />}
       <GameHeader />
-      <div className="absolute top-[clamp(150px,22vh,232px)] inset-x-4 mx-auto flex h-[clamp(280px,38vh,342px)] max-w-[344px] items-center justify-center rounded-[56px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
-        <div className="absolute -top-[34px] left-1/2 -translate-x-1/2"><Avatar who="nino" size={68} halo /></div>
-        <ContentBig c={c} />
+
+      {/* Main card & instruction centered vertically */}
+      <div className="my-auto mx-auto w-full max-w-[340px] sm:max-w-[354px] px-4 pt-7 sm:pt-9 z-10 flex flex-col items-center">
+        {/* Centered white card */}
+        <div className="relative w-full rounded-[36px] bg-white px-4 pt-12 pb-5 sm:px-5 sm:pt-14 sm:pb-6 shadow-[0_16px_36px_rgba(0,0,0,0.14)] flex flex-col items-center">
+          {/* Top perched Avatar with white border */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2">
+            <div className={`relative size-[76px] overflow-hidden rounded-full border-[6px] border-white flex items-end justify-center shadow-[0_4px_12px_rgba(0,0,0,0.1)] ${isPapa ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'}`}>
+              {isPapa ? (
+                <img
+                  src="/people/padre.png"
+                  alt="Padres"
+                  draggable={false}
+                  className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+                />
+              ) : (
+                <img
+                  src="/assets/dac2e.svg"
+                  alt="Niño"
+                  draggable={false}
+                  className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Media / Video container */}
+          <div className="relative aspect-[4/3] sm:aspect-[1.3] w-full overflow-hidden rounded-[22px] sm:rounded-[24px] bg-[#EAF1F8] shadow-inner">
+            <video
+              ref={videoRef}
+              playsInline
+              className={`size-full object-cover ${playing ? 'block' : 'hidden'}`}
+              onEnded={() => setPlaying(false)}
+            />
+            <img
+              src="/assets/110ea.png"
+              alt="Seña LSC"
+              draggable={false}
+              className={`size-full object-cover ${playing ? 'hidden' : 'block'}`}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={handlePlayToggle}
+                aria-label={playing ? 'Pausar' : 'Reproducir'}
+                className="btn3d grid size-14 sm:size-16 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
+                style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0 } as React.CSSProperties}
+              >
+                <Icon
+                  name={playing ? 'pause' : 'play'}
+                  size={28}
+                  solid
+                  color="#FF8001"
+                  className={playing ? '' : 'translate-x-0.5'}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom badge / purple rectangle with letter/content (Figma 668:3561) */}
+          <div className="mt-3.5 sm:mt-4 w-full h-[52px] sm:h-[58px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)]">
+            <span
+              className="font-sans font-black text-[#BF5EEB] leading-none"
+              style={{ fontSize: fit(c.content, 34) }}
+            >
+              {c.content}
+            </span>
+          </div>
+        </div>
+
+        {/* Instruction centered right below the card */}
+        <div className="mt-4 sm:mt-5 flex items-center justify-center gap-2.5 text-white text-[17px] sm:text-[19px] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)] select-none">
+          <Icon name="hand" size={24} color="#FFFFFF" solid />
+          <span>{instruction}</span>
+        </div>
       </div>
-      <div className="absolute bottom-[clamp(76px,11vh,96px)] left-0 flex w-full items-center justify-center gap-3"><Icon name="hand" size={44} color="#fff" /><Icon name="arrowRight" size={34} color="#fff" /><Avatar who="papa" size={52} /></div>
-      <div className="absolute bottom-[clamp(16px,2.5vh,32px)] left-0 flex w-full justify-center"><ListoBtn onClick={() => dispatch({ type: 'SIGN_DONE' })} onOrange /></div>
+
+      {/* Bottom Listo button */}
+      <div className="mx-auto w-full max-w-[280px] shrink-0 pb-4 sm:pb-6 z-20">
+        <ListoBtn onClick={() => dispatch({ type: 'SIGN_DONE' })} onOrange={!isPapa} />
+      </div>
     </Screen>
   )
 }
 
 export function SignScreen() {
   const { s } = useGame()
-  return signer(current(s).round) === 'papa' ? <SignParent /> : <SignKid />
+  const who = signer(current(s).round)
+  return <ChallengeScreen who={who} />
 }
 
 /* ============================== guess ============================== */

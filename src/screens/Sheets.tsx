@@ -89,10 +89,24 @@ export function ExitSheet() {
           <p className="mt-1 font-sans text-[16px] leading-6 font-semibold text-ink2">Tu avance se guarda</p>
         </div>
       </div>
-      <div className="mt-5 flex flex-col gap-4">
+      <div className="mt-5 flex flex-col gap-3.5">
         <Btn icon="play" onClick={() => dispatch({ type: 'OVERLAY', overlay: null })}>Seguir</Btn>
-        <Btn variant="whiteOrange" icon="refresh" onClick={() => dispatch({ type: 'RESTART' })}>Reiniciar reto</Btn>
-        <Btn variant="whiteOrange" icon="map" onClick={() => dispatch({ type: 'EXIT_TO_MAP' })}>Salir al mapa</Btn>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'RESTART' })}
+          className="flex h-[58px] w-full items-center justify-center gap-3 rounded-full bg-white font-sans text-[18px] font-bold text-[#4A5A8C] shadow-[0_3px_12px_rgba(74,90,140,0.12)] border border-[#E8ECF4] transition-all active:scale-[0.98] cursor-pointer"
+        >
+          <Icon name="refresh" size={24} color="#4A5A8C" solid />
+          <span>Reiniciar reto</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'EXIT_TO_MAP' })}
+          className="flex h-[58px] w-full items-center justify-center gap-3 rounded-full bg-white font-sans text-[18px] font-bold text-[#4A5A8C] shadow-[0_3px_12px_rgba(74,90,140,0.12)] border border-[#E8ECF4] transition-all active:scale-[0.98] cursor-pointer"
+        >
+          <Icon name="map" size={24} color="#4A5A8C" solid />
+          <span>Salir al mapa</span>
+        </button>
       </div>
     </Sheet>
   )

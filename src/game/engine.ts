@@ -150,7 +150,7 @@ export function loadState(): GameState {
       : null
     const initialFacing: Person = paramIntro === 'turn-nino' ? 'nino' : 'papa'
     const initialLevel = (paramLevel >= 1 && paramLevel <= 5 ? paramLevel : 1) as ModuleId
-    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess'].includes(param))
+    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write'].includes(param))
       ? (param as Screen)
       : paramIntro
       ? (paramIntro === 'turn-nino' ? 'guess' : 'sign')

@@ -80,10 +80,10 @@ export function XButton({ light = true }: { light?: boolean }) {
       type="button"
       aria-label="Salir del reto"
       onClick={() => dispatch({ type: 'OVERLAY', overlay: 'exit' })}
-      className="btn3d absolute left-5 z-30 grid size-14 place-items-center rounded-full"
-      style={{ '--bg': light ? '#FFFFFF' : '#4A5A8C', '--edge': '#FFD2A8', '--fg': light ? '#FF8001' : '#fff', padding: 0, minHeight: 56, top: 'calc(1.75rem + env(safe-area-inset-top, 0px))' } as CSSProperties}
+      className="btn3d absolute left-4 sm:left-5 z-30 grid size-[46px] sm:size-[48px] place-items-center rounded-full"
+      style={{ '--bg': light ? '#FFFFFF' : '#4A5A8C', '--edge': '#FFD2A8', '--fg': light ? '#FF8001' : '#fff', padding: 0, minHeight: 46, top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' } as CSSProperties}
     >
-      <Icon name="close" size={28} solid />
+      <Icon name="close" size={22} solid />
     </button>
   )
 }
@@ -302,20 +302,26 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
   const total = s.queue.length
   const round = s.queue[Math.min(s.idx, total - 1)].round
   return (
-    <div className="relative z-20 flex flex-col items-center pt-[calc(1.75rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2.25rem+env(safe-area-inset-top,0px))]">
+    <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
       {x && <XButton />}
-      <ModuleBadge id={s.level} size={52} />
-      <div className="mt-2.5 flex w-full max-w-[330px] items-center gap-3 px-3">
-        <div className="flex flex-1 gap-1" aria-hidden>
+      <ModuleBadge id={s.level} size={50} />
+      <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
+        <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
           {Array.from({ length: total }, (_, k) => (
-            <span key={k} className="h-[6px] flex-1 overflow-hidden rounded-full" style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}>
-              <span className="block h-full rounded-full" style={{ width: k <= s.idx ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }} />
+            <span
+              key={k}
+              className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full"
+              style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}
+            >
+              <span
+                className="block h-full rounded-full"
+                style={{ width: k <= s.idx ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
+              />
             </span>
           ))}
         </div>
-        <span className="font-sans text-[14px] font-extrabold whitespace-nowrap text-ink">{Math.min(s.idx + 1, total)} de {total}</span>
       </div>
-      {chip && <RoundChip round={round} className="mt-3.5" textless={s.facing === 'nino'} />}
+      {chip && <RoundChip round={round} className="mt-3" textless={s.facing === 'nino'} />}
     </div>
   )
 }

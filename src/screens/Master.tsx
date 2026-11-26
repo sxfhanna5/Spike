@@ -153,39 +153,108 @@ export function WriteScreen() {
   if (s.write.stage === 'sign') {
     const papa = spellBy === 'papa'
     return (
-      <Screen bg={papa ? '#45C1FF' : '#FF8001'}>
+      <Screen bg={papa ? '#45C1FF' : '#FF8001'} className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
         {papa ? <CloudsBlue /> : <CloudsOrange />}
         <GameHeader />
-        <div className="absolute top-[232px] left-[23px] flex h-[342px] w-[344px] flex-col items-center justify-center gap-3 rounded-[28px] bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
-          <div className="absolute -top-[34px] left-1/2 -translate-x-1/2"><Avatar who={spellBy} size={68} halo /></div>
-          {/* one column per letter: the letter and, below it, the hand-photo marker «Foto mano: [letra]» */}
-          <div className="mt-6 flex items-start justify-center gap-1">
-            {c.content.split('').map((ch, k) => {
-              const L = letters[Math.min(k, letters.length - 1)]
-              const now = k === s.write.letter
-              return (
-                <div key={k} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${now ? 'scale-110' : 'opacity-70'}`}>
-                  <span className={`rounded-xl px-0.5 font-sans leading-[1.05] font-black ${now ? 'bg-[#FFE44C]' : ''}`} style={{ fontSize: letters.length > 5 ? 46 : 58 }}>{ch}</span>
-                  <span title={`Foto mano: ${L}`} aria-label={`Foto mano: ${L}`} className={`grid h-[50px] w-[40px] place-items-center rounded-[14px] ${now ? 'bg-[#FFF4C2] shadow-[0_3px_0_#FFE44C]' : 'bg-[#EEF1FA]'}`}>
-                    <Icon name="hand" size={22} color={spellBy === 'papa' ? '#45C1FF' : '#FF8001'} />
-                    <span className="-mt-1 font-sans text-[14px] leading-none font-black">{L}</span>
-                  </span>
-                </div>
-              )
-            })}
+
+        {/* Unified card & controls centered vertically */}
+        <div className="my-auto mx-auto w-full max-w-[340px] sm:max-w-[354px] px-4 pt-7 sm:pt-9 z-10 flex flex-col items-center">
+          {/* Centered white card */}
+          <div className="relative w-full rounded-[36px] bg-white px-4 pt-12 pb-5 sm:px-5 sm:pt-14 sm:pb-6 shadow-[0_16px_36px_rgba(0,0,0,0.14)] flex flex-col items-center">
+            {/* Top perched Avatar with white border */}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2">
+              <div className={`relative size-[76px] overflow-hidden rounded-full border-[6px] border-white flex items-end justify-center shadow-[0_4px_12px_rgba(0,0,0,0.1)] ${papa ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'}`}>
+                {papa ? (
+                  <img
+                    src="/people/padre.png"
+                    alt="Padres"
+                    draggable={false}
+                    className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+                  />
+                ) : (
+                  <img
+                    src="/assets/dac2e.svg"
+                    alt="Niño"
+                    draggable={false}
+                    className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Letter-by-letter carousel */}
+            <div className="flex items-start justify-center gap-1.5 py-2">
+              {c.content.split('').map((ch, k) => {
+                const L = letters[Math.min(k, letters.length - 1)]
+                const now = k === s.write.letter
+                return (
+                  <div key={k} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${now ? 'scale-110' : 'opacity-70'}`}>
+                    <span className={`rounded-xl px-1 font-sans leading-[1.05] font-black ${now ? 'bg-[#FFE44C]' : ''}`} style={{ fontSize: letters.length > 5 ? 42 : 52 }}>{ch}</span>
+                    <span title={`Foto mano: ${L}`} aria-label={`Foto mano: ${L}`} className={`grid h-[52px] w-[42px] place-items-center rounded-[14px] ${now ? 'bg-[#FFF4C2] shadow-[0_3px_0_#FFE44C]' : 'bg-[#EEF1FA]'}`}>
+                      <Icon name="hand" size={22} color={spellBy === 'papa' ? '#45C1FF' : '#FF8001'} solid />
+                      <span className="-mt-1 font-sans text-[14px] leading-none font-black">{L}</span>
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Current letter indicator / purple rectangle */}
+            <div className="mt-3.5 w-full h-[52px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center gap-2 shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)]">
+              <span className="font-sans font-bold text-[16px] text-[#BF5EEB]">Foto mano:</span>
+              <span className="font-sans font-black text-[26px] text-[#BF5EEB] leading-none">{letters[s.write.letter]}</span>
+            </div>
+
+            {hasPictogram(c.content) && (
+              <div className="mt-3">
+                <span className="grid size-[58px] place-items-center rounded-[18px] bg-[#F6F8FB]">
+                  <Pictogram content={c.content} size={42} />
+                </span>
+              </div>
+            )}
           </div>
-          <p className="flex items-center gap-2 font-sans text-[14px] font-extrabold text-ink2">Foto mano: <b className="text-[18px] text-ink">{letters[s.write.letter]}</b></p>
-          {hasPictogram(c.content) && <span className="grid size-[64px] place-items-center rounded-[18px] bg-[#F6F8FB]"><Pictogram content={c.content} size={46} /></span>}
+
+          {/* Steppers & instruction below card */}
+          <div className="mt-4 flex items-center justify-center gap-3 select-none">
+            <button
+              type="button"
+              aria-label="Letra anterior"
+              disabled={s.write.letter === 0}
+              onClick={() => dispatch({ type: 'LETTER_STEP', dir: -1 })}
+              className="btn3d grid size-12 place-items-center rounded-full disabled:opacity-40"
+              style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 48 } as React.CSSProperties}
+            >
+              <Icon name="arrowLeft" size={22} />
+            </button>
+            <div className="flex items-center gap-2 text-white font-medium text-[16px] sm:text-[18px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+              <Icon name="hand" size={22} color="#fff" solid />
+              <span>{papa ? 'Haz la seña letra por letra' : 'Haz la seña frente a papá'}</span>
+            </div>
+            <button
+              type="button"
+              aria-label="Letra siguiente"
+              disabled={s.write.letter === letters.length - 1}
+              onClick={() => dispatch({ type: 'LETTER_STEP', dir: 1 })}
+              className="btn3d grid size-12 place-items-center rounded-full disabled:opacity-40"
+              style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 48 } as React.CSSProperties}
+            >
+              <Icon name="arrowRight" size={22} />
+            </button>
+          </div>
         </div>
-        <div className="absolute top-[592px] left-0 flex w-full items-center justify-center gap-4">
-          <button type="button" aria-label="Letra anterior" disabled={s.write.letter === 0} onClick={() => dispatch({ type: 'LETTER_STEP', dir: -1 })} className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}><Icon name="arrowLeft" size={26} /></button>
-          <span className="flex items-center gap-2 font-display text-[18px] font-medium text-white drop-shadow-[0_2px_0_rgba(0,0,0,.25)]"><Icon name="hand" size={30} color="#fff" />{papa && ' Letra por letra'}</span>
-          <button type="button" aria-label="Letra siguiente" disabled={s.write.letter === letters.length - 1} onClick={() => dispatch({ type: 'LETTER_STEP', dir: 1 })} className="btn3d grid size-14 place-items-center rounded-full" style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 56 } as React.CSSProperties}><Icon name="arrowRight" size={26} /></button>
-        </div>
-        <div className="absolute top-[670px] left-0 flex w-full justify-center">
+
+        {/* Bottom Listo button */}
+        <div className="mx-auto w-full max-w-[280px] shrink-0 pb-4 sm:pb-6 z-20">
           {(() => {
             const btn = (
-              <button type="button" onClick={() => dispatch({ type: 'SIGN_DONE' })} className="btn3d inline-flex min-h-[64px] w-[210px] items-center justify-center gap-3 rounded-full" style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 24, fontWeight: 700 } as React.CSSProperties}><Icon name="check" size={28} /> Listo</button>
+              <button
+                type="button"
+                onClick={() => dispatch({ type: 'SIGN_DONE' })}
+                className="btn3d inline-flex min-h-[60px] sm:min-h-[64px] w-full items-center justify-center gap-3 rounded-full font-bold cursor-pointer"
+                style={{ '--bg': '#FF8001', '--edge': '#FF4F1A', '--fg': '#fff', '--ts': '0 2px 0 rgb(255 79 26 / .4)', fontSize: 22, fontWeight: 700 } as React.CSSProperties}
+              >
+                <Icon name="check" size={26} solid color="#FFFFFF" /> <span>Listo</span>
+              </button>
             )
             return papa ? btn : <Dock>{btn}</Dock>
           })()}
