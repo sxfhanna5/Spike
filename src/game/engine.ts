@@ -143,26 +143,62 @@ export const initialState = (): GameState => ({
   learned: {}, write: { stage: 'sign', typed: [], letter: 0 }, log: [], fx: fx('none'),
 })
 
-const STORAGE_KEY = 'spike-estado-v1'
-const PERSIST = ['account', 'session', 'tutorialDone', 'done', 'masterSeals', 'masterCount', 'taught', 'playSeconds', 'days', 'replay', 'learned', 'log', 'keyboard', 'simFail', 'level', 'casilla'] as const
-export function loadState(): GameState {
+export const getUserStorageKey = (userId?: string | null) =>
+  userId ? `spike-estado-user-${userId}` : 'spike-estado-guest'
+
+export function getActiveUserId(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        const raw = localStorage.getItem(key)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (parsed?.user?.id) return parsed.user.id
+        }
+      }
+    }
+  } catch { }
+  return null
+}
+
+const PERSIST = [
+  'account', 'session', 'tutorialDone', 'done', 'masterSeals',
+  'masterCount', 'taught', 'playSeconds', 'days', 'replay',
+  'learned', 'log', 'keyboard', 'simFail', 'level', 'casilla',
+  'screen', 'inLevel', 'selectedCasilla'
+] as const
+
+export function loadState(targetUserId?: string | null): GameState {
   const base = initialState()
   try {
+    if (typeof window !== 'undefined' && localStorage.getItem('spike-estado-v1')) {
+      localStorage.removeItem('spike-estado-v1')
+    }
+
+    const userId = targetUserId ?? getActiveUserId()
+    const storageKey = getUserStorageKey(userId)
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+    const saved = raw ? (JSON.parse(raw) as Partial<GameState>) : {}
+
     const param = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('screen') : null
     const paramIntro = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('intro') : null
     const paramLevelRaw = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('level') || '', 10) : NaN
     const paramCasilla = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('casilla') || '', 10) : NaN
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
-    const saved = raw ? (JSON.parse(raw) as Partial<GameState>) : {}
+
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
     const effLevel = (!isNaN(paramLevelRaw) && paramLevelRaw >= 1 && paramLevelRaw <= 5
       ? paramLevelRaw
       : !isNaN(paramCasilla)
       ? moduleOf(paramCasilla).id
-      : (saved.level ?? 1)) as ModuleId
-    const effCasilla = !isNaN(paramCasilla) ? paramCasilla : (saved.casilla ?? MODULES[effLevel].first)
+      : (saved.level ?? moduleOf(activeCasilla(done)).id)) as ModuleId
+    const effCasilla = !isNaN(paramCasilla)
+      ? paramCasilla
+      : (saved.casilla ?? activeCasilla(done))
     const initialCasilla = effCasilla
     const initialIdx = Math.max(0, Math.min(MODULES[effLevel].challenges.length - 1, initialCasilla - MODULES[effLevel].first))
+
     const initialIntro: Intro | null = paramIntro === 'level'
       ? { kind: 'level', who: 'papa', arrow: false }
       : paramIntro === 'turn-papa'
@@ -175,16 +211,29 @@ export function loadState(): GameState {
       ? { kind: 'teacher', who: 'nino', arrow: false }
       : null
     const initialFacing: Person = (paramIntro === 'turn-nino' || paramIntro === 'teacher-nino') ? 'nino' : 'papa'
-    const hasActiveSession = Boolean((saved.session && saved.account) || done > 0 || saved.tutorialDone)
-    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write', 'good', 'almost', 'hatch', 'master'].includes(param))
-      ? (param as Screen)
-      : (paramIntro === 'teacher-papa' || paramIntro === 'teacher-nino')
-      ? 'master'
-      : paramIntro
-      ? (paramIntro === 'turn-nino' ? 'guess' : 'sign')
-      : hasActiveSession
-      ? 'map'
-      : 'loader'
+
+    const hasActiveSession = Boolean((saved.session && saved.account) || userId)
+    let initialScreen: Screen = 'loader'
+    if (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write', 'good', 'almost', 'hatch', 'master'].includes(param)) {
+      initialScreen = param as Screen
+    } else if (paramIntro === 'teacher-papa' || paramIntro === 'teacher-nino') {
+      initialScreen = 'master'
+    } else if (paramIntro) {
+      initialScreen = paramIntro === 'turn-nino' ? 'guess' : 'sign'
+    } else if (hasActiveSession) {
+      if (saved.screen && ['sign', 'guess', 'write', 'master'].includes(saved.screen) && saved.inLevel) {
+        initialScreen = saved.screen
+      } else if (saved.screen && ['map', 'album', 'profile', 'connect'].includes(saved.screen)) {
+        initialScreen = saved.screen
+      } else if (saved.screen === 'tutorialKid' || saved.screen === 'tutorialParent') {
+        initialScreen = saved.screen
+      } else {
+        initialScreen = saved.tutorialDone || done > 0 ? 'map' : 'connect'
+      }
+    } else {
+      initialScreen = 'loader'
+    }
+
     const paramOverlay = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('overlay') : null
     const initialOverlay: Overlay | null = (paramOverlay && ['tutorials', 'reto', 'module', 'exit'].includes(paramOverlay))
       ? (paramOverlay as Overlay)
@@ -192,13 +241,14 @@ export function loadState(): GameState {
     const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
     const paramStage = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('stage') as 'sign' | 'write' | null) : null
     const paramTutorialMode = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('mode') as 'initial' | 'standalone' | null) : null
-    const initialTutorialMode = paramTutorialMode ?? (param === 'tutorialKid' || param === 'tutorialParent' ? 'initial' : undefined)
-    const initialWriteStage: 'sign' | 'write' = paramStage === 'write' ? 'write' : 'sign'
+    const initialTutorialMode = paramTutorialMode ?? (saved.tutorialMode ?? (initialScreen === 'tutorialKid' || initialScreen === 'tutorialParent' ? 'initial' : undefined))
+    const initialWriteStage: 'sign' | 'write' = paramStage === 'write' ? 'write' : (saved.write?.stage ?? 'sign')
     const paramMaster = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('master') as Person | null) : null
     const paramTeacherPhase = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('teacherPhase') as TeacherPhase | null) : null
-    const initialTeacherPhase: TeacherPhase = paramTeacherPhase ?? 'show'
+    const initialTeacherPhase: TeacherPhase = paramTeacherPhase ?? (saved.teacherPhase ?? 'show')
     const paramErrorActor = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('errorActor') as Person | null) : null
     const initialErrorActor: Person = paramMaster === 'papa' ? 'nino' : paramMaster === 'nino' ? 'papa' : (paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : 'nino'))
+
     if (!raw) {
       return {
         ...base,
@@ -218,23 +268,24 @@ export function loadState(): GameState {
         teacherPhase: initialTeacherPhase,
       }
     }
+
     return {
       ...base,
       ...saved,
       done,
       heat: heatFor(done),
       screen: initialScreen,
-      tutorialMode: initialTutorialMode ?? saved.tutorialMode,
+      tutorialMode: initialTutorialMode,
       overlay: initialOverlay,
       connected: paramConnected,
       intro: initialIntro,
       facing: paramIntro ? initialFacing : (saved.facing ?? 'nino'),
       level: effLevel,
       queue: buildQueue(effLevel, false),
-      selectedCasilla: initialCasilla,
+      selectedCasilla: saved.selectedCasilla ?? initialCasilla,
       casilla: initialCasilla,
       idx: initialIdx,
-      write: { stage: initialWriteStage, typed: [], letter: 0 },
+      write: saved.write ?? { stage: initialWriteStage, typed: [], letter: 0 },
       selected: null,
       errorActor: initialErrorActor,
       teacherPhase: initialTeacherPhase,
@@ -244,19 +295,22 @@ export function loadState(): GameState {
     return base
   }
 }
-export function saveState(s: GameState) {
+
+export function saveState(s: GameState, explicitUserId?: string | null) {
   try {
+    const userId = explicitUserId ?? s.account?.id ?? getActiveUserId()
+    const key = getUserStorageKey(userId)
     const out: Record<string, unknown> = {}
     for (const k of PERSIST) {
       if (k === 'account' && s.account) {
-        // Nunca guardar contraseñas en localStorage
         const { password: _p, ...safeAccount } = s.account as { password?: string; name: string; email: string; id?: string }
         out[k] = safeAccount
       } else {
         out[k] = s[k]
       }
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
+    out.updatedAt = Date.now()
+    localStorage.setItem(key, JSON.stringify(out))
   } catch {
     /* the app keeps working in memory */
   }
@@ -433,12 +487,36 @@ export function reducer(s: GameState, a: Action): GameState {
       return { ...s, account: a.account, session: a.session, authError: null }
     case 'LOAD_PROGRESS': {
       const done = Math.max(0, Math.min(TOTAL_CASILLAS, a.progress.done ?? s.done))
-      return { ...s, ...a.progress, done, heat: heatFor(done) }
+      const targetCasilla = s.inLevel ? s.casilla : activeCasilla(done)
+      const targetLevel = s.inLevel ? s.level : (moduleOf(targetCasilla).id as ModuleId)
+      const nextScreen = (s.screen === 'tutorialKid' || s.screen === 'tutorialParent' || s.screen === 'login' || s.screen === 'welcome' || s.screen === 'loader')
+        ? (a.progress.tutorialDone || done > 0 ? (s.connected ? 'map' : 'connect') : s.screen)
+        : s.screen
+      return {
+        ...s,
+        ...a.progress,
+        done,
+        heat: heatFor(done),
+        screen: nextScreen,
+        casilla: targetCasilla,
+        selectedCasilla: s.inLevel ? s.selectedCasilla : targetCasilla,
+        level: targetLevel,
+        queue: buildQueue(targetLevel, false),
+      }
     }
     case 'SET_AUTH_ERROR':
       return { ...s, authError: a.error }
-    case 'LOGOUT':
-      return { ...s, account: null, session: false, screen: 'welcome', overlay: null, connected: false, intro: null, inLevel: false }
+    case 'LOGOUT': {
+      const fresh = initialState()
+      return {
+        ...fresh,
+        screen: 'welcome',
+        account: null,
+        session: false,
+        connected: s.connected,
+        link: s.link,
+      }
+    }
     case 'SET_PASSWORD':
       return s.account ? { ...s, account: { ...s.account, password: a.password } } : s
     case 'CLEAR_AUTH_ERROR':

@@ -5,6 +5,7 @@ import { Btn, ProfileFace, Screen, Spike, usePausedTimeout } from '../components
 import { Icon } from '../components/glyphs'
 import { egg, virtualEgg } from '../egg'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { getUserStorageKey } from '../game/engine'
 
 /* ============================== shared bits ============================== */
 
@@ -199,7 +200,19 @@ export function Login() {
           account: { id: data.user.id, name, email: data.user.email || '' },
           session: true,
         })
-        dispatch({ type: 'TUTORIAL_START_INITIAL' })
+        const userKey = getUserStorageKey(data.user.id)
+        let hasPriorProgress = false
+        try {
+          const raw = typeof window !== 'undefined' ? localStorage.getItem(userKey) : null
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (parsed.tutorialDone || (parsed.done ?? 0) > 0) hasPriorProgress = true
+          }
+        } catch { }
+
+        if (!hasPriorProgress) {
+          dispatch({ type: 'TUTORIAL_START_INITIAL' })
+        }
       }
     } else {
       dispatch({ type: 'LOGIN', email: email.trim(), password: pass })
