@@ -251,6 +251,26 @@ function LevelCard() {
 function TeacherTurnCard({ who }: { who: Person }) {
   const { s } = useGame()
   const isPapa = who === 'papa'
+  const isSecondTurn = s.teacherPhase === 'retry'
+
+  // Primer turno: morada (#E2ACFF).
+  // Segundo turno: azul para papá (#45C1FF), naranja para niño (#FF8001).
+  const cardBg = isSecondTurn ? (isPapa ? '#45C1FF' : '#FF8001') : '#E2ACFF'
+  const cardShadow = isSecondTurn
+    ? isPapa
+      ? 'shadow-[0_12px_32px_rgba(69,193,255,0.22)]'
+      : 'shadow-[0_12px_32px_rgba(255,128,1,0.22)]'
+    : 'shadow-[0_12px_32px_rgba(186,80,240,0.18)]'
+
+  const title = isSecondTurn
+    ? (isPapa ? 'Turno del padre' : 'Turno del niño')
+    : (isPapa ? 'Padre maestro' : 'Niño maestro')
+
+  const isWrite = s.level === 5 || s.screen === 'write'
+  const actionText = isWrite ? 'Escribe' : 'Adivina'
+  const subtitle = isSecondTurn
+    ? (isPapa ? `${actionText} la seña de tu hijo` : `${actionText} la seña de papá`)
+    : 'Quien sabe, es quien enseña'
 
   return (
     <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-8 sm:pt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:pb-10">
@@ -268,27 +288,32 @@ function TeacherTurnCard({ who }: { who: Person }) {
 
       {/* Central Card Area */}
       <div className="my-auto flex flex-col items-center w-full max-w-[340px] sm:max-w-[356px]">
-        {/* Large Rounded Purple Card (Figma 817:3104 / 817:3127) */}
-        <div className="w-full rounded-[34px] sm:rounded-[38px] bg-[#E2ACFF] px-6 pt-7 pb-8 shadow-[0_12px_32px_rgba(186,80,240,0.18)] flex flex-col items-center text-center">
-          {/* Title: Padre maestro or Niño maestro */}
+        {/* Large Rounded Card */}
+        <div
+          className={`w-full rounded-[34px] sm:rounded-[38px] px-6 pt-7 pb-8 ${cardShadow} flex flex-col items-center text-center`}
+          style={{ backgroundColor: cardBg }}
+        >
+          {/* Title */}
           <h1 className="font-display font-black text-white text-[32px] sm:text-[36px] leading-tight">
-            {isPapa ? 'Padre maestro' : 'Niño maestro'}
+            {title}
           </h1>
-          {/* Subtitle: Quien sabe, es quien enseña */}
+          {/* Subtitle */}
           <p className="mt-1.5 text-white/95 font-medium text-[16px] sm:text-[18px]">
-            Quien sabe, es quien enseña
+            {subtitle}
           </p>
 
-          {/* Central Circular Avatar with Perched Graduation Cap */}
+          {/* Central Circular Avatar with Perched Graduation Cap ONLY on first turn */}
           <div className="relative mt-8 mb-2 flex items-center justify-center">
-            {/* Graduation Cap (perched on top of circle matching Figma image 63 Vectorized) */}
-            <div className="absolute -top-7 sm:-top-8 left-1/2 -translate-x-1/2 z-20 w-[84px] sm:w-[94px] pointer-events-none select-none">
-              <img
-                src="/assets/teacher-cap.svg"
-                alt=""
-                className="size-full object-contain drop-shadow-sm"
-              />
-            </div>
+            {/* Graduation Cap: ONLY on first turn (Maestro), eliminated on second turn */}
+            {!isSecondTurn && (
+              <div className="absolute -top-7 sm:-top-8 left-1/2 -translate-x-1/2 z-20 w-[84px] sm:w-[94px] pointer-events-none select-none">
+                <img
+                  src="/assets/teacher-cap.svg"
+                  alt=""
+                  className="size-full object-contain drop-shadow-sm"
+                />
+              </div>
+            )}
 
             {/* Avatar Circle */}
             <div
@@ -337,7 +362,7 @@ function TurnCard() {
   const intro = s.intro!
   const c = current(s)
   const m = MODULES[s.level]
-  const teacher = intro.kind === 'teacher'
+  const teacher = s.screen === 'master' || intro.kind === 'teacher'
   const who = intro.who
 
   const signing = signer(c.round) === who && (s.screen === 'sign' || (s.screen === 'write' && s.write.stage === 'sign'))
