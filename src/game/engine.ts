@@ -161,10 +161,16 @@ export function loadState(): GameState {
       ? { kind: 'turn', who: 'papa', arrow: false }
       : paramIntro === 'turn-nino'
       ? { kind: 'turn', who: 'nino', arrow: true }
+      : paramIntro === 'teacher-papa'
+      ? { kind: 'teacher', who: 'papa', arrow: false }
+      : paramIntro === 'teacher-nino'
+      ? { kind: 'teacher', who: 'nino', arrow: false }
       : null
-    const initialFacing: Person = paramIntro === 'turn-nino' ? 'nino' : 'papa'
+    const initialFacing: Person = (paramIntro === 'turn-nino' || paramIntro === 'teacher-nino') ? 'nino' : 'papa'
     const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write', 'good', 'almost', 'hatch', 'master'].includes(param))
       ? (param as Screen)
+      : (paramIntro === 'teacher-papa' || paramIntro === 'teacher-nino')
+      ? 'master'
       : paramIntro
       ? (paramIntro === 'turn-nino' ? 'guess' : 'sign')
       : 'loader'
@@ -177,8 +183,10 @@ export function loadState(): GameState {
     const paramTutorialMode = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('mode') as 'initial' | 'standalone' | null) : null
     const initialTutorialMode = paramTutorialMode ?? (param === 'tutorialKid' || param === 'tutorialParent' ? 'initial' : undefined)
     const initialWriteStage: 'sign' | 'write' = paramStage === 'write' ? 'write' : 'sign'
+    const paramErrorActor = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('errorActor') as Person | null) : null
+    const initialErrorActor: Person = paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : 'nino')
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx, write: { stage: initialWriteStage, typed: [], letter: 0 } }
+    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx, write: { stage: initialWriteStage, typed: [], letter: 0 }, errorActor: initialErrorActor }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
     const effLevel = (!isNaN(paramLevelRaw) ? initialLevel : param ? initialLevel : paramIntro ? initialLevel : (saved.level ?? 1)) as ModuleId
@@ -200,6 +208,7 @@ export function loadState(): GameState {
       idx: initialIdx,
       write: { stage: initialWriteStage, typed: [], letter: 0 },
       selected: null,
+      errorActor: paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : (saved.errorActor ?? 'nino')),
       fx: fx('none'),
     }
   } catch {
@@ -496,8 +505,8 @@ export function reducer(s: GameState, a: Action): GameState {
       if (!ctl.help) return s
       const logged = addLog(s, ctl.owner, '? No entendí', 'No')
       if (s.screen === 'master') return teacherLoop(logged)
-      // «?» = the sign was not understood → the parent needs help (the child is the LSC expert) → Maestro niño.
-      return fail(logged, 'papa', 'help')
+      // «?» = the sign was not understood → the person who interprets needs help → whoever guessed/wrote fails
+      return fail(logged, ctl.owner, 'help')
     }
     case 'CHECK': {
       if (isPaused(s)) return s
@@ -521,8 +530,11 @@ export function reducer(s: GameState, a: Action): GameState {
         if (s.casilla === MODULES[s.level].last) return hatch({ ...s, done })
         return { ...s, done, screen: 'map', inLevel: false, intro: null, facing: 'nino', mapAnim: { from: s.casilla, to: s.casilla + 1, key: key++ } }
       }
-      // Modo maestro always starts facing the child: he is the teacher or he sees the sign with the word.
-      if (s.screen === 'almost') return face({ ...s, screen: 'master', teacherPhase: 'show', write: { ...s.write, typed: [] }, fx: fx('teacher') }, 'nino', 'teacher')
+      // Modo maestro always starts facing the teacher: he is the teacher who demonstrates.
+      if (s.screen === 'almost') {
+        const teacher = teacherOf(s)
+        return face({ ...s, screen: 'master', teacherPhase: 'show', write: { ...s.write, typed: [] }, fx: fx('teacher') }, teacher, 'teacher')
+      }
       return s
     }
     case 'TEACHER_NEXT':

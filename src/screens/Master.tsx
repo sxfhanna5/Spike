@@ -412,7 +412,7 @@ export function ChildWriteSlotsBoard() {
             onPointerDown={(e) => handlePointerDown(e, letter)}
             onClick={() => handleLetterTap(letter)}
             aria-label={`Letra ${letter}`}
-            className="btn3d size-[64px] sm:size-[72px] md:size-[76px] rounded-[20px] bg-white font-sans font-black text-[32px] sm:text-[36px] text-[#4E596F] select-none cursor-pointer active:scale-95 transition-transform flex items-center justify-center shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
+            className="btn3d touch-none size-[64px] sm:size-[72px] md:size-[76px] rounded-[20px] bg-white font-sans font-black text-[32px] sm:text-[36px] text-[#4E596F] select-none cursor-pointer active:scale-95 transition-transform flex items-center justify-center shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
             style={{
               '--bg': '#FFFFFF',
               '--edge': '#E5E9F2',

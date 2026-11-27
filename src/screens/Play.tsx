@@ -248,13 +248,95 @@ function LevelCard() {
   )
 }
 
+function TeacherTurnCard({ who }: { who: Person }) {
+  const isPapa = who === 'papa'
+
+  return (
+    <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-8 sm:pt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:pb-10">
+      {/* Top Header: Circular Purple "Aa" Disc Badge (Figma 817:3119 / 817:3154) */}
+      <div className="flex flex-col items-center w-full">
+        <ModuleBadge id={1} size={50} />
+      </div>
+
+      {/* Central Card Area */}
+      <div className="my-auto flex flex-col items-center w-full max-w-[340px] sm:max-w-[356px]">
+        {/* Large Rounded Purple Card (Figma 817:3104 / 817:3127) */}
+        <div className="w-full rounded-[34px] sm:rounded-[38px] bg-[#E2ACFF] px-6 pt-7 pb-8 shadow-[0_12px_32px_rgba(186,80,240,0.18)] flex flex-col items-center text-center">
+          {/* Title: Padre maestro or Niño maestro */}
+          <h1 className="font-display font-black text-white text-[32px] sm:text-[36px] leading-tight">
+            {isPapa ? 'Padre maestro' : 'Niño maestro'}
+          </h1>
+          {/* Subtitle: Quien sabe, es quien enseña */}
+          <p className="mt-1.5 text-white/95 font-medium text-[16px] sm:text-[18px]">
+            Quien sabe, es quien enseña
+          </p>
+
+          {/* Central Circular Avatar with Perched Graduation Cap */}
+          <div className="relative mt-8 mb-2 flex items-center justify-center">
+            {/* Graduation Cap (perched on top of circle matching Figma image 63 Vectorized) */}
+            <div className="absolute -top-7 sm:-top-8 left-1/2 -translate-x-1/2 z-20 w-[84px] sm:w-[94px] pointer-events-none select-none">
+              <img
+                src="/assets/teacher-cap.svg"
+                alt=""
+                className="size-full object-contain drop-shadow-sm"
+              />
+            </div>
+
+            {/* Avatar Circle */}
+            <div
+              className={`size-[164px] sm:size-[184px] rounded-full border-[7px] border-white relative overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.12)] shrink-0 flex items-end justify-center ${
+                isPapa ? 'bg-[#38B6FF]' : 'bg-[#FF8001]'
+              }`}
+            >
+              {isPapa ? (
+                <img
+                  src="/people/padre.png"
+                  alt="Padres"
+                  draggable={false}
+                  className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+                />
+              ) : (
+                <img
+                  src="/assets/dac2e.svg"
+                  alt="Niño"
+                  draggable={false}
+                  className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Below Card Instruction */}
+        {isPapa ? (
+          <div className="mt-4 sm:mt-5 flex items-center justify-center gap-2 text-[#8C8C8C] text-[16px] sm:text-[17px] font-medium select-none">
+            <Icon name="arrowLeft" size={20} color="#8C8C8C" solid />
+            <span>Gira el celular hacia tu padre</span>
+          </div>
+        ) : (
+          <div className="mt-4 sm:mt-5 flex items-center justify-center gap-2 text-[#8C8C8C] text-[16px] sm:text-[17px] font-medium select-none">
+            <span>Gira el celular hacia el niño</span>
+            <Icon name="arrowRight" size={20} color="#8C8C8C" solid />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function TurnCard() {
   const { s } = useGame()
   const intro = s.intro!
   const c = current(s)
   const m = MODULES[s.level]
   const teacher = intro.kind === 'teacher'
-  const who = teacher ? teacherOf(s) : intro.who
+  const who = intro.who
+
+  // Use dedicated TeacherTurnCard for Maestro turns (Figma 817:3104 / 817:3127)
+  if (teacher) {
+    return <TeacherTurnCard who={who} />
+  }
+
   const signing = signer(c.round) === who && (s.screen === 'sign' || (s.screen === 'write' && s.write.stage === 'sign'))
   const role = signing ? 'sign' : s.screen === 'write' ? 'write' : 'guess'
   const kid = who === 'nino'
@@ -263,14 +345,12 @@ function TurnCard() {
   const doneInModule = Math.max(1, Math.min(m.challenges.length, s.casilla - m.first + 1))
   const handColor = roundInfo.signer === 'papa' ? '#45C1FF' : '#FF8001'
 
-  const cardBg = teacher ? '#E7B3FF' : kid ? '#FF8001' : '#45C1FF'
-  const title = teacher ? `Maestro ${name}` : `Turno del ${name}`
-  const subtitle = teacher
-    ? 'El que sabe, enseña'
-    : role === 'sign'
+  const cardBg = kid ? '#FF8001' : '#45C1FF'
+  const title = `Turno del ${name}`
+  const subtitle = role === 'sign'
     ? (who === 'papa' ? 'Haz la seña frente a tu hijo' : 'Haz la seña frente a papá')
     : (who === 'nino' ? 'Adivina la seña de papá' : 'Adivina la seña de tu hijo')
-  const subIcon = teacher ? 'cap' : role === 'sign' ? 'hand' : 'eye'
+  const subIcon = role === 'sign' ? 'hand' : 'eye'
 
   return (
     <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-6 sm:pt-[calc(2.75rem+env(safe-area-inset-top,0px))] sm:pb-8">
@@ -664,21 +744,143 @@ export function GoodScreen() {
 
 export function AlmostScreen() {
   const { s, dispatch } = useGame()
-  const who: Person = s.errorActor ?? 'papa'
-  usePausedTimeout(() => dispatch({ type: 'AUTO_NEXT' }), 2400)
+  const teacher = teacherOf(s)
+  const isPapaTeacher = teacher === 'papa'
+  usePausedTimeout(() => dispatch({ type: 'AUTO_NEXT' }), 2600)
+
   return (
-    <div role="button" tabIndex={0} aria-label="Seguir" onClick={() => dispatch({ type: 'AUTO_NEXT' })} onKeyDown={(e) => e.key === 'Enter' && dispatch({ type: 'AUTO_NEXT' })} className="absolute inset-0 cursor-pointer outline-none">
-      <Screen bg="#BCEDFF">
-        <SkyHills />
-        <div className="card-in absolute top-[150px] inset-x-5 mx-auto flex max-w-[350px] flex-col items-center rounded-[28px] bg-white px-5 pt-6 pb-6 shadow-[0_10px_28px_rgba(0,0,0,.14)]">
-          <h1 className="pop font-display text-[56px] leading-[60px] font-bold text-[#FF8001]" style={{ textShadow: '0 3px 0 rgb(255 79 26 / .25)' }}>¡Casi!</h1>
-          <div className="mt-1 mb-2"><Spike stage={stageOf(s.done)} mood="confused" size={170} /></div>
-          <div className="pop mt-1" style={{ animationDelay: '200ms' }}><Avatar who={who} size={96} halo question /></div>
-          {who === 'papa' && <p className="mt-4 font-display text-[22px] leading-7 font-medium text-ink">{s.errorKind === 'help' ? 'Vamos a verla juntos' : 'Era otra. ¡Vamos juntos!'}</p>}
-          <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#F7E8FF] py-1.5 pr-4 pl-2 font-sans text-[14px] font-extrabold text-[#8A3FC4]"><Icon name="cap" size={20} color="#D06BFF" />Modo maestro</span>
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label="Continuar al modo maestro"
+      onClick={() => dispatch({ type: 'AUTO_NEXT' })}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && dispatch({ type: 'AUTO_NEXT' })}
+      className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none cursor-pointer outline-none bg-[#E7B3FF]"
+    >
+      {/* Background lavender-purple gradient */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#DF98FF] via-[#E7B3FF] to-[#D585FF]" />
+
+      {/* Top Close Button (standard XButton) */}
+      <XButton />
+
+      {/* Top Header: Circular Purple "Aa" Disc Badge */}
+      <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
+        <ModuleBadge id={1} size={50} />
+      </div>
+
+      {/* Title & Subtitle */}
+      <div className="relative z-20 flex flex-col items-center text-center px-4 mt-2 sm:mt-3">
+        <h1
+          className="font-display font-black text-white text-[50px] sm:text-[58px] leading-tight select-none"
+          style={{ textShadow: '0 2px 4px rgba(138,63,196,0.3)' }}
+        >
+          ¡Casi!
+        </h1>
+        <p className="font-sans font-medium text-white/90 text-[17px] sm:text-[19px] mt-0.5">
+          La seña no se entendió
+        </p>
+      </div>
+
+      {/* Central Mascot: Egg with bewildered expression + Thought bubble with '?' */}
+      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[280px] sm:max-w-[320px] mx-auto py-2">
+        <div className="relative w-[180px] sm:w-[210px] aspect-[475/584] flex items-center justify-center">
+          {/* Egg Shadow on ground */}
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[70%] h-4 rounded-full bg-[#52B81F]/30 blur-[2px]" />
+
+          {/* Egg Mascot SVG */}
+          <img
+            src="/assets/casi-egg.svg"
+            alt="Spike confundido"
+            draggable={false}
+            className="size-full object-contain pointer-events-none select-none drop-shadow-sm"
+          />
+
+          {/* Thought Bubble with '?' perched on upper right */}
+          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[54px] sm:w-[62px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
+            <img
+              src="/assets/casi-bubble.svg"
+              alt=""
+              className="absolute inset-0 size-full object-contain drop-shadow-sm"
+            />
+            <span className="relative z-10 font-display font-black text-white text-[24px] sm:text-[28px] -translate-y-0.5">
+              ?
+            </span>
+          </div>
         </div>
-        <XButton />
-      </Screen>
+      </div>
+
+      {/* Bottom Area: Green Hills + Orange Mushroom + Transition Pill Card */}
+      <div className="relative z-20 w-full flex flex-col items-center pb-6 sm:pb-8">
+        {/* Landscape backdrop behind pill card */}
+        <div className="absolute bottom-0 inset-x-0 h-[160px] sm:h-[180px] pointer-events-none overflow-hidden" aria-hidden>
+          {/* Soft lilac clouds behind hills */}
+          <img
+            src="/assets/casi-clouds.svg"
+            alt=""
+            className="absolute -top-6 left-[-10%] w-[120%] opacity-40 mix-blend-screen pointer-events-none"
+          />
+
+          {/* Green rolling hill */}
+          <div className="absolute bottom-0 inset-x-[-15%] h-[130px] rounded-t-[50%] bg-[#7ED321] border-t-4 border-[#6CB81C]" />
+
+          {/* Green Bush clusters */}
+          <div className="absolute bottom-6 left-3 size-12 rounded-full bg-[#4EA816]" />
+          <div className="absolute bottom-7 left-8 size-14 rounded-full bg-[#4EA816]" />
+          <div className="absolute bottom-6 right-20 size-10 rounded-full bg-[#4EA816]" />
+
+          {/* Orange Spotted Mushroom on the bottom right (Figma 817:1915) */}
+          <div className="absolute bottom-2 right-4 w-[110px] sm:w-[130px] aspect-[434/246]">
+            <img
+              src="/assets/casi-mushroom.svg"
+              alt=""
+              className="size-full object-contain pointer-events-none"
+            />
+          </div>
+        </div>
+
+        {/* Transition Pill Card (Figma 817:1928) */}
+        <div className="relative z-30 w-full max-w-[310px] sm:max-w-[330px] rounded-[30px] bg-white px-5 pt-3.5 pb-4 shadow-[0_10px_28px_rgba(74,90,140,0.18)] border border-[#E8ECF4] flex flex-col items-center select-none">
+          {/* Avatar -> Arrow -> Teacher Cap */}
+          <div className="flex items-center justify-center gap-3.5 sm:gap-4">
+            {/* Teacher Avatar Disc */}
+            <div className={`size-11 sm:size-12 rounded-full border-[3px] border-white shadow-sm overflow-hidden flex items-end justify-center ${isPapaTeacher ? 'bg-[#38B6FF]' : 'bg-[#FF8001]'}`}>
+              {isPapaTeacher ? (
+                <img
+                  src="/people/padre.png"
+                  alt="Padres"
+                  draggable={false}
+                  className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+                />
+              ) : (
+                <img
+                  src="/assets/dac2e.svg"
+                  alt="Niño"
+                  draggable={false}
+                  className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+                />
+              )}
+            </div>
+
+            {/* Transition Arrow */}
+            <Icon name="arrowRight" size={18} color="#6A7187" solid />
+
+            {/* Graduation Cap Disc */}
+            <div className="size-11 sm:size-12 rounded-full bg-[#F7E8FF] shadow-sm flex items-center justify-center p-1.5 border border-[#E7B3FF]">
+              <img
+                src="/assets/teacher-cap.svg"
+                alt="Modo maestro"
+                draggable={false}
+                className="size-full object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Invitation Text */}
+          <p className="mt-2 text-[#6A7187] font-sans font-bold text-[14px] sm:text-[15px] text-center leading-tight">
+            {isPapaTeacher ? 'Papá, llegó tu momento de enseñar' : 'Hijo, llegó tu momento de enseñar'}
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
