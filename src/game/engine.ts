@@ -183,10 +183,13 @@ export function loadState(): GameState {
     const paramTutorialMode = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('mode') as 'initial' | 'standalone' | null) : null
     const initialTutorialMode = paramTutorialMode ?? (param === 'tutorialKid' || param === 'tutorialParent' ? 'initial' : undefined)
     const initialWriteStage: 'sign' | 'write' = paramStage === 'write' ? 'write' : 'sign'
+    const paramMaster = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('master') as Person | null) : null
+    const paramTeacherPhase = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('teacherPhase') as TeacherPhase | null) : null
+    const initialTeacherPhase: TeacherPhase = paramTeacherPhase ?? 'show'
     const paramErrorActor = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('errorActor') as Person | null) : null
-    const initialErrorActor: Person = paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : 'nino')
+    const initialErrorActor: Person = paramMaster === 'papa' ? 'nino' : paramMaster === 'nino' ? 'papa' : (paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : 'nino'))
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx, write: { stage: initialWriteStage, typed: [], letter: 0 }, errorActor: initialErrorActor }
+    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx, write: { stage: initialWriteStage, typed: [], letter: 0 }, errorActor: initialErrorActor, teacherPhase: initialTeacherPhase }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
     const effLevel = (!isNaN(paramLevelRaw) ? initialLevel : param ? initialLevel : paramIntro ? initialLevel : (saved.level ?? 1)) as ModuleId
@@ -208,7 +211,8 @@ export function loadState(): GameState {
       idx: initialIdx,
       write: { stage: initialWriteStage, typed: [], letter: 0 },
       selected: null,
-      errorActor: paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : (saved.errorActor ?? 'nino')),
+      errorActor: initialErrorActor,
+      teacherPhase: initialTeacherPhase,
       fx: fx('none'),
     }
   } catch {

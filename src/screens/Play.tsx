@@ -7,7 +7,7 @@ import { CloudsOrange } from '../art/CloudsOrange'
 import { GoodScene } from '../art/GoodScene'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ModuleBadge, PrimaryActionButton, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
+import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ListoBtn, ModuleBadge, PrimaryActionButton, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 
 /* ============================== shared pieces ============================== */
@@ -116,11 +116,6 @@ function Thinking() {
       {[0, 1, 2].map((k) => <span key={k} className="dot-bounce size-3.5 rounded-full bg-white" style={{ animationDelay: `${k * 140}ms` }} />)}
     </div>
   )
-}
-
-/** Listo button: uses the canonical PrimaryActionButton shared across the app. */
-function ListoBtn({ onClick }: { onClick: () => void }) {
-  return <PrimaryActionButton label="Listo" icon="check" onClick={onClick} />
 }
 
 /* ============================== intro cards (level · turn · maestro) ============================== */

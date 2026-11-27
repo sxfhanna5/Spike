@@ -124,6 +124,30 @@ export function XButton({ light = true }: { light?: boolean }) {
   )
 }
 
+/** Curved return back arrow button matching Figma 817:2999 (Arrow Back Up). */
+export function BackArrowButton({ onClick }: { onClick?: () => void }) {
+  const { dispatch } = useGame()
+  return (
+    <button
+      type="button"
+      aria-label="Regresar"
+      onClick={onClick ?? (() => dispatch({ type: 'OVERLAY', overlay: 'exit' }))}
+      className="absolute left-4 sm:left-5 z-30 flex items-center justify-center text-white cursor-pointer transition-transform active:scale-95"
+      style={{ top: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}
+    >
+      <svg width="34" height="34" viewBox="0 0 118 118" fill="none" className="size-8 sm:size-9 drop-shadow-sm">
+        <path d="M44.25 68.83L24.58 49.17L44.25 29.5" stroke="white" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M24.58 49.17H78.66C89.5 49.17 98.33 58 98.33 68.84C98.33 79.68 89.5 88.5 78.66 88.5H73.75" stroke="white" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </button>
+  )
+}
+
+/** Canonical orange 3D "Listo" button with check icon. */
+export function ListoBtn({ onClick, className = '' }: { onClick?: () => void; className?: string }) {
+  return <PrimaryActionButton label="Listo" icon="check" onClick={onClick} className={className} />
+}
+
 /* ============================== motion helpers ============================== */
 
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches

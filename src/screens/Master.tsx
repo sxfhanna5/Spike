@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { useGame } from '../game/context'
-import { ALPHABET, MODULES, STAGES, plainLetters, type ModuleId } from '../game/data'
+import { ALPHABET, MODULES, STAGES, plainLetters, type ModuleId, type Person } from '../game/data'
 import { boxControls, countTotalLearned, current, interpreter, signer, teacherMode, teacherOf, teacherPicker } from '../game/engine'
 import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Btn, Dock, GameHeader, InstructionStrip, ModuleBadge, NavBar, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
+import { Avatar, BackArrowButton, Btn, Dock, GameHeader, InstructionStrip, ListoBtn, ModuleBadge, NavBar, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
 import { Badge, Icon, Pictogram, hasPictogram } from '../components/glyphs'
 import { ContentBig, HelpButton, OptionCard } from './Play'
 
@@ -33,6 +33,170 @@ function Laps() {
   )
 }
 
+/**
+ * Pantalla que aparece durante la reproducción del video en los modos Maestro y Niño.
+ * Figma 817:2936 ("Padre hace seña") / Modo Niño.
+ */
+export function MasterVideoScreen({
+  who,
+  onDone,
+}: {
+  who: Person
+  onDone?: () => void
+}) {
+  const { s, dispatch } = useGame()
+  const c = current(s)
+  const isPapa = who === 'papa'
+  const m = MODULES[s.level]
+  const total = m.challenges.length
+  const currentIdx = Math.min(total, s.casilla - m.first + 1)
+
+  const [playing, setPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  const handlePlayToggle = () => {
+    if (videoRef.current && videoRef.current.currentSrc) {
+      if (playing) {
+        videoRef.current.pause()
+        setPlaying(false)
+      } else {
+        videoRef.current
+          .play()
+          .then(() => setPlaying(true))
+          .catch(() => setPlaying(true))
+      }
+    } else {
+      setPlaying((prev) => !prev)
+    }
+  }
+
+  return (
+    <div className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none bg-[#E7B3FF]">
+      {/* 2. Botón de regresar en la esquina superior izquierda */}
+      <BackArrowButton />
+
+      {/* Top Header: Graduation Cap + Horizontal Segmented Progress Bar + Instruction Strip */}
+      <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))] w-full px-4">
+        {/* 3. Icono de graduación en la parte superior */}
+        <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+          <img
+            src="/assets/teacher-cap.svg"
+            alt=""
+            className="size-full object-contain"
+          />
+        </div>
+
+        {/* 4. Barra de progreso horizontal: completado en naranja, restante en blanco */}
+        <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
+          <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
+            {Array.from({ length: total }).map((_, i) => (
+              <span
+                key={i}
+                className="h-[7px] sm:h-[8px] flex-1 max-w-[36px] rounded-full transition-colors duration-300"
+                style={{ background: i < currentIdx ? '#FF8001' : '#FFFFFF' }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* 5. Indicador del tipo de actividad:
+            - Padre maestro: "Padre hace seña - niño adivina"
+            - Niño maestro: "Niño hace seña - padre adivina" */}
+        <InstructionStrip
+          signer={who}
+          guesser={isPapa ? 'nino' : 'papa'}
+          action={s.level === 5 ? 'escribe' : 'adivina'}
+          className="mt-3 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
+        />
+      </div>
+
+      {/* Center: Card with perched avatar & helper text */}
+      <div className="my-auto mx-auto w-full max-w-[340px] sm:max-w-[356px] px-4 pt-8 sm:pt-10 z-10 flex flex-col items-center">
+        {/* 7. Tarjeta blanca con bordes redondeados */}
+        <div className="relative w-full rounded-[34px] sm:rounded-[36px] bg-white px-4 pt-12 pb-5 sm:px-5 sm:pt-14 sm:pb-6 shadow-[0_16px_36px_rgba(112,40,160,0.14)] flex flex-col items-center">
+          {/* 6. Avatar de los personajes sobre el borde superior */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2">
+            <div
+              className={`relative size-[76px] sm:size-[80px] overflow-hidden rounded-full border-[6px] border-white flex items-end justify-center shadow-[0_4px_14px_rgba(0,0,0,0.12)] ${
+                isPapa ? 'bg-[#38B6FF]' : 'bg-[#FF8001]'
+              }`}
+            >
+              {isPapa ? (
+                <img
+                  src="/people/padre.png"
+                  alt="Padres"
+                  draggable={false}
+                  className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
+                />
+              ) : (
+                <img
+                  src="/assets/dac2e.svg"
+                  alt="Niño"
+                  draggable={false}
+                  className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* 8. Video de la seña con proporción adecuada y botón de reproducción */}
+          <div className="relative aspect-[4/3] sm:aspect-[1.3] w-full overflow-hidden rounded-[22px] sm:rounded-[24px] bg-[#EAF1F8] shadow-inner">
+            <video
+              ref={videoRef}
+              playsInline
+              className={`size-full object-cover ${playing ? 'block' : 'hidden'}`}
+              onEnded={() => setPlaying(false)}
+            />
+            <img
+              src="/assets/110ea.png"
+              alt="Seña LSC"
+              draggable={false}
+              className={`size-full object-cover ${playing ? 'hidden' : 'block'}`}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={handlePlayToggle}
+                aria-label={playing ? 'Pausar' : 'Reproducir'}
+                className="btn3d grid size-14 sm:size-16 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
+                style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0 } as React.CSSProperties}
+              >
+                <Icon
+                  name={playing ? 'pause' : 'play'}
+                  size={28}
+                  solid
+                  color="#FF8001"
+                  className={playing ? '' : 'translate-x-0.5'}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* 9. Recuadro morado claro que muestra la letra correspondiente */}
+          <div className="mt-3.5 sm:mt-4 w-full h-[52px] sm:h-[58px] rounded-[24px] sm:rounded-[26px] bg-[#E7B3FF] flex items-center justify-center shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)]">
+            <span
+              className="font-sans font-black text-[#BF5EEB] leading-none text-[32px] sm:text-[36px]"
+            >
+              {c.kind === 'number' ? (c.digit ?? c.content) : c.content}
+            </span>
+          </div>
+        </div>
+
+        {/* 10. Texto de ayuda debajo de la tarjeta */}
+        <div className="mt-4 sm:mt-5 flex items-center justify-center gap-2.5 text-white text-[17px] sm:text-[19px] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)] select-none">
+          <Icon name="hand" size={24} color="#FFFFFF" solid />
+          <span>{isPapa ? 'Enséñale a tu hijo' : 'Enséñale a tu padre'}</span>
+        </div>
+      </div>
+
+      {/* 11. Botón naranja inferior con el icono de check y el texto "Listo" */}
+      <div className="w-full flex items-center justify-center pb-5 sm:pb-7 z-20 px-4">
+        <ListoBtn onClick={onDone ?? (() => dispatch({ type: 'TEACHER_NEXT' }))} />
+      </div>
+    </div>
+  )
+}
+
 export function MasterScreen() {
   const { s, dispatch } = useGame()
   const c = current(s)
@@ -42,8 +206,11 @@ export function MasterScreen() {
   const show = s.teacherPhase === 'show'
   const ctl = boxControls(s)
   const two = [c.correct, (c.correct + 1) % 3].sort()
-  const name = master === 'nino' ? 'niño' : 'padre'
-  const kidTeaches = master === 'nino'
+
+  if (show) {
+    return <MasterVideoScreen who={master} onDone={() => dispatch({ type: 'TEACHER_NEXT' })} />
+  }
+
   return (
     <Screen bg="#E7B3FF">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,#F3D6FF,#E7B3FF_65%)]" />
@@ -53,44 +220,11 @@ export function MasterScreen() {
       <SealChip />
       <div className="absolute top-[104px] left-1/2 -translate-x-1/2"><span className="hat-bounce block"><Avatar who={master} size={150} halo cap /></span></div>
       <div className="absolute top-[274px] left-0 flex w-full flex-col items-center gap-2">
-        {/* the child's turn has no sentences */}
-        {!kidTeaches && <h1 className="font-display text-[30px] leading-9 font-semibold text-ink">Maestro {name}</h1>}
+        {master !== 'nino' && <h1 className="font-display text-[30px] leading-9 font-semibold text-ink">Maestro padre</h1>}
         <Laps />
       </div>
 
-      {show ? (
-        <>
-          <div className="card-in absolute top-[clamp(320px,44vh,390px)] inset-x-5 mx-auto flex h-[196px] max-w-[350px] items-center justify-center gap-4 rounded-[28px] bg-white px-4 shadow-[0_10px_26px_rgba(112,40,160,.18)]">
-            <div className="relative h-[150px] w-[140px] shrink-0 overflow-hidden rounded-[20px] bg-[#4A5A8C]">
-              <img src="/assets/110ea.png" alt="" className="size-full object-cover" draggable={false} />
-              <span className="absolute right-2 bottom-2 left-2 truncate rounded-full bg-[#4A5A8C]/80 px-2 py-0.5 text-center font-sans text-[14px] font-extrabold text-white">Video LSC</span>
-              <span className="absolute top-2 left-2 grid size-8 place-items-center rounded-full bg-white text-[#FF8001]"><Icon name="play" size={14} /></span>
-            </div>
-            {kidTeaches ? (
-              <div className="flex flex-col items-center gap-2">
-                <span className="grid size-[62px] place-items-center rounded-full bg-[#F7E8FF] shadow-[0_4px_0_#E7B3FF]"><Icon name="hand" size={34} color="#D06BFF" /></span>
-                <Icon name="arrowRight" size={24} color="#D06BFF" />
-                <Avatar who="papa" size={64} />
-              </div>
-            ) : (
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#E7B3FF] font-display text-[26px] font-bold shadow-[0_3px_0_#D06BFF]">=</span>
-                <div className="flex min-w-0 flex-col items-center gap-1">
-                  {hasPictogram(c.content) && <Pictogram content={c.content} size={54} />}
-                  <span className="font-sans leading-none font-black" style={{ fontSize: c.content.length > 8 ? 22 : c.content.length > 4 ? 32 : 56 }}>{c.content}</span>
-                </div>
-              </div>
-            )}
-          </div>
-          {!kidTeaches && (
-            <p className="absolute top-[604px] left-0 flex w-full items-center justify-center gap-2 font-display text-[20px] font-medium text-ink">
-              <Icon name="turtle" size={26} color="#D06BFF" />
-              {mode === 'write' ? 'Letra por letra, despacio' : 'Repítela despacio'}
-            </p>
-          )}
-          <div className="absolute top-[664px] inset-x-5 mx-auto max-w-[300px]"><PrimaryActionButton onClick={() => dispatch({ type: 'TEACHER_NEXT' })} /></div>
-        </>
-      ) : mode === 'write' ? (
+      {mode === 'write' ? (
         <div className="absolute top-[372px] inset-x-5 mx-auto max-w-[350px]"><WriteBoard compact /></div>
       ) : (
         <>
