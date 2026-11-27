@@ -128,7 +128,7 @@ export function IntroCard() {
   usePausedTimeout(done, isFrozen ? 999999 : (intro.kind === 'level' ? 2000 : 1800), true, [intro.kind, s.idx, intro.who, s.teacherPhase, s.teacherLoops, s.screen])
   return (
     <div role="button" tabIndex={0} aria-label="Toca para saltar" onClick={done} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && done()} className="screen-in absolute inset-0 z-50 cursor-pointer outline-none">
-      {intro.kind === 'level' ? <LevelCard /> : <TurnCard />}
+      {intro.kind === 'level' ? <LevelCard /> : intro.kind === 'teacher' ? <TeacherTurnCard who={intro.who} /> : <TurnCard />}
     </div>
   )
 }
@@ -244,13 +244,14 @@ function LevelCard() {
 }
 
 function TeacherTurnCard({ who }: { who: Person }) {
+  const { s } = useGame()
   const isPapa = who === 'papa'
 
   return (
     <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-8 sm:pt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:pb-10">
-      {/* Top Header: Circular Purple "Aa" Disc Badge (Figma 817:3119 / 817:3154) */}
+      {/* Top Header: Circular Disc Badge matching current module (Figma 817:3119 / 817:3154) */}
       <div className="flex flex-col items-center w-full">
-        <ModuleBadge id={1} size={50} />
+        <ModuleBadge id={s.level} size={50} />
       </div>
 
       {/* Central Card Area */}
@@ -576,19 +577,9 @@ export function GuessScreen({ isMasterMode = false }: { isMasterMode?: boolean }
 
   usePausedTimeout(() => dispatch({ type: 'CHECK' }), 850, s.selected !== null, [s.selected])
   return (
-    <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
-      <SkyHills />
-      <GameHeader isMaster={isMasterMode} masterLoops={s.teacherLoops} />
-      {isMasterMode && (
-        <div className="relative z-20 flex justify-center -mt-1 mb-2">
-          <InstructionStrip
-            signer={master}
-            guesser={picker}
-            action="adivina"
-            className="shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
-          />
-        </div>
-      )}
+    <Screen bg={isMasterMode ? '#E7B3FF' : '#BCEDFF'} className={`relative flex h-full w-full flex-col justify-between overflow-hidden select-none ${isMasterMode ? 'bg-[#E7B3FF]' : ''}`}>
+      {!isMasterMode && <SkyHills />}
+      <GameHeader isMaster={isMasterMode} masterLoops={s.teacherLoops} chip={true} />
       <div className="relative z-10 my-auto mx-auto flex w-full max-w-[356px] sm:max-w-[380px] flex-col gap-3.5 sm:gap-4 px-3 sm:px-4">
         {optionsToRender.map((k) => (
           <OptionCard
@@ -760,8 +751,8 @@ export function AlmostScreen() {
       </div>
 
       {/* Central Mascot: Egg resting directly on the green hill crest + Thought bubble with '?' */}
-      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[290px] sm:max-w-[320px] mx-auto pt-2 pb-0 translate-y-7 sm:translate-y-8">
-        <div className="relative w-[196px] sm:w-[220px] aspect-[475/584] flex items-center justify-center">
+      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[320px] sm:max-w-[350px] mx-auto pt-2 pb-0 translate-y-8 sm:translate-y-9">
+        <div className="relative w-[220px] sm:w-[246px] aspect-[475/584] flex items-center justify-center">
           {/* Egg Mascot SVG */}
           <img
             src="/assets/casi-egg.svg"
@@ -771,13 +762,13 @@ export function AlmostScreen() {
           />
 
           {/* Thought Bubble with '?' perched on upper right */}
-          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[56px] sm:w-[64px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
+          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[58px] sm:w-[66px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
             <img
               src="/assets/casi-bubble.svg"
               alt=""
               className="absolute inset-0 size-full object-contain drop-shadow-sm"
             />
-            <span className="relative z-10 font-display font-black text-white text-[25px] sm:text-[29px] -translate-y-0.5">
+            <span className="relative z-10 font-display font-black text-white text-[26px] sm:text-[30px] -translate-y-0.5">
               ?
             </span>
           </div>

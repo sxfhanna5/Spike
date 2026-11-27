@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { MODULES, ROUND_INFO, type ModuleId, type Person, type Round } from '../game/data'
 import { useGame } from '../game/context'
+import { teacherOf, teacherPicker } from '../game/engine'
 import { Icon, ModuleArt, type IconName } from './glyphs'
 
 /* ============================== buttons ============================== */
@@ -518,26 +519,31 @@ export function GameHeader({
   masterLoops?: number
 }) {
   const { s } = useGame()
+  const master = teacherOf(s)
+  const picker = teacherPicker(s)
   const total = s.queue.length
   const round = s.queue[Math.min(s.idx, Math.max(0, total - 1))].round
   const isWrite = s.level === 5
   return (
-    <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
+    <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))] w-full px-4">
+      {x && <XButton />}
       {isMaster ? (
-        <>
-          <BackArrowButton />
-          <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
-            <img src="/assets/teacher-cap.svg" alt="" className="size-full object-contain" />
-          </div>
-        </>
+        <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+          <img src="/assets/teacher-cap.svg" alt="" className="size-full object-contain" />
+        </div>
       ) : (
-        <>
-          {x && <XButton />}
-          <ModuleBadge id={s.level} size={50} />
-        </>
+        <ModuleBadge id={s.level} size={50} />
       )}
-      <ProgressBar isMaster={isMaster} masterLoops={masterLoops} onWhite={onWhite} />
-      {chip && !isMaster && <InstructionStrip round={round} action={isWrite ? 'escribe' : 'adivina'} className="mt-3" />}
+      <ProgressBar isMaster={isMaster} masterLoops={masterLoops} onWhite={onWhite} className="mt-2.5 sm:mt-3" />
+      {chip && (
+        <InstructionStrip
+          signer={isMaster ? master : undefined}
+          guesser={isMaster ? picker : undefined}
+          round={isMaster ? undefined : round}
+          action={isWrite ? 'escribe' : 'adivina'}
+          className="mt-4 sm:mt-5 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
+        />
+      )}
     </div>
   )
 }

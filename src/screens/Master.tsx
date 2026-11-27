@@ -72,8 +72,8 @@ export function MasterVideoScreen({
 
   return (
     <div className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none bg-[#E7B3FF]">
-      {/* 2. Botón de regresar en la esquina superior izquierda */}
-      <BackArrowButton />
+      {/* 2. Botón de cerrar (X) en la esquina superior izquierda */}
+      <XButton />
 
       {/* Top Header: Graduation Cap + Horizontal Segmented Progress Bar + Instruction Strip */}
       <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))] w-full px-4">
@@ -87,7 +87,7 @@ export function MasterVideoScreen({
         </div>
 
         {/* 4. Barra de progreso horizontal de exactamente 2 intentos */}
-        <ProgressBar isMaster={true} masterLoops={s.teacherLoops} className="mt-2.5" />
+        <ProgressBar isMaster={true} masterLoops={s.teacherLoops} className="mt-2.5 sm:mt-3" />
 
         {/* 5. Indicador del tipo de actividad:
             - Padre maestro: "Padre hace seña - niño adivina"
@@ -96,7 +96,7 @@ export function MasterVideoScreen({
           signer={who}
           guesser={isPapa ? 'nino' : 'papa'}
           action={s.level === 5 ? 'escribe' : 'adivina'}
-          className="mt-3 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
+          className="mt-4 sm:mt-5 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
         />
       </div>
 
@@ -580,18 +580,16 @@ export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean }
   if (isShowPhase) {
     return (
       <Screen bg={isMaster ? '#E7B3FF' : '#BCEDFF'} className={`relative flex h-full w-full flex-col justify-between overflow-hidden select-none ${isMaster ? 'bg-[#E7B3FF]' : ''}`}>
-        {!isMaster ? (
+        {!isMaster && (
           <>
             {/* Continuous sky gradient */}
             <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
             {/* Standard outdoor landscape ground */}
             <SkyHills />
-            {/* Top Close Button */}
-            <XButton />
           </>
-        ) : (
-          <BackArrowButton />
         )}
+        {/* Top Close Button (XButton used in all screens) */}
+        <XButton />
 
         {/* Top Header */}
         <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
@@ -608,7 +606,7 @@ export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean }
           )}
 
           {/* Segmented Progress Bar */}
-          <ProgressBar isMaster={isMaster} masterLoops={s.teacherLoops} className="mt-2.5" />
+          <ProgressBar isMaster={isMaster} masterLoops={s.teacherLoops} className="mt-2.5 sm:mt-3" />
 
           {/* Canonical Instruction Strip: Padre hace seña - niño escribe */}
           <InstructionStrip
@@ -616,7 +614,7 @@ export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean }
             guesser={isMaster ? picker : undefined}
             round={isMaster ? undefined : c.round}
             action="escribe"
-            className="mt-3"
+            className="mt-4 sm:mt-5 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
           />
         </div>
 
@@ -739,18 +737,16 @@ export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean }
   // stage === 'write' / teacherPhase === 'retry': "El niño escribe"
   return (
     <Screen bg={isMaster ? '#E7B3FF' : '#BCEDFF'} className={`relative flex h-full w-full flex-col justify-between overflow-hidden select-none ${isMaster ? 'bg-[#E7B3FF]' : ''}`}>
-      {!isMaster ? (
+      {!isMaster && (
         <>
           {/* Continuous sky gradient */}
           <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
           {/* Standard outdoor landscape ground */}
           <SkyHills />
-          {/* Top Close Button */}
-          <XButton />
         </>
-      ) : (
-        <BackArrowButton />
       )}
+      {/* Top Close Button (XButton used in all screens) */}
+      <XButton />
 
       {/* Top Header */}
       <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
@@ -767,7 +763,7 @@ export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean }
         )}
 
         {/* Segmented Progress Bar */}
-        <ProgressBar isMaster={isMaster} masterLoops={s.teacherLoops} className="mt-2.5" />
+        <ProgressBar isMaster={isMaster} masterLoops={s.teacherLoops} className="mt-2.5 sm:mt-3" />
 
         {/* Canonical Instruction Strip: Padre hace seña - niño escribe */}
         <InstructionStrip
@@ -775,7 +771,7 @@ export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean }
           guesser={isMaster ? picker : undefined}
           round={isMaster ? undefined : c.round}
           action="escribe"
-          className="mt-3"
+          className="mt-4 sm:mt-5 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
         />
       </div>
 
