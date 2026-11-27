@@ -112,8 +112,14 @@ export function MapScreen() {
   const finished = s.done >= TOTAL_CASILLAS
   const anim = s.mapAnim
   const slotArcs = geo.arcs
-  const activeSlot = slotOfReto(active)
+  const activeSlot = Math.max(0, Math.min(slotArcs.length - 1, slotOfReto(active) >= 0 ? slotOfReto(active) : 0))
   const stage = stageOf(s.done)
+
+  const safeSlotIndex = (n: number) => {
+    const idx = slotOfReto(n)
+    if (idx >= 0 && idx < slotArcs.length) return idx
+    return Math.max(0, Math.min(slotArcs.length - 1, activeSlot >= 0 ? activeSlot : 0))
+  }
 
   useEffect(() => {
     const updateScale = () => {
@@ -128,7 +134,8 @@ export function MapScreen() {
   }, [])
 
   // Spike's position along the path (arc) and the hop height.
-  const [pos, setPos] = useState(() => ({ arc: slotArcs[slotOfReto(anim ? anim.from : active)], hop: 0 }))
+  const initialArc = slotArcs[anim ? safeSlotIndex(anim.from) : activeSlot] ?? slotArcs[0] ?? 0
+  const [pos, setPos] = useState(() => ({ arc: initialArc, hop: 0 }))
   const [shake, setShake] = useState<number | null>(null)
   const [toast, setToast] = useState<{ key: number; text: string; icon: 'lock' | 'cloud' } | null>(null)
 
@@ -138,7 +145,8 @@ export function MapScreen() {
   const scrollToArc = (arc: number, smooth: boolean, offset = 0) => {
     const el = scroller.current
     if (!el) return
-    const y = geo.pointAt(arc).y * K * scale
+    const safeArc = typeof arc === 'number' && !isNaN(arc) ? arc : 0
+    const y = geo.pointAt(safeArc).y * K * scale
     const totalH = TOTAL_MAP_H * scale
     const top = Math.max(0, Math.min(totalH - el.clientHeight, y - el.clientHeight / 2 + 20 + offset * scale))
     if (smooth) el.scrollTo({ top, behavior: 'smooth' })
@@ -160,7 +168,7 @@ export function MapScreen() {
   }
 
   useLayoutEffect(() => {
-    scrollToArc(slotArcs[slotOfReto(anim ? anim.from : active)], false)
+    scrollToArc(slotArcs[anim ? safeSlotIndex(anim.from) : activeSlot] ?? 0, false)
     onScroll()
     return () => {
       if (scrollRaf.current) cancelAnimationFrame(scrollRaf.current)
@@ -171,7 +179,7 @@ export function MapScreen() {
   useEffect(() => {
     // Settle scroll in mobile browsers after viewport/font metrics resolve
     const timer = window.setTimeout(() => {
-      scrollToArc(slotArcs[slotOfReto(anim ? anim.from : active)], false)
+      scrollToArc(slotArcs[anim ? safeSlotIndex(anim.from) : activeSlot] ?? 0, false)
       onScroll()
     }, 60)
     return () => window.clearTimeout(timer)
@@ -181,11 +189,16 @@ export function MapScreen() {
   // After a reto: Spike hops from casilla to casilla (also over a module casilla) and the path fills with the module colour.
   useEffect(() => {
     if (!anim) {
-      setPos({ arc: slotArcs[activeSlot], hop: 0 })
+      setPos({ arc: slotArcs[activeSlot] ?? 0, hop: 0 })
       return
     }
-    const a = slotOfReto(anim.from)
-    const b = slotOfReto(anim.to)
+    const a = safeSlotIndex(anim.from)
+    const b = safeSlotIndex(anim.to)
+    if (b <= a) {
+      setPos({ arc: slotArcs[b] ?? 0, hop: 0 })
+      dispatch({ type: 'MAP_ANIM_DONE' })
+      return
+    }
     const HOP = 520
     const total = (b - a) * HOP
     const start = performance.now() + 600
@@ -195,14 +208,19 @@ export function MapScreen() {
       const seg = Math.min(b - a - 1, Math.floor(el / HOP))
       const t = (el - seg * HOP) / HOP
       const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
-      const arc = slotArcs[a + seg] + (slotArcs[a + seg + 1] - slotArcs[a + seg]) * e
+      const arc0 = slotArcs[a + seg] ?? 0
+      const arc1 = slotArcs[a + seg + 1] ?? arc0
+      const arc = arc0 + (arc1 - arc0) * e
       setPos({ arc, hop: Math.sin(Math.PI * t) * 20 })
-      if (el < total) raf = requestAnimationFrame(tick)
-      else dispatch({ type: 'MAP_ANIM_DONE' })
+      if (el < total) {
+        raf = requestAnimationFrame(tick)
+      } else {
+        dispatch({ type: 'MAP_ANIM_DONE' })
+      }
     }
-    setPos({ arc: slotArcs[a], hop: 0 })
+    setPos({ arc: slotArcs[a] ?? 0, hop: 0 })
     raf = requestAnimationFrame(tick)
-    const sc = window.setTimeout(() => scrollToArc(slotArcs[b], true), 700)
+    const sc = window.setTimeout(() => scrollToArc(slotArcs[b] ?? 0, true), 700)
     return () => {
       cancelAnimationFrame(raf)
       window.clearTimeout(sc)

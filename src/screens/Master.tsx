@@ -969,7 +969,7 @@ export function HatchScreen() {
               >
                 <div className="flex items-center justify-center gap-2 font-display text-[42px] sm:text-[48px] leading-none font-black text-[#4A5A8C]">
                   <CountUp value={levelLearnedCount} />
-                  <span className="text-[36px] sm:text-[42px] leading-none select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.14)]" aria-hidden="true">🔥</span>
+                  <Icon name="flame" size={38} color="#FF8001" solid className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.14)]" />
                 </div>
                 <span className="font-sans text-[12px] sm:text-[13px] font-black text-[#6A7187] mt-1.5 text-center leading-tight tracking-tight">
                   Aprendidos

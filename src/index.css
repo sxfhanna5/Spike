@@ -37,6 +37,8 @@
   body,
   #root {
     height: 100%;
+    overscroll-behavior: none;
+    -webkit-touch-callout: none;
   }
   body {
     background: #eaf6ff;

@@ -48,7 +48,8 @@ export function getGeometry(): MapGeometry {
   document.body.appendChild(svg)
   const total = path.getTotalLength()
   const pointAt = (arc: number) => {
-    const p = path.getPointAtLength(Math.max(0, Math.min(total, arc)))
+    const validArc = typeof arc === 'number' && !isNaN(arc) && isFinite(arc) ? arc : 0
+    const p = path.getPointAtLength(Math.max(0, Math.min(total, validArc)))
     return { x: p.x, y: p.y }
   }
   // Dense samples of the centre line (every 4 units) so the layout maths is purely numeric and fast.

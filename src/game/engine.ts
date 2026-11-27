@@ -144,7 +144,7 @@ export const initialState = (): GameState => ({
 })
 
 const STORAGE_KEY = 'spike-estado-v1'
-const PERSIST = ['account', 'session', 'tutorialDone', 'done', 'masterSeals', 'masterCount', 'taught', 'playSeconds', 'days', 'replay', 'learned', 'log', 'keyboard', 'simFail'] as const
+const PERSIST = ['account', 'session', 'tutorialDone', 'done', 'masterSeals', 'masterCount', 'taught', 'playSeconds', 'days', 'replay', 'learned', 'log', 'keyboard', 'simFail', 'level', 'casilla'] as const
 export function loadState(): GameState {
   const base = initialState()
   try {
@@ -152,9 +152,17 @@ export function loadState(): GameState {
     const paramIntro = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('intro') : null
     const paramLevelRaw = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('level') || '', 10) : NaN
     const paramCasilla = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('casilla') || '', 10) : NaN
-    const initialLevel = (!isNaN(paramLevelRaw) && paramLevelRaw >= 1 && paramLevelRaw <= 5 ? paramLevelRaw : (!isNaN(paramCasilla) ? moduleOf(paramCasilla).id : 1)) as ModuleId
-    const initialCasilla = !isNaN(paramCasilla) ? paramCasilla : MODULES[initialLevel].first
-    const initialIdx = Math.max(0, Math.min(MODULES[initialLevel].challenges.length - 1, initialCasilla - MODULES[initialLevel].first))
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+    const saved = raw ? (JSON.parse(raw) as Partial<GameState>) : {}
+    const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
+    const effLevel = (!isNaN(paramLevelRaw) && paramLevelRaw >= 1 && paramLevelRaw <= 5
+      ? paramLevelRaw
+      : !isNaN(paramCasilla)
+      ? moduleOf(paramCasilla).id
+      : (saved.level ?? 1)) as ModuleId
+    const effCasilla = !isNaN(paramCasilla) ? paramCasilla : (saved.casilla ?? MODULES[effLevel].first)
+    const initialCasilla = effCasilla
+    const initialIdx = Math.max(0, Math.min(MODULES[effLevel].challenges.length - 1, initialCasilla - MODULES[effLevel].first))
     const initialIntro: Intro | null = paramIntro === 'level'
       ? { kind: 'level', who: 'papa', arrow: false }
       : paramIntro === 'turn-papa'
@@ -167,12 +175,15 @@ export function loadState(): GameState {
       ? { kind: 'teacher', who: 'nino', arrow: false }
       : null
     const initialFacing: Person = (paramIntro === 'turn-nino' || paramIntro === 'teacher-nino') ? 'nino' : 'papa'
+    const hasActiveSession = Boolean((saved.session && saved.account) || done > 0 || saved.tutorialDone)
     const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write', 'good', 'almost', 'hatch', 'master'].includes(param))
       ? (param as Screen)
       : (paramIntro === 'teacher-papa' || paramIntro === 'teacher-nino')
       ? 'master'
       : paramIntro
       ? (paramIntro === 'turn-nino' ? 'guess' : 'sign')
+      : hasActiveSession
+      ? 'map'
       : 'loader'
     const paramOverlay = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('overlay') : null
     const initialOverlay: Overlay | null = (paramOverlay && ['tutorials', 'reto', 'module', 'exit'].includes(paramOverlay))
@@ -188,11 +199,25 @@ export function loadState(): GameState {
     const initialTeacherPhase: TeacherPhase = paramTeacherPhase ?? 'show'
     const paramErrorActor = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('errorActor') as Person | null) : null
     const initialErrorActor: Person = paramMaster === 'papa' ? 'nino' : paramMaster === 'nino' ? 'papa' : (paramErrorActor ?? (paramIntro === 'teacher-nino' ? 'papa' : 'nino'))
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx, write: { stage: initialWriteStage, typed: [], letter: 0 }, errorActor: initialErrorActor, teacherPhase: initialTeacherPhase }
-    const saved = JSON.parse(raw) as Partial<GameState>
-    const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
-    const effLevel = (!isNaN(paramLevelRaw) ? initialLevel : param ? initialLevel : paramIntro ? initialLevel : (saved.level ?? 1)) as ModuleId
+    if (!raw) {
+      return {
+        ...base,
+        screen: initialScreen,
+        tutorialMode: initialTutorialMode,
+        connected: paramConnected,
+        intro: initialIntro,
+        facing: initialFacing,
+        level: effLevel,
+        queue: buildQueue(effLevel, false),
+        overlay: initialOverlay,
+        selectedCasilla: initialCasilla,
+        casilla: initialCasilla,
+        idx: initialIdx,
+        write: { stage: initialWriteStage, typed: [], letter: 0 },
+        errorActor: initialErrorActor,
+        teacherPhase: initialTeacherPhase,
+      }
+    }
     return {
       ...base,
       ...saved,
@@ -304,8 +329,10 @@ export const startReto = (s: GameState, casilla: number, opts: { fixed?: boolean
 /** A reto counts as completed when it is guessed or when Modo maestro ends. Heat only goes up. */
 const complete = (s: GameState, mastered = false, replay = false): GameState => {
   const c = current(s)
-  return {
+  const done = Math.max(s.done, s.casilla)
+  const next: GameState = {
     ...s,
+    done,
     screen: 'good',
     intro: null,
     heat: s.replaying ? s.heat : Math.min(12, s.heat + 1),
@@ -318,6 +345,8 @@ const complete = (s: GameState, mastered = false, replay = false): GameState => 
     learned: { ...s.learned, [s.level]: uniq(s.learned[s.level] ?? [], c.content) },
     fx: fx('none'),
   }
+  saveState(next)
+  return next
 }
 const fail = (s: GameState, who: Person, kind: ErrorKind): GameState => ({
   ...s, screen: 'almost', errorActor: who, errorKind: kind, selected: null, teacherPhase: 'show', fx: fx('teacher'),
@@ -369,7 +398,7 @@ const afterConnect = (s: GameState): GameState => ({ ...s, screen: 'map', link: 
 export function reducer(s: GameState, a: Action): GameState {
   switch (a.type) {
     case 'LOADER_DONE':
-      return s.screen === 'loader' ? { ...s, screen: s.session && s.account ? 'connect' : 'welcome' } : s
+      return s.screen === 'loader' ? { ...s, screen: s.session && s.account ? (s.done > 0 ? 'map' : 'connect') : 'welcome' } : s
     case 'GOTO':
       return { ...s, screen: a.screen, overlay: null, authError: null, intro: null }
     case 'NAV':
@@ -534,10 +563,20 @@ export function reducer(s: GameState, a: Action): GameState {
     case 'AUTO_NEXT': {
       if (isPaused(s)) return s
       if (s.screen === 'good') {
-        if (s.replaying) return { ...s, screen: 'map', inLevel: false, intro: null, facing: 'nino', mapAnim: null }
+        if (s.replaying) {
+          const next: GameState = { ...s, screen: 'map', inLevel: false, intro: null, facing: 'nino', mapAnim: null }
+          saveState(next)
+          return next
+        }
         const done = Math.max(s.done, s.casilla)
-        if (s.casilla === MODULES[s.level].last) return hatch({ ...s, done })
-        return { ...s, done, screen: 'map', inLevel: false, intro: null, facing: 'nino', mapAnim: { from: s.casilla, to: s.casilla + 1, key: key++ } }
+        if (s.casilla === MODULES[s.level].last) {
+          const next = hatch({ ...s, done })
+          saveState(next)
+          return next
+        }
+        const next: GameState = { ...s, done, screen: 'map', inLevel: false, intro: null, facing: 'nino', mapAnim: { from: s.casilla, to: s.casilla + 1, key: key++ } }
+        saveState(next)
+        return next
       }
       // Modo maestro always starts facing the teacher: he is the teacher who demonstrates.
       if (s.screen === 'almost') {

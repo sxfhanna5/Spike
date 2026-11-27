@@ -68,9 +68,13 @@ export function OptionCard({ index, c, selected, dim, onClick, compact }: { inde
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick?.()
+      }}
       aria-label={`${o.label}: ${label}`}
-      className={`flex w-full items-center justify-between gap-2.5 sm:gap-3.5 rounded-full pr-5 pl-3 sm:pl-3.5 shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
+      className={`touch-manipulation flex w-full items-center justify-between gap-2.5 sm:gap-3.5 rounded-full pr-5 pl-3 sm:pl-3.5 shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
       style={{ height: h, background: selected ? o.color : '#fff' }}
     >
       <OptionBadge index={index} size={compact ? 50 : 56} />
@@ -250,9 +254,15 @@ function TeacherTurnCard({ who }: { who: Person }) {
 
   return (
     <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-8 sm:pt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:pb-10">
-      {/* Top Header: Circular Disc Badge matching current module + 2-segment attempt bar */}
+      {/* Top Header: Maestro birrete badge + 2-segment attempt bar */}
       <div className="flex flex-col items-center w-full">
-        <ModuleBadge id={s.level} size={50} />
+        <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+          <img
+            src="/assets/teacher-cap.svg"
+            alt=""
+            className="size-full object-contain"
+          />
+        </div>
         <ProgressBar isMaster={true} masterLoops={s.teacherLoops} onWhite={true} className="mt-2.5" />
       </div>
 
@@ -593,7 +603,10 @@ export function GuessScreen({ isMasterMode = false }: { isMasterMode?: boolean }
             c={c}
             selected={isMasterMode ? s.teacherSelected === k : s.selected === k}
             dim={isMasterMode ? s.teacherSelected !== null && s.teacherSelected !== k : s.selected !== null && s.selected !== k}
-            onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })}
+            onClick={() => {
+              if (isSelected) return
+              if (ctl.colors) dispatch({ type: 'COLOR', index: k })
+            }}
           />
         ))}
       </div>
@@ -705,7 +718,7 @@ export function GoodScreen() {
                   {c.content}
                 </span>
               </div>
-              {/* Level Learned Droplet Badge (e.g. 💧 +1, 💧 +2...) */}
+              {/* Level Learned Droplet Badge (e.g. drop +1, drop +2...) */}
               <LearnedWordBadge count={levelLearnedCount} plus className="shrink-0" />
             </div>
           </div>
