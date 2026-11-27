@@ -412,66 +412,132 @@ export function RoundChip({ round, className = '', textless }: { round: Round; c
   return <InstructionStrip round={round} className={className} />
 }
 
-/** In-reto header: X, module badge, progress bar and the canonical instruction strip. */
-export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: boolean; x?: boolean; onWhite?: boolean }) {
+/** Unified Progress Bar: exactly 2 segments in Maestro mode; normal challenge bar in regular levels. */
+export function ProgressBar({
+  isMaster = false,
+  masterLoops = 0,
+  onWhite = false,
+  className = '',
+}: {
+  isMaster?: boolean
+  masterLoops?: number
+  onWhite?: boolean
+  className?: string
+}) {
   const { s } = useGame()
   const m = MODULES[s.level]
   const total = s.queue.length
-  const round = s.queue[Math.min(s.idx, total - 1)].round
   const isColors = s.level === 2
   const isNumbers = s.level === 3
   const isWrite = s.level === 5
-  return (
-    <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
-      {x && <XButton />}
-      <ModuleBadge id={s.level} size={50} />
-      <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
+
+  if (isMaster) {
+    // Modo maestro: strictly 2 segments representing the 2 attempts
+    // Attempt 1 (masterLoops === 0): 1st segment filled in orange (#FF8001), 2nd segment white/unfilled
+    // Attempt 2 (masterLoops >= 1): both segments filled in orange (#FF8001)
+    const filledCount = Math.min(2, masterLoops + 1)
+    const unfilledColor = onWhite ? '#E6EAF5' : '#FFFFFF'
+    return (
+      <div className={`flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2 ${className}`}>
         <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
-          {Array.from({ length: total }, (_, k) => {
-            const isDoneOrCurrent = k <= s.idx
-            if (isColors) {
-              return (
-                <span
-                  key={k}
-                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                  style={{ background: isDoneOrCurrent ? '#FF4F1A' : '#F9F9F9' }}
-                />
-              )
-            }
-            if (isNumbers) {
-              return (
-                <span
-                  key={k}
-                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                  style={{ background: isDoneOrCurrent ? '#45C1FF' : '#F9F9F9' }}
-                />
-              )
-            }
-            if (isWrite) {
-              return (
-                <span
-                  key={k}
-                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                  style={{ background: isDoneOrCurrent ? '#C48243' : '#F9F9F9' }}
-                />
-              )
-            }
+          {[0, 1].map((k) => (
+            <span
+              key={k}
+              className="h-[7px] sm:h-[8px] flex-1 max-w-[48px] rounded-full transition-colors duration-300"
+              style={{ background: k < filledCount ? '#FF8001' : unfilledColor }}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Normal levels: retain untouched original logic
+  return (
+    <div className={`mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2 ${className}`}>
+      <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
+        {Array.from({ length: total }, (_, k) => {
+          const isDoneOrCurrent = k <= s.idx
+          if (isColors) {
             return (
               <span
                 key={k}
-                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full"
-                style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}
-              >
-                <span
-                  className="block h-full rounded-full"
-                  style={{ width: isDoneOrCurrent ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
-                />
-              </span>
+                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                style={{ background: isDoneOrCurrent ? '#FF4F1A' : '#F9F9F9' }}
+              />
             )
-          })}
-        </div>
+          }
+          if (isNumbers) {
+            return (
+              <span
+                key={k}
+                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                style={{ background: isDoneOrCurrent ? '#45C1FF' : '#F9F9F9' }}
+              />
+            )
+          }
+          if (isWrite) {
+            return (
+              <span
+                key={k}
+                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                style={{ background: isDoneOrCurrent ? '#C48243' : '#F9F9F9' }}
+              />
+            )
+          }
+          return (
+            <span
+              key={k}
+              className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full"
+              style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}
+            >
+              <span
+                className="block h-full rounded-full"
+                style={{ width: isDoneOrCurrent ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
+              />
+            </span>
+          )
+        })}
       </div>
-      {chip && <InstructionStrip round={round} action={isWrite ? 'escribe' : 'adivina'} className="mt-3" />}
+    </div>
+  )
+}
+
+/** In-reto header: X / Back, module badge / cap, progress bar and instruction strip. */
+export function GameHeader({
+  chip = true,
+  x = true,
+  onWhite = false,
+  isMaster = false,
+  masterLoops = 0,
+}: {
+  chip?: boolean
+  x?: boolean
+  onWhite?: boolean
+  isMaster?: boolean
+  masterLoops?: number
+}) {
+  const { s } = useGame()
+  const total = s.queue.length
+  const round = s.queue[Math.min(s.idx, Math.max(0, total - 1))].round
+  const isWrite = s.level === 5
+  return (
+    <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
+      {isMaster ? (
+        <>
+          <BackArrowButton />
+          <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+            <img src="/assets/teacher-cap.svg" alt="" className="size-full object-contain" />
+          </div>
+        </>
+      ) : (
+        <>
+          {x && <XButton />}
+          <ModuleBadge id={s.level} size={50} />
+        </>
+      )}
+      <ProgressBar isMaster={isMaster} masterLoops={masterLoops} onWhite={onWhite} />
+      {chip && !isMaster && <InstructionStrip round={round} action={isWrite ? 'escribe' : 'adivina'} className="mt-3" />}
     </div>
   )
 }

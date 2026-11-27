@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react'
 import { useGame } from '../game/context'
 import { COLOR_HEX, MODULES, OPTION_META, ROUND_INFO, ROLE_COLOR, type Challenge, type Person, type ModuleId } from '../game/data'
-import { boxControls, countTotalLearned, current, interpreter, signer, stageOf, teacherOf } from '../game/engine'
+import { boxControls, countTotalLearned, current, interpreter, signer, stageOf, teacherOf, teacherPicker } from '../game/engine'
 import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { GoodScene } from '../art/GoodScene'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ListoBtn, ModuleBadge, PrimaryActionButton, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
+import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ListoBtn, ModuleBadge, PrimaryActionButton, ProgressBar, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 
 /* ============================== shared pieces ============================== */
@@ -327,19 +327,11 @@ function TurnCard() {
   const teacher = intro.kind === 'teacher'
   const who = intro.who
 
-  // Use dedicated TeacherTurnCard for Maestro turns (Figma 817:3104 / 817:3127)
-  if (teacher) {
-    return <TeacherTurnCard who={who} />
-  }
-
   const signing = signer(c.round) === who && (s.screen === 'sign' || (s.screen === 'write' && s.write.stage === 'sign'))
   const role = signing ? 'sign' : s.screen === 'write' ? 'write' : 'guess'
   const kid = who === 'nino'
   const name = who === 'papa' ? 'padre' : 'niño'
   const roundInfo = ROUND_INFO[c.round]
-  const doneInModule = Math.max(1, Math.min(m.challenges.length, s.casilla - m.first + 1))
-  const handColor = roundInfo.signer === 'papa' ? '#45C1FF' : '#FF8001'
-
   const cardBg = kid ? '#FF8001' : '#45C1FF'
   const title = `Turno del ${name}`
   const subtitle = role === 'sign'
@@ -349,45 +341,20 @@ function TurnCard() {
 
   return (
     <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-6 sm:pt-[calc(2.75rem+env(safe-area-inset-top,0px))] sm:pb-8">
-      {/* Top Section: Level 3D disc badge + Segmented Progress Bar */}
+      {/* Top Section: Graduation Cap if Maestro mode, else Level 3D disc badge + Segmented Progress Bar */}
       <div className="flex flex-col items-center w-full">
-        <ModuleBadge id={m.id} size={50} />
-        <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
-          <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
-            {Array.from({ length: m.challenges.length }).map((_, i) => {
-              const isDoneOrCurrent = i < doneInModule
-              if (m.id === 2) {
-                return (
-                  <span
-                    key={i}
-                    className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                    style={{ background: isDoneOrCurrent ? '#FF4F1A' : '#F9F9F9' }}
-                  />
-                )
-              }
-              if (m.id === 3) {
-                return (
-                  <span
-                    key={i}
-                    className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                    style={{ background: isDoneOrCurrent ? '#45C1FF' : '#F9F9F9' }}
-                  />
-                )
-              }
-              return (
-                <span
-                  key={i}
-                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full bg-[#E6EAF5]"
-                >
-                  <span
-                    className="block h-full rounded-full"
-                    style={{ width: isDoneOrCurrent ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
-                  />
-                </span>
-              )
-            })}
+        {teacher ? (
+          <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+            <img
+              src="/assets/teacher-cap.svg"
+              alt=""
+              className="size-full object-contain"
+            />
           </div>
-        </div>
+        ) : (
+          <ModuleBadge id={m.id} size={50} />
+        )}
+        <ProgressBar isMaster={teacher} masterLoops={s.teacherLoops} onWhite={true} className="mt-2.5" />
       </div>
 
       {/* Center container holding Card and below-card prompt */}
@@ -597,24 +564,39 @@ export function SignScreen() {
 
 /* ============================== guess ============================== */
 
-export function GuessScreen() {
+export function GuessScreen({ isMasterMode = false }: { isMasterMode?: boolean } = {}) {
   const { s, dispatch } = useGame()
   const c = current(s)
-  const who = interpreter(c.round)
+  const master = teacherOf(s)
+  const picker = teacherPicker(s)
   const ctl = boxControls(s)
+  const two = [c.correct, (c.correct + 1) % 3].sort()
+  const optionsToRender = isMasterMode ? two : c.options.map((_, k) => k)
+  const isSelected = isMasterMode ? s.teacherSelected !== null : s.selected !== null
+
   usePausedTimeout(() => dispatch({ type: 'CHECK' }), 850, s.selected !== null, [s.selected])
   return (
     <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
       <SkyHills />
-      <GameHeader />
+      <GameHeader isMaster={isMasterMode} masterLoops={s.teacherLoops} />
+      {isMasterMode && (
+        <div className="relative z-20 flex justify-center -mt-1 mb-2">
+          <InstructionStrip
+            signer={master}
+            guesser={picker}
+            action="adivina"
+            className="shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
+          />
+        </div>
+      )}
       <div className="relative z-10 my-auto mx-auto flex w-full max-w-[356px] sm:max-w-[380px] flex-col gap-3.5 sm:gap-4 px-3 sm:px-4">
-        {c.options.map((_, k) => (
+        {optionsToRender.map((k) => (
           <OptionCard
             key={k}
             index={k}
             c={c}
-            selected={s.selected === k}
-            dim={s.selected !== null && s.selected !== k}
+            selected={isMasterMode ? s.teacherSelected === k : s.selected === k}
+            dim={isMasterMode ? s.teacherSelected !== null && s.teacherSelected !== k : s.selected !== null && s.selected !== k}
             onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })}
           />
         ))}
@@ -623,7 +605,7 @@ export function GuessScreen() {
         className="relative z-10 flex w-full justify-center pb-16 sm:pb-20"
         style={{ paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        {s.selected !== null ? (
+        {isSelected ? (
           <div className="rounded-full bg-[#4A5A8C]/35 px-8">
             <Thinking />
           </div>
@@ -752,36 +734,34 @@ export function AlmostScreen() {
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && dispatch({ type: 'AUTO_NEXT' })}
       className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none cursor-pointer outline-none bg-[#E7B3FF]"
     >
-      {/* Background lavender-purple gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-[#DF98FF] via-[#E7B3FF] to-[#D585FF]" />
+      {/* Full-bleed background from Figma (node 827:5883 / 817:1942) */}
+      <img
+        src="/assets/casi-bg.svg"
+        alt=""
+        draggable={false}
+        className="absolute inset-0 size-full object-cover object-bottom pointer-events-none select-none"
+      />
 
-      {/* Top Close Button (standard XButton) */}
-      <XButton />
-
-      {/* Top Header: Circular Purple "Aa" Disc Badge */}
-      <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
+      {/* Top Header: Circular Purple "Aa" Disc Badge + Title + Subtitle */}
+      <div className="relative z-20 flex flex-col items-center pt-[calc(1.8rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2.2rem+env(safe-area-inset-top,0px))]">
         <ModuleBadge id={1} size={50} />
+
+        <div className="flex flex-col items-center text-center px-4 mt-3 sm:mt-4">
+          <h1
+            className="font-display font-black text-white text-[52px] sm:text-[58px] leading-tight select-none"
+            style={{ textShadow: '0 2px 6px rgba(138,63,196,0.35)' }}
+          >
+            ¡Casi!
+          </h1>
+          <p className="font-sans font-medium text-white/90 text-[17px] sm:text-[19px] mt-0.5">
+            La seña no se entendió
+          </p>
+        </div>
       </div>
 
-      {/* Title & Subtitle */}
-      <div className="relative z-20 flex flex-col items-center text-center px-4 mt-2 sm:mt-3">
-        <h1
-          className="font-display font-black text-white text-[50px] sm:text-[58px] leading-tight select-none"
-          style={{ textShadow: '0 2px 4px rgba(138,63,196,0.3)' }}
-        >
-          ¡Casi!
-        </h1>
-        <p className="font-sans font-medium text-white/90 text-[17px] sm:text-[19px] mt-0.5">
-          La seña no se entendió
-        </p>
-      </div>
-
-      {/* Central Mascot: Egg with bewildered expression + Thought bubble with '?' */}
-      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[280px] sm:max-w-[320px] mx-auto py-2">
-        <div className="relative w-[180px] sm:w-[210px] aspect-[475/584] flex items-center justify-center">
-          {/* Egg Shadow on ground */}
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[70%] h-4 rounded-full bg-[#52B81F]/30 blur-[2px]" />
-
+      {/* Central Mascot: Egg resting directly on the green hill crest + Thought bubble with '?' */}
+      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[290px] sm:max-w-[320px] mx-auto pt-2 pb-0 translate-y-7 sm:translate-y-8">
+        <div className="relative w-[196px] sm:w-[220px] aspect-[475/584] flex items-center justify-center">
           {/* Egg Mascot SVG */}
           <img
             src="/assets/casi-egg.svg"
@@ -791,51 +771,23 @@ export function AlmostScreen() {
           />
 
           {/* Thought Bubble with '?' perched on upper right */}
-          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[54px] sm:w-[62px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
+          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[56px] sm:w-[64px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
             <img
               src="/assets/casi-bubble.svg"
               alt=""
               className="absolute inset-0 size-full object-contain drop-shadow-sm"
             />
-            <span className="relative z-10 font-display font-black text-white text-[24px] sm:text-[28px] -translate-y-0.5">
+            <span className="relative z-10 font-display font-black text-white text-[25px] sm:text-[29px] -translate-y-0.5">
               ?
             </span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Area: Green Hills + Orange Mushroom + Transition Pill Card */}
-      <div className="relative z-20 w-full flex flex-col items-center pb-6 sm:pb-8">
-        {/* Landscape backdrop behind pill card */}
-        <div className="absolute bottom-0 inset-x-0 h-[160px] sm:h-[180px] pointer-events-none overflow-hidden" aria-hidden>
-          {/* Soft lilac clouds behind hills */}
-          <img
-            src="/assets/casi-clouds.svg"
-            alt=""
-            className="absolute -top-6 left-[-10%] w-[120%] opacity-40 mix-blend-screen pointer-events-none"
-          />
-
-          {/* Green rolling hill */}
-          <div className="absolute bottom-0 inset-x-[-15%] h-[130px] rounded-t-[50%] bg-[#7ED321] border-t-4 border-[#6CB81C]" />
-
-          {/* Green Bush clusters */}
-          <div className="absolute bottom-6 left-3 size-12 rounded-full bg-[#4EA816]" />
-          <div className="absolute bottom-7 left-8 size-14 rounded-full bg-[#4EA816]" />
-          <div className="absolute bottom-6 right-20 size-10 rounded-full bg-[#4EA816]" />
-
-          {/* Orange Spotted Mushroom on the bottom right (Figma 817:1915) */}
-          <div className="absolute bottom-2 right-4 w-[110px] sm:w-[130px] aspect-[434/246]">
-            <img
-              src="/assets/casi-mushroom.svg"
-              alt=""
-              className="size-full object-contain pointer-events-none"
-            />
-          </div>
-        </div>
-
-        {/* Transition Pill Card (Figma 817:1928) */}
-        <div className="relative z-30 w-full max-w-[310px] sm:max-w-[330px] rounded-[30px] bg-white px-5 pt-3.5 pb-4 shadow-[0_10px_28px_rgba(74,90,140,0.18)] border border-[#E8ECF4] flex flex-col items-center select-none">
-          {/* Avatar -> Arrow -> Teacher Cap */}
+      {/* Bottom Area: Transition Pill Card resting on the green hill */}
+      <div className="relative z-20 w-full flex flex-col items-center pb-9 sm:pb-11 px-4" style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="w-full max-w-[316px] sm:max-w-[336px] rounded-[30px] bg-white px-5 pt-3.5 pb-4 shadow-[0_10px_28px_rgba(74,90,140,0.18)] border border-[#E8ECF4] flex flex-col items-center select-none">
+          {/* Avatar -> Arrow -> Teacher Cap (matching Figma 817:1942) */}
           <div className="flex items-center justify-center gap-3.5 sm:gap-4">
             {/* Teacher Avatar Disc */}
             <div className={`size-11 sm:size-12 rounded-full border-[3px] border-white shadow-sm overflow-hidden flex items-end justify-center ${isPapaTeacher ? 'bg-[#38B6FF]' : 'bg-[#FF8001]'}`}>
@@ -859,8 +811,8 @@ export function AlmostScreen() {
             {/* Transition Arrow */}
             <Icon name="arrowRight" size={18} color="#6A7187" solid />
 
-            {/* Graduation Cap Disc */}
-            <div className="size-11 sm:size-12 rounded-full bg-[#F7E8FF] shadow-sm flex items-center justify-center p-1.5 border border-[#E7B3FF]">
+            {/* Graduation Cap Icon */}
+            <div className="w-10 sm:w-11 aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
               <img
                 src="/assets/teacher-cap.svg"
                 alt="Modo maestro"

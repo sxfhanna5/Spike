@@ -524,6 +524,11 @@ export function reducer(s: GameState, a: Action): GameState {
         const logged = addLog(s, guesser, `Escribe ${s.write.typed.join('')}`, ok ? 'Sí' : 'No')
         return ok ? complete(logged) : fail(logged, guesser, 'wrong')
       }
+      if (s.screen === 'master' && s.level === 5 && s.teacherPhase === 'retry' && s.write.typed.length === plainLetters(c.content).length) {
+        const ok = s.write.typed.join('') === plainLetters(c.content).join('')
+        const logged = addLog(s, teacherPicker(s), `Escribe ${s.write.typed.join('')}`, ok ? 'Sí' : 'No')
+        return ok ? complete(logged, true) : teacherLoop(logged)
+      }
       return s
     }
     case 'AUTO_NEXT': {

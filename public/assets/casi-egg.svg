@@ -1,23 +1,23 @@
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="532.133" height="641.305" viewBox="0 0 532.133 641.305" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="Frame 39">
 <g id="Ellipse 112">
-<use xlink:href="#stroke0_0_4" fill="#FBEDFF"/>
-<mask id="stroke1_0_4" maskUnits="userSpaceOnUse" x="-0.347764" y="-0.347763" width="533" height="642" fill="black">
+<use xlink:href="#stroke0_0_28" fill="#FBEDFF"/>
+<mask id="stroke1_0_28" maskUnits="userSpaceOnUse" x="-0.347764" y="-0.347763" width="533" height="642" fill="black">
 <rect fill="white" x="-0.347764" y="-0.347763" width="533" height="642"/>
-<use xlink:href="#stroke0_0_4"/>
+<use xlink:href="#stroke0_0_28"/>
 </mask>
-<path d="M503.481 375.238C503.481 506.358 397.187 612.652 266.067 612.652C134.946 612.652 28.6522 506.358 28.6522 375.238C28.6522 244.117 134.946 28.6522 266.067 28.6522C397.187 28.6522 503.481 244.117 503.481 375.238Z" stroke-width="57.3045" stroke="white" mask="url(#stroke1_0_4)"/>
+<path d="M503.481 375.238C503.481 506.358 397.187 612.652 266.067 612.652C134.946 612.652 28.6522 506.358 28.6522 375.238C28.6522 244.117 134.946 28.6522 266.067 28.6522C397.187 28.6522 503.481 244.117 503.481 375.238Z" stroke-width="57.3045" stroke="white" mask="url(#stroke1_0_28)"/>
 </g>
-<mask id="mask0_0_4" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="28" y="28" width="476" height="585">
+<mask id="mask0_0_28" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="28" y="28" width="476" height="585">
 <g id="Ellipse 125">
-<use xlink:href="#stroke2_0_4" fill="url(#paint0_radial_0_4)"/>
-<mask id="stroke3_0_4" fill="white">
-<use xlink:href="#stroke2_0_4"/>
+<use xlink:href="#stroke2_0_28" fill="url(#paint0_radial_0_28)"/>
+<mask id="stroke3_0_28" fill="white">
+<use xlink:href="#stroke2_0_28"/>
 </mask>
-<path d="M503.073 375.238C503.073 506.358 396.779 612.652 265.658 612.652C134.538 612.652 28.244 506.358 28.244 375.238C28.244 244.117 134.538 28.6522 265.658 28.6522C396.779 28.6522 503.073 244.117 503.073 375.238Z" stroke-width="522.482" stroke="white" mask="url(#stroke3_0_4)"/>
+<path d="M503.073 375.238C503.073 506.358 396.779 612.652 265.658 612.652C134.538 612.652 28.244 506.358 28.244 375.238C28.244 244.117 134.538 28.6522 265.658 28.6522C396.779 28.6522 503.073 244.117 503.073 375.238Z" stroke-width="522.482" stroke="white" mask="url(#stroke3_0_28)"/>
 </g>
 </mask>
-<g mask="url(#mask0_0_4)">
+<g mask="url(#mask0_0_28)">
 <circle id="Ellipse 126" opacity="0.62" cx="266.102" cy="582.472" r="172.182" fill="#F1C4FB"/>
 <circle id="Ellipse 127" opacity="0.62" cx="41.5612" cy="396.979" r="68.3404" fill="#CC86F2"/>
 <circle id="Ellipse 128" opacity="0.17" cx="426.747" cy="144.918" r="75.4407" fill="#CC86F2"/>
@@ -37,11 +37,11 @@
 </g>
 </g>
 <defs>
-<radialGradient id="paint0_radial_0_4" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(265.658 320.652) rotate(90) scale(292 237.414)">
+<radialGradient id="paint0_radial_0_28" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(265.658 320.652) rotate(90) scale(292 237.414)">
 <stop stop-color="#FDFAFF"/>
 <stop offset="1" stop-color="#F9EDFF"/>
 </radialGradient>
-<path id="stroke0_0_4" d="M503.481 375.238C503.481 506.358 397.187 612.652 266.067 612.652C134.946 612.652 28.6522 506.358 28.6522 375.238C28.6522 244.117 134.946 28.6522 266.067 28.6522C397.187 28.6522 503.481 244.117 503.481 375.238Z"/>
-<path id="stroke2_0_4" d="M503.073 375.238C503.073 506.358 396.779 612.652 265.658 612.652C134.538 612.652 28.244 506.358 28.244 375.238C28.244 244.117 134.538 28.6522 265.658 28.6522C396.779 28.6522 503.073 244.117 503.073 375.238Z"/>
+<path id="stroke0_0_28" d="M503.481 375.238C503.481 506.358 397.187 612.652 266.067 612.652C134.946 612.652 28.6522 506.358 28.6522 375.238C28.6522 244.117 134.946 28.6522 266.067 28.6522C397.187 28.6522 503.481 244.117 503.481 375.238Z"/>
+<path id="stroke2_0_28" d="M503.073 375.238C503.073 506.358 396.779 612.652 265.658 612.652C134.538 612.652 28.244 506.358 28.244 375.238C28.244 244.117 134.538 28.6522 265.658 28.6522C396.779 28.6522 503.073 244.117 503.073 375.238Z"/>
 </defs>
 </svg>

@@ -6,9 +6,9 @@ import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, BackArrowButton, Btn, Dock, GameHeader, InstructionStrip, ListoBtn, ModuleBadge, NavBar, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
+import { Avatar, BackArrowButton, Btn, Dock, GameHeader, InstructionStrip, ListoBtn, ModuleBadge, NavBar, PrimaryActionButton, ProgressBar, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
 import { Badge, Icon, Pictogram, hasPictogram } from '../components/glyphs'
-import { ContentBig, HelpButton, OptionCard } from './Play'
+import { ContentBig, GuessScreen, HelpButton, OptionCard } from './Play'
 
 /* ============================== S19 / S20 · Modo maestro ============================== */
 
@@ -86,18 +86,8 @@ export function MasterVideoScreen({
           />
         </div>
 
-        {/* 4. Barra de progreso horizontal: completado en naranja, restante en blanco */}
-        <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
-          <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
-            {Array.from({ length: total }).map((_, i) => (
-              <span
-                key={i}
-                className="h-[7px] sm:h-[8px] flex-1 max-w-[36px] rounded-full transition-colors duration-300"
-                style={{ background: i < currentIdx ? '#FF8001' : '#FFFFFF' }}
-              />
-            ))}
-          </div>
-        </div>
+        {/* 4. Barra de progreso horizontal de exactamente 2 intentos */}
+        <ProgressBar isMaster={true} masterLoops={s.teacherLoops} className="mt-2.5" />
 
         {/* 5. Indicador del tipo de actividad:
             - Padre maestro: "Padre hace seña - niño adivina"
@@ -199,44 +189,23 @@ export function MasterVideoScreen({
 
 export function MasterScreen() {
   const { s, dispatch } = useGame()
-  const c = current(s)
   const master = teacherOf(s)
-  const picker = teacherPicker(s)
   const mode = teacherMode(s)
   const show = s.teacherPhase === 'show'
-  const ctl = boxControls(s)
-  const two = [c.correct, (c.correct + 1) % 3].sort()
 
   if (show) {
+    if (mode === 'write') {
+      return <WriteScreen isMasterMode={true} />
+    }
     return <MasterVideoScreen who={master} onDone={() => dispatch({ type: 'TEACHER_NEXT' })} />
   }
 
-  return (
-    <Screen bg="#E7B3FF">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,#F3D6FF,#E7B3FF_65%)]" />
-      <div className="pointer-events-none absolute inset-0 overflow-hidden"><LevelRays opacity={0.5} /></div>
-      <Sparkles color="#fff" className="opacity-70" />
-      <XButton />
-      <SealChip />
-      <div className="absolute top-[104px] left-1/2 -translate-x-1/2"><span className="hat-bounce block"><Avatar who={master} size={150} halo cap /></span></div>
-      <div className="absolute top-[274px] left-0 flex w-full flex-col items-center gap-2">
-        {master !== 'nino' && <h1 className="font-display text-[30px] leading-9 font-semibold text-ink">Maestro padre</h1>}
-        <Laps />
-      </div>
+  // teacherPhase === 'retry'
+  if (mode === 'write') {
+    return <WriteScreen isMasterMode={true} />
+  }
 
-      {mode === 'write' ? (
-        <div className="absolute top-[372px] inset-x-5 mx-auto max-w-[350px]"><WriteBoard compact /></div>
-      ) : (
-        <>
-          <p className="absolute top-[378px] left-0 flex w-full items-center justify-center gap-2 font-display text-[20px] font-medium text-ink"><Avatar who={picker} size={36} />{picker === 'papa' ? 'Padre, elige otra vez' : ''}</p>
-          <div className="absolute top-[428px] inset-x-5 mx-auto flex max-w-[350px] flex-col gap-3">
-            {two.map((k) => <OptionCard key={k} index={k} c={c} compact onClick={() => ctl.colors && dispatch({ type: 'COLOR', index: k })} />)}
-          </div>
-          <div className="absolute top-[640px] left-0 flex w-full justify-center"><HelpButton /></div>
-        </>
-      )}
-    </Screen>
-  )
+  return <GuessScreen isMasterMode={true} />
 }
 
 /* ============================== S21 · Escribir ============================== */
@@ -578,13 +547,15 @@ export function ChildWriteSlotsBoard() {
   )
 }
 
-export function WriteScreen() {
+export function WriteScreen({ isMasterMode = false }: { isMasterMode?: boolean } = {}) {
   const { s, dispatch } = useGame()
   const c = current(s)
+  const isMaster = isMasterMode || s.screen === 'master'
+  const isShowPhase = isMaster ? s.teacherPhase === 'show' : s.write.stage === 'sign'
   const letters = plainLetters(c.content)
   const spellBy = signer(c.round)
-  const totalChallenges = MODULES[5].challenges.length
-  const currentProgressIdx = Math.min(totalChallenges, s.casilla - MODULES[5].first + 1)
+  const master = teacherOf(s)
+  const picker = teacherPicker(s)
 
   // Video playback state for stage 'sign'
   const [playing, setPlaying] = useState(false)
@@ -606,40 +577,47 @@ export function WriteScreen() {
     }
   }
 
-  if (s.write.stage === 'sign') {
+  if (isShowPhase) {
     return (
-      <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
-        {/* Continuous sky gradient */}
-        <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+      <Screen bg={isMaster ? '#E7B3FF' : '#BCEDFF'} className={`relative flex h-full w-full flex-col justify-between overflow-hidden select-none ${isMaster ? 'bg-[#E7B3FF]' : ''}`}>
+        {!isMaster ? (
+          <>
+            {/* Continuous sky gradient */}
+            <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+            {/* Standard outdoor landscape ground */}
+            <SkyHills />
+            {/* Top Close Button */}
+            <XButton />
+          </>
+        ) : (
+          <BackArrowButton />
+        )}
 
-        {/* Standard outdoor landscape ground */}
-        <SkyHills />
-
-        {/* Top Close Button (standard XButton: white circle with orange close icon, no return arrow) */}
-        <XButton />
-
-        {/* Top Header: Module 5 brown disc badge + 5-segment progress bar + canonical InstructionStrip */}
+        {/* Top Header */}
         <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
-          <ModuleBadge id={5} size={50} />
-
-          {/* Segmented Progress Bar: 5 segments */}
-          <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
-            <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
-              {Array.from({ length: totalChallenges }, (_, k) => {
-                const isDoneOrCurrent = k < currentProgressIdx
-                return (
-                  <span
-                    key={k}
-                    className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                    style={{ background: isDoneOrCurrent ? '#C48243' : '#FFFFFF' }}
-                  />
-                )
-              })}
+          {isMaster ? (
+            <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+              <img
+                src="/assets/teacher-cap.svg"
+                alt=""
+                className="size-full object-contain"
+              />
             </div>
-          </div>
+          ) : (
+            <ModuleBadge id={5} size={50} />
+          )}
+
+          {/* Segmented Progress Bar */}
+          <ProgressBar isMaster={isMaster} masterLoops={s.teacherLoops} className="mt-2.5" />
 
           {/* Canonical Instruction Strip: Padre hace seña - niño escribe */}
-          <InstructionStrip round={c.round} action="escribe" className="mt-3" />
+          <InstructionStrip
+            signer={isMaster ? master : undefined}
+            guesser={isMaster ? picker : undefined}
+            round={isMaster ? undefined : c.round}
+            action="escribe"
+            className="mt-3"
+          />
         </div>
 
         {/* Central Area: White Card + Nav controls below */}
@@ -752,46 +730,53 @@ export function WriteScreen() {
 
         {/* Bottom Orange Listo button */}
         <div className="w-full flex items-center justify-center pb-6 sm:pb-8 z-20 px-4">
-          <PrimaryActionButton label="Listo" icon="check" onClick={() => dispatch({ type: 'SIGN_DONE' })} />
+          <ListoBtn onClick={() => dispatch(isMaster ? { type: 'TEACHER_NEXT' } : { type: 'SIGN_DONE' })} />
         </div>
       </Screen>
     )
   }
 
-  // stage === 'write': "El niño escribe" matching Figma 659:1467 exactly
+  // stage === 'write' / teacherPhase === 'retry': "El niño escribe"
   return (
-    <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
-      {/* Continuous sky gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+    <Screen bg={isMaster ? '#E7B3FF' : '#BCEDFF'} className={`relative flex h-full w-full flex-col justify-between overflow-hidden select-none ${isMaster ? 'bg-[#E7B3FF]' : ''}`}>
+      {!isMaster ? (
+        <>
+          {/* Continuous sky gradient */}
+          <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+          {/* Standard outdoor landscape ground */}
+          <SkyHills />
+          {/* Top Close Button */}
+          <XButton />
+        </>
+      ) : (
+        <BackArrowButton />
+      )}
 
-      {/* Standard outdoor landscape ground */}
-      <SkyHills />
-
-      {/* Top Close Button (standard XButton: white circle with orange close icon, no return arrow) */}
-      <XButton />
-
-      {/* Top Header: Module 5 brown disc badge + 5-segment progress bar + canonical InstructionStrip */}
+      {/* Top Header */}
       <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
-        <ModuleBadge id={5} size={50} />
-
-        {/* Segmented Progress Bar: 5 segments */}
-        <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
-          <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
-            {Array.from({ length: totalChallenges }, (_, k) => {
-              const isDoneOrCurrent = k < currentProgressIdx
-              return (
-                <span
-                  key={k}
-                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
-                  style={{ background: isDoneOrCurrent ? '#C48243' : '#FFFFFF' }}
-                />
-              )
-            })}
+        {isMaster ? (
+          <div className="w-[50px] sm:w-[56px] aspect-[147/123] flex items-center justify-center drop-shadow-sm pointer-events-none select-none">
+            <img
+              src="/assets/teacher-cap.svg"
+              alt=""
+              className="size-full object-contain"
+            />
           </div>
-        </div>
+        ) : (
+          <ModuleBadge id={5} size={50} />
+        )}
+
+        {/* Segmented Progress Bar */}
+        <ProgressBar isMaster={isMaster} masterLoops={s.teacherLoops} className="mt-2.5" />
 
         {/* Canonical Instruction Strip: Padre hace seña - niño escribe */}
-        <InstructionStrip round={c.round} action="escribe" className="mt-3" />
+        <InstructionStrip
+          signer={isMaster ? master : undefined}
+          guesser={isMaster ? picker : undefined}
+          round={isMaster ? undefined : c.round}
+          action="escribe"
+          className="mt-3"
+        />
       </div>
 
       {/* Main Drag-and-Drop / Interactive Letter Slots Area */}
