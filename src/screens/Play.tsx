@@ -126,9 +126,10 @@ export function IntroCard() {
   const done = () => dispatch({ type: 'INTRO_DONE' })
   const isFrozen = typeof window !== 'undefined' && window.location.search.includes('freeze=true')
   usePausedTimeout(done, isFrozen ? 999999 : (intro.kind === 'level' ? 2000 : 1800), true, [intro.kind, s.idx, intro.who, s.teacherPhase, s.teacherLoops, s.screen])
+  const isMaster = s.screen === 'master' || intro.kind === 'teacher'
   return (
     <div role="button" tabIndex={0} aria-label="Toca para saltar" onClick={done} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && done()} className="screen-in absolute inset-0 z-50 cursor-pointer outline-none">
-      {intro.kind === 'level' ? <LevelCard /> : intro.kind === 'teacher' ? <TeacherTurnCard who={intro.who} /> : <TurnCard />}
+      {intro.kind === 'level' ? <LevelCard /> : isMaster ? <TeacherTurnCard who={intro.who} /> : <TurnCard />}
     </div>
   )
 }
@@ -249,9 +250,10 @@ function TeacherTurnCard({ who }: { who: Person }) {
 
   return (
     <div className="absolute inset-0 bg-white overflow-hidden flex flex-col items-center justify-between px-4 select-none pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-8 sm:pt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:pb-10">
-      {/* Top Header: Circular Disc Badge matching current module (Figma 817:3119 / 817:3154) */}
+      {/* Top Header: Circular Disc Badge matching current module + 2-segment attempt bar */}
       <div className="flex flex-col items-center w-full">
         <ModuleBadge id={s.level} size={50} />
+        <ProgressBar isMaster={true} masterLoops={s.teacherLoops} onWhite={true} className="mt-2.5" />
       </div>
 
       {/* Central Card Area */}
@@ -577,8 +579,11 @@ export function GuessScreen({ isMasterMode = false }: { isMasterMode?: boolean }
 
   usePausedTimeout(() => dispatch({ type: 'CHECK' }), 850, s.selected !== null, [s.selected])
   return (
-    <Screen bg={isMasterMode ? '#E7B3FF' : '#BCEDFF'} className={`relative flex h-full w-full flex-col justify-between overflow-hidden select-none ${isMasterMode ? 'bg-[#E7B3FF]' : ''}`}>
-      {!isMasterMode && <SkyHills />}
+    <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
+      {/* Continuous sky gradient */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+      {/* Standard outdoor landscape ground (preserved in both normal and master mode) */}
+      <SkyHills />
       <GameHeader isMaster={isMasterMode} masterLoops={s.teacherLoops} chip={true} />
       <div className="relative z-10 my-auto mx-auto flex w-full max-w-[356px] sm:max-w-[380px] flex-col gap-3.5 sm:gap-4 px-3 sm:px-4">
         {optionsToRender.map((k) => (
@@ -751,8 +756,8 @@ export function AlmostScreen() {
       </div>
 
       {/* Central Mascot: Egg resting directly on the green hill crest + Thought bubble with '?' */}
-      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[320px] sm:max-w-[350px] mx-auto pt-2 pb-0 translate-y-8 sm:translate-y-9">
-        <div className="relative w-[220px] sm:w-[246px] aspect-[475/584] flex items-center justify-center">
+      <div className="relative z-20 my-auto flex items-center justify-center w-full max-w-[340px] sm:max-w-[370px] mx-auto pt-2 pb-0 translate-y-[48px] sm:translate-y-[56px]">
+        <div className="relative w-[236px] sm:w-[264px] aspect-[475/584] flex items-center justify-center">
           {/* Egg Mascot SVG */}
           <img
             src="/assets/casi-egg.svg"
@@ -762,13 +767,13 @@ export function AlmostScreen() {
           />
 
           {/* Thought Bubble with '?' perched on upper right */}
-          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[58px] sm:w-[66px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
+          <div className="absolute -top-3 -right-4 sm:-top-4 sm:-right-6 w-[60px] sm:w-[68px] aspect-[143/141] flex items-center justify-center pointer-events-none select-none">
             <img
               src="/assets/casi-bubble.svg"
               alt=""
               className="absolute inset-0 size-full object-contain drop-shadow-sm"
             />
-            <span className="relative z-10 font-display font-black text-white text-[26px] sm:text-[30px] -translate-y-0.5">
+            <span className="relative z-10 font-display font-black text-white text-[27px] sm:text-[31px] -translate-y-0.5">
               ?
             </span>
           </div>
