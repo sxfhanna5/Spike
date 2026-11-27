@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react'
 import { useGame } from '../game/context'
 import { COLOR_HEX, MODULES, OPTION_META, ROUND_INFO, ROLE_COLOR, type Challenge, type Person, type ModuleId } from '../game/data'
-import { boxControls, current, interpreter, signer, stageOf, teacherOf } from '../game/engine'
+import { boxControls, countTotalLearned, current, interpreter, signer, stageOf, teacherOf } from '../game/engine'
 import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { GoodScene } from '../art/GoodScene'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Dock, GameHeader, InstructionStrip, ModuleBadge, PrimaryActionButton, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
+import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ModuleBadge, PrimaryActionButton, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 
 /* ============================== shared pieces ============================== */
@@ -45,11 +45,11 @@ export function ContentBig({ c, size = 150 }: { c: Challenge; size?: number }) {
 }
 
 /** ● ▲ ■ badge, identical to the buttons of the box. */
-export function OptionBadge({ index, size = 58 }: { index: number; size?: number }) {
+export function OptionBadge({ index, size = 56 }: { index: number; size?: number }) {
   const o = OPTION_META[index]
   return (
-    <span className="grid shrink-0 place-items-center rounded-full" style={{ width: size, height: size, background: o.color, boxShadow: `0 4px 0 ${o.ink}55` }} aria-label={o.label}>
-      <Shape kind={o.shape} size={size * 0.55} color={o.ink} />
+    <span className="grid shrink-0 place-items-center rounded-full" style={{ width: size, height: size, background: o.color }} aria-label={o.label}>
+      <Shape kind={o.shape} size={size * 0.46} color={o.ink} />
     </span>
   )
 }
@@ -57,20 +57,20 @@ export function OptionBadge({ index, size = 58 }: { index: number; size?: number
 export function OptionCard({ index, c, selected, dim, onClick, compact }: { index: number; c: Challenge; selected?: boolean; dim?: boolean; onClick?: () => void; compact?: boolean }) {
   const label = c.options[index]
   const o = OPTION_META[index]
-  const h = compact ? 80 : 90
+  const h = compact ? 72 : 78
   const hex = COLOR_HEX[label]
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={`${o.label}: ${label}`}
-      className={`flex w-full items-center gap-3 rounded-full pr-6 pl-4 text-left shadow-[0_6px_16px_rgba(0,0,0,.1)] transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] ${selected ? 'scale-[1.04] shadow-[0_14px_28px_rgba(0,0,0,.2)]' : ''} ${dim ? 'opacity-40' : ''}`}
+      className={`flex w-full items-center gap-4 sm:gap-5 rounded-full pr-6 pl-3 sm:pl-3.5 text-left shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
       style={{ height: h, background: selected ? o.color : '#fff' }}
     >
-      <OptionBadge index={index} size={compact ? 52 : 58} />
-      <span className="flex-1 font-sans leading-none font-black text-ink2" style={{ fontSize: fit(label, compact ? 44 : 52), color: selected ? '#4A5A8C' : undefined }}>{label}</span>
+      <OptionBadge index={index} size={compact ? 50 : 56} />
+      <span className="flex-1 font-sans leading-none font-extrabold text-[#4A5A8C]" style={{ fontSize: fit(label, compact ? 40 : 46), color: selected ? '#4A5A8C' : undefined }}>{label}</span>
       {c.kind === 'color' && hex && <span className="size-9 rounded-full" style={{ background: hex }} aria-hidden />}
-      {c.kind === 'number' && <span className="font-sans text-[30px] font-black text-ink2">{NUMBER_DIGIT[label]}</span>}
+      {c.kind === 'number' && <span className="font-sans text-[30px] font-black text-[#4A5A8C]">{NUMBER_DIGIT[label]}</span>}
       {c.kind === 'word' && hasPictogram(label) && <Pictogram content={label} size={46} />}
     </button>
   )
@@ -108,13 +108,8 @@ function Thinking() {
 }
 
 /** Listo button: uses the canonical PrimaryActionButton shared across the app. */
-function ListoBtn({ onClick, onOrange }: { onClick: () => void; onOrange?: boolean }) {
-  const btn = <PrimaryActionButton onClick={onClick} />
-  return onOrange ? (
-    <div className="mx-auto inline-flex items-center justify-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.14)]">
-      {btn}
-    </div>
-  ) : btn
+function ListoBtn({ onClick }: { onClick: () => void }) {
+  return <PrimaryActionButton label="Listo" icon="check" onClick={onClick} />
 }
 
 /* ============================== intro cards (level · turn · maestro) ============================== */
@@ -201,7 +196,7 @@ function LevelCard() {
           <div className="relative flex flex-col items-center">
             {/* Sombra ovalada debajo del huevo */}
             <div
-              className="absolute -bottom-2 w-[170px] sm:w-[200px] h-[30px] rounded-[50%] bg-[#C590DE] blur-[1px] opacity-90 z-0 pointer-events-none"
+              className="absolute -bottom-2 w-[200px] sm:w-[230px] h-[32px] rounded-[50%] bg-[#C590DE] blur-[1px] opacity-90 z-0 pointer-events-none"
               aria-hidden
             />
             {/* Huevo en primer plano, completamente por encima de la sombra */}
@@ -209,21 +204,21 @@ function LevelCard() {
               src="/assets/737b7.svg"
               alt="Huevo de Spike"
               draggable={false}
-              className="relative z-10 w-[230px] sm:w-[260px] max-h-[36vh] object-contain drop-shadow-[0_16px_30px_rgba(0,0,0,0.18)]"
+              className="relative z-10 w-[270px] sm:w-[300px] max-h-[38vh] object-contain drop-shadow-[0_16px_32px_rgba(0,0,0,0.18)]"
             />
           </div>
         ) : (
           <div className="relative flex flex-col items-center">
             <div
-              className="absolute -bottom-2 w-[160px] sm:w-[190px] h-[26px] rounded-[50%] bg-black/15 blur-[2px] z-0 pointer-events-none"
+              className="absolute -bottom-2 w-[190px] sm:w-[220px] h-[28px] rounded-[50%] bg-black/20 blur-[3px] z-0 pointer-events-none"
               aria-hidden
             />
             <div className="relative z-10">
               <Spike
                 stage={m.stage}
                 mood="happy"
-                size={230}
-                className="max-h-[34vh] drop-shadow-[0_14px_28px_rgba(0,0,0,0.18)]"
+                size={270}
+                className="max-h-[38vh] drop-shadow-[0_16px_32px_rgba(0,0,0,0.2)]"
               />
             </div>
           </div>
@@ -275,6 +270,24 @@ function TurnCard() {
           <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
             {Array.from({ length: m.challenges.length }).map((_, i) => {
               const isDoneOrCurrent = i < doneInModule
+              if (m.id === 2) {
+                return (
+                  <span
+                    key={i}
+                    className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                    style={{ background: isDoneOrCurrent ? '#FF4F1A' : '#F9F9F9' }}
+                  />
+                )
+              }
+              if (m.id === 3) {
+                return (
+                  <span
+                    key={i}
+                    className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                    style={{ background: isDoneOrCurrent ? '#45C1FF' : '#F9F9F9' }}
+                  />
+                )
+              }
               return (
                 <span
                   key={i}
@@ -292,10 +305,10 @@ function TurnCard() {
       </div>
 
       {/* Center container holding Card and below-card prompt */}
-      <div className="my-auto flex flex-col items-center w-full max-w-[344px] sm:max-w-[360px]">
+      <div className="my-auto flex flex-col items-center w-full max-w-[350px] sm:max-w-[364px]">
         {/* Main Card */}
         <div
-          className="w-full h-[clamp(430px,62vh,530px)] rounded-[32px] sm:rounded-[36px] flex flex-col items-center justify-between py-6 px-4 shadow-[0_14px_36px_rgba(0,0,0,0.12)]"
+          className="w-full h-[390px] sm:h-[430px] rounded-[32px] sm:rounded-[36px] flex flex-col items-center justify-between py-5 sm:py-6 px-3 sm:px-4 shadow-[0_14px_36px_rgba(0,0,0,0.12)]"
           style={{ backgroundColor: cardBg }}
         >
           {/* Card Header: Title & Subtitle */}
@@ -311,7 +324,7 @@ function TurnCard() {
 
           {/* Central Illustration Circle */}
           <div
-            className="my-auto size-[170px] sm:size-[200px] rounded-full border-[8px] sm:border-[10px] border-white relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.1)] shrink-0"
+            className="my-2 sm:my-3 size-[160px] sm:size-[190px] rounded-full border-[7px] sm:border-[8px] border-white relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.1)] shrink-0"
             style={{ backgroundColor: cardBg }}
           >
             {who === 'papa' ? (
@@ -336,18 +349,14 @@ function TurnCard() {
           </div>
 
           {/* Bottom Canonical Instruction Strip */}
-          <InstructionStrip round={c.round} className="mx-auto mt-auto" />
+          <InstructionStrip round={c.round} className="mx-auto" />
         </div>
 
         {/* Prompt right below card */}
-        {kid ? (
-          <div className="mt-3.5 sm:mt-4 flex items-center justify-center gap-2 text-[#71717A] text-[15px] sm:text-[16px] font-medium select-none">
-            <span>Gira el celular hacia el niño</span>
-            <Icon name="arrowRight" size={18} color="#71717A" solid />
-          </div>
-        ) : (
-          <div className="h-[28px] mt-3.5 sm:mt-4" aria-hidden />
-        )}
+        <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2 text-[#71717A] text-[15px] sm:text-[16px] font-medium select-none">
+          <span>{who === 'papa' ? 'Gira el celular hacia tu padre' : 'Gira el celular hacia el niño'}</span>
+          <Icon name="arrowRight" size={18} color="#71717A" solid />
+        </div>
       </div>
     </div>
   )
@@ -407,48 +416,74 @@ function ChallengeScreen({ who }: { who: 'papa' | 'nino' }) {
             </div>
           </div>
 
-          {/* Media / Video container */}
-          <div className="relative aspect-[4/3] sm:aspect-[1.3] w-full overflow-hidden rounded-[22px] sm:rounded-[24px] bg-[#EAF1F8] shadow-inner">
-            <video
-              ref={videoRef}
-              playsInline
-              className={`size-full object-cover ${playing ? 'block' : 'hidden'}`}
-              onEnded={() => setPlaying(false)}
-            />
-            <img
-              src="/assets/110ea.png"
-              alt="Seña LSC"
-              draggable={false}
-              className={`size-full object-cover ${playing ? 'hidden' : 'block'}`}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button
-                type="button"
-                onClick={handlePlayToggle}
-                aria-label={playing ? 'Pausar' : 'Reproducir'}
-                className="btn3d grid size-14 sm:size-16 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
-                style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0 } as React.CSSProperties}
-              >
-                <Icon
-                  name={playing ? 'pause' : 'play'}
-                  size={28}
-                  solid
-                  color="#FF8001"
-                  className={playing ? '' : 'translate-x-0.5'}
-                />
-              </button>
+          {/* Main Card Body:
+              - If kid's turn and color: only large color circle.
+              - If kid's turn and number: only large number.
+              - In ALL father turns (and kid letters): video player + answer text!
+          */}
+          {who === 'nino' && c.kind === 'color' ? (
+            <div className="flex flex-1 w-full items-center justify-center py-7 sm:py-9 min-h-[220px] sm:min-h-[250px]">
+              <span
+                className="size-[150px] sm:size-[170px] rounded-full shadow-[0_12px_28px_rgba(0,0,0,0.16)] block shrink-0"
+                style={{ backgroundColor: COLOR_HEX[c.content] }}
+                aria-label={`Color ${c.content}`}
+              />
             </div>
-          </div>
+          ) : who === 'nino' && c.kind === 'number' ? (
+            <div className="flex flex-1 w-full items-center justify-center py-6 sm:py-8 min-h-[220px] sm:min-h-[250px]">
+              <span
+                className="font-sans leading-none font-black text-[#4A5A8C] select-none text-[120px] sm:text-[136px]"
+                aria-label={`Número ${c.digit ?? c.content}`}
+              >
+                {c.digit ?? c.content}
+              </span>
+            </div>
+          ) : (
+            <>
+              {/* Media / Video container */}
+              <div className="relative aspect-[4/3] sm:aspect-[1.3] w-full overflow-hidden rounded-[22px] sm:rounded-[24px] bg-[#EAF1F8] shadow-inner">
+                <video
+                  ref={videoRef}
+                  playsInline
+                  className={`size-full object-cover ${playing ? 'block' : 'hidden'}`}
+                  onEnded={() => setPlaying(false)}
+                />
+                <img
+                  src="/assets/110ea.png"
+                  alt="Seña LSC"
+                  draggable={false}
+                  className={`size-full object-cover ${playing ? 'hidden' : 'block'}`}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={handlePlayToggle}
+                    aria-label={playing ? 'Pausar' : 'Reproducir'}
+                    className="btn3d grid size-14 sm:size-16 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
+                    style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0 } as React.CSSProperties}
+                  >
+                    <Icon
+                      name={playing ? 'pause' : 'play'}
+                      size={28}
+                      solid
+                      color="#FF8001"
+                      className={playing ? '' : 'translate-x-0.5'}
+                    />
+                  </button>
+                </div>
+              </div>
 
-          {/* Bottom badge / purple rectangle with letter/content (Figma 668:3561) */}
-          <div className="mt-3.5 sm:mt-4 w-full h-[52px] sm:h-[58px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)]">
-            <span
-              className="font-sans font-black text-[#BF5EEB] leading-none"
-              style={{ fontSize: fit(c.content, 34) }}
-            >
-              {c.content}
-            </span>
-          </div>
+              {/* Bottom badge / purple rectangle with letter/content (Figma 668:3561) */}
+              <div className="mt-3.5 sm:mt-4 w-full h-[52px] sm:h-[58px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)]">
+                <span
+                  className="font-sans font-black text-[#BF5EEB] leading-none"
+                  style={{ fontSize: fit(c.content, 34) }}
+                >
+                  {c.content}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Instruction centered right below the card */}
@@ -460,7 +495,7 @@ function ChallengeScreen({ who }: { who: 'papa' | 'nino' }) {
 
       {/* Bottom Listo button */}
       <div className="w-full flex items-center justify-center pb-5 sm:pb-7 z-20 px-4">
-        <ListoBtn onClick={() => dispatch({ type: 'SIGN_DONE' })} onOrange={!isPapa} />
+        <ListoBtn onClick={() => dispatch({ type: 'SIGN_DONE' })} />
       </div>
     </Screen>
   )
@@ -484,7 +519,7 @@ export function GuessScreen() {
     <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
       <SkyHills />
       <GameHeader />
-      <div className="relative z-10 my-auto mx-auto flex w-full max-w-[344px] sm:max-w-[364px] flex-col gap-3.5 sm:gap-4 px-4">
+      <div className="relative z-10 my-auto mx-auto flex w-full max-w-[356px] sm:max-w-[380px] flex-col gap-3.5 sm:gap-4 px-3 sm:px-4">
         {c.options.map((_, k) => (
           <OptionCard
             key={k}
@@ -497,8 +532,8 @@ export function GuessScreen() {
         ))}
       </div>
       <div
-        className="relative z-10 flex w-full justify-center pb-8 sm:pb-10"
-        style={{ paddingBottom: 'calc(2.25rem + env(safe-area-inset-bottom, 0px))' }}
+        className="relative z-10 flex w-full justify-center pb-16 sm:pb-20"
+        style={{ paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {s.selected !== null ? (
           <div className="rounded-full bg-[#4A5A8C]/35 px-8">
@@ -517,34 +552,93 @@ export function GuessScreen() {
 export function GoodScreen() {
   const { s, dispatch } = useGame()
   const c = current(s)
-  const m = MODULES[s.level]
   const learned = s.teacherPhase === 'learned'
-  usePausedTimeout(() => dispatch({ type: 'AUTO_NEXT' }), learned ? 2800 : 2000)
+  const levelLearnedCount = Math.max(1, (s.learned[s.level] ?? []).length)
+  usePausedTimeout(() => dispatch({ type: 'AUTO_NEXT' }), 2400)
+
   return (
-    <div role="button" tabIndex={0} aria-label="Seguir" onClick={() => dispatch({ type: 'AUTO_NEXT' })} onKeyDown={(e) => e.key === 'Enter' && dispatch({ type: 'AUTO_NEXT' })} className="absolute inset-0 cursor-pointer outline-none">
-      <Screen bg="#BCEDFF">
-        <GoodScene />
-        <h1 className="pop absolute top-[clamp(140px,20vh,212px)] left-0 w-full text-center font-display leading-[72px] font-bold text-white" style={{ fontSize: learned ? 50 : 66, textShadow: `0 4px 0 ${learned ? '#D06BFF' : '#FF8001'}` }}>{learned ? '¡Aprendimos!' : '¡Bien!'}</h1>
-        <div className="absolute top-[clamp(230px,33vh,318px)] left-1/2 -translate-x-1/2"><Spike stage={m.stage} mood="happy" size={232} className="max-h-[26vh]" /></div>
-        {learned && (
-          <>
-            <div className="seal-glint absolute top-[clamp(330px,46vh,420px)] right-[48px] z-10">
-              <span className="sparkle-fx absolute -top-3 -left-3 text-[#FFE44C]"><Icon name="sparkle" size={26} /></span>
-              <span className="sparkle-fx absolute -right-2 bottom-1 text-white" style={{ animationDelay: '.7s' }}><Icon name="sparkle" size={20} /></span>
-              <img src="/art/spike-medal.png" alt="Sello de maestro" width={92} className="drop-shadow-[0_8px_10px_rgba(0,0,0,.2)]" />
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label="Continuar"
+      onClick={() => dispatch({ type: 'AUTO_NEXT' })}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && dispatch({ type: 'AUTO_NEXT' })}
+      className="screen-in absolute inset-0 z-50 cursor-pointer outline-none select-none overflow-hidden"
+    >
+      <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden">
+        {/* Continuous sky gradient */}
+        <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+
+        {/* Bottom clouds layer (Figma 667:1055) */}
+        <CloudsBlue />
+
+        {/* Central Reward Card Container (Figma 667:1103 / 667:1055) */}
+        <div className="relative z-10 my-auto mx-auto flex w-full max-w-[356px] sm:max-w-[380px] flex-col items-center px-3 sm:px-4 pt-10 sm:pt-12">
+          {/* Top Stars Cluster: Left (Star 13), Center (Star 11), Right (Star 12) - enlarged */}
+          <div className="absolute -top-9 sm:-top-11 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center pointer-events-none">
+            <div className="-mr-4 -rotate-12 translate-y-3">
+              <img src="/assets/17ebc.svg" alt="" className="w-[62px] h-[62px] sm:w-[70px] sm:h-[70px] drop-shadow-[0_3px_6px_rgba(0,0,0,0.16)]" />
             </div>
-          </>
-        )}
-        <div className="absolute bottom-[clamp(24px,5vh,54px)] left-0 flex w-full items-center justify-center gap-3">
-          <span className="card-in flex h-[40px] min-w-[120px] items-center justify-center rounded-full bg-white px-5 font-display text-[20px] font-bold shadow-[0_3px_8px_rgba(0,0,0,.1)]" style={{ color: m.accent }}>{c.content}</span>
-          {!s.replaying && (
-            <span className="card-in flex h-[40px] items-center gap-1.5 rounded-full bg-[#FF8001] pr-5 pl-3 font-display text-[20px] font-bold text-white shadow-[0_4px_0_#FF4F1A]">
-              <img src="/art/fx-flame.png" alt="" width={24} />+1
-            </span>
-          )}
-          {learned && <span className="card-in flex h-[40px] items-center gap-1.5 rounded-full bg-[#E7B3FF] px-4 font-display text-[16px] font-semibold shadow-[0_4px_0_#D06BFF]"><Icon name="cap" size={20} color="#D06BFF" />Sello</span>}
+            <div className="z-10 -translate-y-1">
+              <img src="/assets/4b70e.svg" alt="" className="w-[84px] h-[84px] sm:w-[94px] sm:h-[94px] drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)]" />
+            </div>
+            <div className="-ml-4 rotate-12 translate-y-3">
+              <img src="/assets/9e0b2.svg" alt="" className="w-[62px] h-[62px] sm:w-[70px] sm:h-[70px] drop-shadow-[0_3px_6px_rgba(0,0,0,0.16)]" />
+            </div>
+          </div>
+
+          {/* Main Yellow Card with rounded corners - enlarged to match reference */}
+          <div
+            className="relative flex w-full flex-col items-center rounded-[36px] sm:rounded-[42px] px-5 sm:px-6 pt-9 sm:pt-11 pb-7 sm:pb-8 shadow-[0_20px_50px_rgba(0,0,0,0.18)] overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, #FFE44C 0%, #FFD000 65%, #FFBE00 100%)',
+            }}
+          >
+            {/* Background sunburst light rays behind egg */}
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden" aria-hidden>
+              <img
+                src="/assets/rays.png"
+                alt=""
+                draggable={false}
+                className="size-[900px] max-w-none object-cover opacity-65 mix-blend-screen pointer-events-none"
+              />
+            </div>
+
+            {/* ¡Bien! Text (below stars, bold white with soft shadow) */}
+            <h1
+              className="pop font-display text-[54px] sm:text-[62px] font-bold text-white tracking-wide text-center leading-none mt-3 sm:mt-4 z-10"
+              style={{
+                textShadow: '0 3px 6px rgba(0,0,0,0.15)',
+              }}
+            >
+              {learned ? '¡Aprendimos!' : '¡Bien!'}
+            </h1>
+
+            {/* Egg / Character in center with purple spots - enlarged & protagonist */}
+            <div className="relative my-3 sm:my-4 flex items-center justify-center z-10">
+              <div className="relative size-[210px] sm:size-[235px] flex items-center justify-center">
+                <img
+                  src="/spike/1-feliz.svg"
+                  alt="Huevo Spike"
+                  draggable={false}
+                  className="size-full object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.16)] select-none pointer-events-none"
+                />
+              </div>
+            </div>
+
+            {/* Bottom Reward Badges: Content white pill & Level Learned Droplet pill */}
+            <div className="relative z-10 flex w-full items-center justify-center gap-3.5 mt-1">
+              {/* Content Badge (e.g. "A") */}
+              <div className="flex h-[46px] sm:h-[50px] min-w-[108px] sm:min-w-[120px] items-center justify-center rounded-full bg-white px-5 shadow-[0_4px_14px_rgba(0,0,0,0.08)]">
+                <span className="font-display text-[24px] sm:text-[26px] font-bold text-[#C48243]">
+                  {c.content}
+                </span>
+              </div>
+              {/* Level Learned Droplet Badge (e.g. 💧 +1, 💧 +2...) */}
+              <LearnedWordBadge count={levelLearnedCount} plus />
+            </div>
+          </div>
         </div>
-        <XButton />
       </Screen>
     </div>
   )

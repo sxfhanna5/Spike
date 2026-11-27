@@ -318,6 +318,18 @@ export function ModuleBadge({ id, size = 52 }: { id: ModuleId; size?: number }) 
   return <ModuleArt id={id} size={size} />
 }
 
+/** Unified learned words counter pill (droplet icon + number). */
+export function LearnedWordBadge({ count, plus = false, className = '' }: { count: number; plus?: boolean; className?: string }) {
+  return (
+    <div
+      className={`flex h-[46px] sm:h-[50px] min-w-[108px] sm:min-w-[120px] items-center justify-center gap-2 rounded-full bg-[#FF8001] px-4 sm:px-5 shadow-[0_4px_14px_rgba(255,128,1,0.38)] text-white select-none ${className}`}
+    >
+      <Icon name="drop" size={20} color="#FFFFFF" solid />
+      <span className="font-display text-[22px] sm:text-[25px] font-bold">{plus ? `+${count}` : count}</span>
+    </div>
+  )
+}
+
 /** Canonical instruction capsule: who signs → who guesses (Figma 659:2283). */
 export function InstructionStrip({ round, className = '' }: { round: Round; className?: string }) {
   const r = ROUND_INFO[round]
@@ -327,15 +339,15 @@ export function InstructionStrip({ round, className = '' }: { round: Round; clas
   const handColor = '#FF8001'
   return (
     <div
-      className={`inline-flex items-center gap-1.5 sm:gap-2.5 rounded-full bg-white px-3 sm:px-4 h-[44px] sm:h-[48px] shadow-[0_4px_14px_rgba(0,0,0,0.08)] select-none shrink-0 max-w-[95%] sm:max-w-none ${className}`}
+      className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white px-2.5 sm:px-3.5 h-[42px] sm:h-[46px] shadow-[0_4px_14px_rgba(0,0,0,0.08)] select-none shrink-0 max-w-full ${className}`}
     >
       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-        <Avatar who={r.signer} size={26} bg={signerBg} />
-        <Icon name="hand" size={17} color={handColor} solid />
+        <Avatar who={r.signer} size={25} bg={signerBg} />
+        <Icon name="hand" size={19} color={handColor} solid />
         <Icon name="arrowRight" size={13} color="#4A5A8C" />
-        <Avatar who={r.guesser} size={26} bg={guesserBg} />
+        <Avatar who={r.guesser} size={25} bg={guesserBg} />
       </div>
-      <span className="font-sans font-bold text-[12px] sm:text-[13.5px] text-[#4A5A8C] whitespace-nowrap pl-0.5">
+      <span className="font-sans font-bold text-[12px] sm:text-[13px] text-[#4A5A8C] whitespace-nowrap pl-0.5 sm:pl-1">
         {r.short.replace(' · ', ' - ')}
       </span>
     </div>
@@ -353,24 +365,47 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
   const m = MODULES[s.level]
   const total = s.queue.length
   const round = s.queue[Math.min(s.idx, total - 1)].round
+  const isColors = s.level === 2
+  const isNumbers = s.level === 3
   return (
     <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
       {x && <XButton />}
       <ModuleBadge id={s.level} size={50} />
       <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
         <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
-          {Array.from({ length: total }, (_, k) => (
-            <span
-              key={k}
-              className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full"
-              style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}
-            >
+          {Array.from({ length: total }, (_, k) => {
+            const isDoneOrCurrent = k <= s.idx
+            if (isColors) {
+              return (
+                <span
+                  key={k}
+                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                  style={{ background: isDoneOrCurrent ? '#FF4F1A' : '#F9F9F9' }}
+                />
+              )
+            }
+            if (isNumbers) {
+              return (
+                <span
+                  key={k}
+                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                  style={{ background: isDoneOrCurrent ? '#45C1FF' : '#F9F9F9' }}
+                />
+              )
+            }
+            return (
               <span
-                className="block h-full rounded-full"
-                style={{ width: k <= s.idx ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
-              />
-            </span>
-          ))}
+                key={k}
+                className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full"
+                style={{ background: onWhite ? '#E6EAF5' : 'rgba(255,255,255,0.75)' }}
+              >
+                <span
+                  className="block h-full rounded-full"
+                  style={{ width: isDoneOrCurrent ? '100%' : '0%', background: m.color, transition: 'width 500ms cubic-bezier(.3,1.2,.5,1)' }}
+                />
+              </span>
+            )
+          })}
         </div>
       </div>
       {chip && <InstructionStrip round={round} className="mt-3" />}

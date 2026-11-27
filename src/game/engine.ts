@@ -131,6 +131,8 @@ export const stageOf = (done: number): ModuleId => (done >= TOTAL_CASILLAS ? 5 :
 export const stageUnlocked = (done: number, stage: number) => stage === 1 || modulesDone(done) >= stage - 1
 export const activeCasilla = (done: number) => Math.min(TOTAL_CASILLAS, done + 1)
 export const lit = (heat: number) => Math.min(12, Math.floor(heat))
+export const countTotalLearned = (learned: Partial<Record<ModuleId, string[]>> = {}): number =>
+  Object.values(learned).reduce((acc, list) => acc + (list ? list.length : 0), 0)
 
 export const initialState = (): GameState => ({
   screen: 'loader', overlay: null, account: null, session: false, authError: null, facing: 'nino', intro: null,
@@ -148,7 +150,11 @@ export function loadState(): GameState {
   try {
     const param = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('screen') : null
     const paramIntro = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('intro') : null
-    const paramLevel = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('level') || '1', 10) : 1
+    const paramLevelRaw = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('level') || '', 10) : NaN
+    const paramCasilla = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('casilla') || '', 10) : NaN
+    const initialLevel = (!isNaN(paramLevelRaw) && paramLevelRaw >= 1 && paramLevelRaw <= 5 ? paramLevelRaw : (!isNaN(paramCasilla) ? moduleOf(paramCasilla).id : 1)) as ModuleId
+    const initialCasilla = !isNaN(paramCasilla) ? paramCasilla : MODULES[initialLevel].first
+    const initialIdx = Math.max(0, Math.min(MODULES[initialLevel].challenges.length - 1, initialCasilla - MODULES[initialLevel].first))
     const initialIntro: Intro | null = paramIntro === 'level'
       ? { kind: 'level', who: 'papa', arrow: false }
       : paramIntro === 'turn-papa'
@@ -157,8 +163,7 @@ export function loadState(): GameState {
       ? { kind: 'turn', who: 'nino', arrow: true }
       : null
     const initialFacing: Person = paramIntro === 'turn-nino' ? 'nino' : 'papa'
-    const initialLevel = (paramLevel >= 1 && paramLevel <= 5 ? paramLevel : 1) as ModuleId
-    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write'].includes(param))
+    const initialScreen = (param && ['welcome', 'login', 'register', 'connect', 'map', 'album', 'profile', 'tutorialKid', 'tutorialParent', 'sign', 'guess', 'write', 'good', 'almost', 'hatch', 'master'].includes(param))
       ? (param as Screen)
       : paramIntro
       ? (paramIntro === 'turn-nino' ? 'guess' : 'sign')
@@ -167,14 +172,14 @@ export function loadState(): GameState {
     const initialOverlay: Overlay | null = (paramOverlay && ['tutorials', 'reto', 'module', 'exit'].includes(paramOverlay))
       ? (paramOverlay as Overlay)
       : null
-    const paramCasilla = typeof window !== 'undefined' ? parseInt(new URLSearchParams(window.location.search).get('casilla') || '1', 10) : 1
     const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
     const paramTutorialMode = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('mode') as 'initial' | 'standalone' | null) : null
     const initialTutorialMode = paramTutorialMode ?? (param === 'tutorialKid' || param === 'tutorialParent' ? 'initial' : undefined)
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, overlay: initialOverlay, selectedCasilla: paramCasilla, casilla: paramCasilla, idx: Math.max(0, paramCasilla - 1) }
+    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
+    const effLevel = (!isNaN(paramLevelRaw) ? initialLevel : param ? initialLevel : paramIntro ? initialLevel : (saved.level ?? 1)) as ModuleId
     return {
       ...base,
       ...saved,
@@ -186,10 +191,11 @@ export function loadState(): GameState {
       connected: paramConnected,
       intro: initialIntro,
       facing: paramIntro ? initialFacing : (saved.facing ?? 'nino'),
-      level: paramIntro ? initialLevel : (saved.level ?? 1),
-      selectedCasilla: paramCasilla,
-      casilla: paramCasilla,
-      idx: Math.max(0, paramCasilla - 1),
+      level: effLevel,
+      queue: buildQueue(effLevel, false),
+      selectedCasilla: initialCasilla,
+      casilla: initialCasilla,
+      idx: initialIdx,
       selected: null,
       fx: fx('none'),
     }

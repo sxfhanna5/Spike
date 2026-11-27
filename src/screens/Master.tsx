@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useGame } from '../game/context'
-import { ALPHABET, MODULES, STAGES, plainLetters } from '../game/data'
-import { boxControls, current, interpreter, signer, teacherMode, teacherOf, teacherPicker } from '../game/engine'
+import { ALPHABET, MODULES, STAGES, plainLetters, type ModuleId } from '../game/data'
+import { boxControls, countTotalLearned, current, interpreter, signer, teacherMode, teacherOf, teacherPicker } from '../game/engine'
 import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Btn, Dock, GameHeader, ModuleBadge, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
-import { Icon, Pictogram, hasPictogram } from '../components/glyphs'
+import { Avatar, Btn, Dock, GameHeader, ModuleBadge, NavBar, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
+import { Badge, Icon, Pictogram, hasPictogram } from '../components/glyphs'
 import { ContentBig, HelpButton, OptionCard } from './Play'
 
 /* ============================== S19 / S20 · Modo maestro ============================== */
@@ -265,55 +265,200 @@ export function WriteScreen() {
 
 /* ============================== S22 · Eclosión / crecimiento ============================== */
 
+function CategoryIcon({ id, size = 22 }: { id: ModuleId; size?: number }) {
+  if (id === 1) {
+    return <span className="font-display text-[18px] sm:text-[20px] font-black leading-none text-[#8A3FC4]">Aa</span>
+  }
+  if (id === 2) {
+    return <Icon name="drop" size={size} color="#FFFFFF" solid />
+  }
+  if (id === 3) {
+    return <span className="font-display text-[22px] sm:text-[24px] font-black leading-none text-white">1</span>
+  }
+  if (id === 4) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden>
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2z" />
+      </svg>
+    )
+  }
+  if (id === 5) {
+    return <Icon name="pencil" size={size} color="#FFFFFF" solid />
+  }
+  return null
+}
+
+function getCategoryPillColors(id: ModuleId) {
+  switch (id) {
+    case 1:
+      return { circleBg: '#E7B3FF', titleColor: '#D06BFF' }
+    case 2:
+      return { circleBg: '#FF4F1A', titleColor: '#FF4F1A' }
+    case 3:
+      return { circleBg: '#38B6FF', titleColor: '#38B6FF' }
+    case 4:
+      return { circleBg: '#73D83A', titleColor: '#369C00' }
+    case 5:
+      return { circleBg: '#C48243', titleColor: '#884E17' }
+    default:
+      return { circleBg: '#38B6FF', titleColor: '#38B6FF' }
+  }
+}
+
 export function HatchScreen() {
   const { s, dispatch } = useGame()
   const m = MODULES[s.level]
   const final = m.id === 5
   const next = Math.min(5, m.stage + 1)
   const [phase, setPhase] = useState<'crack' | 'reveal'>('crack')
-  usePausedTimeout(() => setPhase('reveal'), 3400, phase === 'crack', [s.fx.key])
-  const learned = (s.learned[m.id] ?? []).length
+  usePausedTimeout(() => setPhase('reveal'), 2800, phase === 'crack', [s.fx.key])
+
+  // Master seals obtained in the current completed category
+  const levelMasterCount = s.masterSeals && s.masterSeals.length > 0
+    ? s.masterSeals.filter((item) => m.contents.includes(item)).length
+    : s.masterCount
+  // Learned count in the current completed category
+  const levelLearnedCount = (s.learned[m.id] ?? []).length > 0
+    ? (s.learned[m.id] ?? []).length
+    : Math.max(1, (s.learned[s.level] ?? []).length)
+  // Hatch screen is ALWAYS vibrant orange with reddish-orange base pedestal across ALL levels
+  const bgColor = '#FF8001'
+  const baseColor = '#FF4F1A'
+  const stageName = final ? 'Spike llegó a ser adulto' : (STAGES[next - 1] ?? 'Bebé')
+  const pillColors = getCategoryPillColors(m.id)
+
   return (
-    <Screen bg={m.color}>
-      {/* soft gradient of the module colour: no image backdrops, so nothing can show as a dark box */}
-      <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 50% 38%, #ffffff66 0%, ${m.color} 46%, ${m.accent} 135%)` }} />
-      <LevelRays opacity={0.5} />
-      <Sparkles color="#fff" />
-      <div className="card-in absolute top-5 left-1/2 flex h-[64px] -translate-x-1/2 items-center gap-3 rounded-full bg-white py-1 pr-6 pl-3 shadow-[0_6px_16px_rgba(0,0,0,.14)]">
-        <ModuleBadge id={m.id} size={44} />
-        <span className="flex flex-col leading-tight"><span className="font-display text-[20px] font-semibold" style={{ color: m.accent }}>Nivel {m.id}</span><span className="font-sans text-[14px] font-bold text-ink2">Completo</span></span>
+    <Screen bg={bgColor} className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
+      {/* Sunburst rays behind egg */}
+      <div className="pointer-events-none absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden" aria-hidden>
+        <img
+          src="/assets/rays.png"
+          alt=""
+          draggable={false}
+          className="size-[850px] max-w-none object-cover opacity-35 mix-blend-screen pointer-events-none"
+        />
+      </div>
+
+      {/* Close button X (top-left circular white button, dispatches HATCH_CONTINUE) */}
+      <button
+        type="button"
+        aria-label="Cerrar y continuar"
+        onClick={() => dispatch({ type: 'HATCH_CONTINUE' })}
+        className="btn3d absolute left-4 sm:left-5 z-50 grid size-[46px] sm:size-[48px] place-items-center rounded-full"
+        style={{
+          '--bg': '#FFFFFF',
+          '--edge': '#FFD2A8',
+          '--fg': '#FF8001',
+          padding: 0,
+          minHeight: 46,
+          top: 'calc(1.35rem + env(safe-area-inset-top, 0px))',
+        } as React.CSSProperties}
+      >
+        <Icon name="close" size={22} solid color="#FF8001" />
+      </button>
+
+      {/* Top Level Complete Pill with category icon (Figma 610:4850 & Reference Image 1) */}
+      <div
+        className="card-in absolute top-[calc(2.25rem+env(safe-area-inset-top,0px))] sm:top-[calc(2.5rem+env(safe-area-inset-top,0px))] left-1/2 -translate-x-1/2 z-40 flex h-[54px] sm:h-[58px] items-center gap-3 sm:gap-3.5 rounded-full bg-white pl-2 pr-6 sm:pl-2.5 sm:pr-7 shadow-[0_4px_16px_rgba(0,0,0,0.12)] select-none"
+      >
+        <div
+          data-category-icon
+          className="category-disc grid size-10 sm:size-11 place-items-center rounded-full shrink-0 shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+          style={{ backgroundColor: pillColors.circleBg }}
+        >
+          <CategoryIcon id={m.id} size={22} />
+        </div>
+        <div className="flex flex-col justify-center leading-none">
+          <span
+            className="font-display text-[18px] sm:text-[21px] font-black leading-tight tracking-tight"
+            style={{ color: pillColors.titleColor }}
+          >
+            Nivel {m.id}
+          </span>
+          <span className="font-sans text-[12px] sm:text-[13px] font-medium text-[#737373] mt-0.5 leading-none">
+            Completo
+          </span>
+        </div>
       </div>
 
       {phase === 'crack' ? (
-        <div className="absolute top-[170px] left-0 flex w-full flex-col items-center">
-          <h1 className="font-display text-[44px] leading-[52px] font-semibold text-white drop-shadow-[0_4px_0_rgba(0,0,0,.14)]">{final ? '¡Último reto!' : '¡Casi sale!'}</h1>
-          <div className="relative mt-10 egg-tremble" style={{ filter: 'drop-shadow(0 0 22px #fff)' }}>
+        <div className="relative z-20 flex h-full w-full flex-col items-center justify-center pt-16">
+          <h1 className="font-display text-[44px] sm:text-[50px] leading-[52px] font-bold text-white drop-shadow-[0_4px_0_rgba(0,0,0,.14)] text-center">
+            {final ? '¡Último reto!' : '¡Casi sale!'}
+          </h1>
+          <div className="relative mt-8 egg-tremble" style={{ filter: 'drop-shadow(0 0 24px rgba(255,255,255,0.75))' }}>
             <Spike stage={m.stage} mood="restless" size={260} animate={false} />
           </div>
-          <div className="flash pointer-events-none absolute inset-0 -top-[170px] h-[844px] bg-white" style={{ animationDelay: '2.7s', opacity: 0 }} />
         </div>
       ) : (
-        <>
-          <div className="flash pointer-events-none absolute inset-0 bg-white" />
-          <div className="absolute top-[116px] left-0 flex w-full flex-col items-center">
-            <h1 className="hatch-pop font-display text-[46px] leading-[52px] font-semibold text-white drop-shadow-[0_4px_0_rgba(0,0,0,.14)]">{final ? '¡Terminaste todo!' : '¡Spike creció!'}</h1>
-            <p className="mt-1 font-display text-[22px] font-normal text-white/95">{final ? 'Spike llegó a ser adulto' : `Nuevo en Progreso: ${STAGES[next - 1]}`}</p>
-            <div className="mt-4"><Spike stage={next} mood="surprised" size={final ? 250 : 240} className="hatch-pop" /></div>
+        <div className="relative z-20 flex flex-col h-full w-full justify-between items-center">
+          {/* Top Title Area: enlarged title centered */}
+          <div className="flex w-full flex-col items-center pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(6rem+env(safe-area-inset-top,0px))] px-4 text-center shrink-0 z-30">
+            <h1 className="hatch-pop font-display text-[46px] sm:text-[54px] leading-tight font-black text-white drop-shadow-[0_3px_8px_rgba(0,0,0,.22)]">
+              {final ? '¡Terminaste todo!' : '¡Eclosionó!'}
+            </h1>
           </div>
-          <div className="absolute top-[500px] left-5 flex w-[350px] gap-4">
-            <div className="card flex h-[112px] flex-1 flex-col items-center justify-center rounded-[28px] shadow-[0_8px_20px_rgba(0,0,0,.12)]">
-              <span className="flex items-center gap-1 font-display text-[36px] leading-10 font-bold text-ink"><CountUp value={s.masterCount} /><img src="/art/spike-medal.png" alt="" width={34} /></span>
-              <span className="font-sans text-[14px] font-extrabold text-ink2">Sellos de maestro</span>
-            </div>
-            <div className="card flex h-[112px] flex-1 flex-col items-center justify-center rounded-[28px] shadow-[0_8px_20px_rgba(0,0,0,.12)]">
-              <span className="flex items-center gap-1 font-display text-[36px] leading-10 font-bold text-ink"><CountUp value={learned} /><img src="/art/fx-flame.png" alt="" width={30} /></span>
-              <span className="font-sans text-[14px] font-extrabold text-ink2">Aprendidos</span>
+
+          {/* Central Area: Dino resting on top of the extended pedestal, with stageName immediately above its head */}
+          <div className="relative flex flex-1 items-end justify-center w-full z-30 pb-0">
+            <div className="relative flex flex-col items-center -mb-12 sm:-mb-16">
+              {/* Stage Name right above dino head */}
+              <span className="font-sans text-[20px] sm:text-[23px] font-bold text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)] mb-2 sm:mb-2.5 tracking-wide">
+                {stageName}
+              </span>
+
+              {/* Pedestal shadow directly beneath the dino */}
+              <div
+                className="absolute bottom-2 w-[180px] sm:w-[210px] h-[22px] rounded-[50%] bg-black/20 blur-[3px] z-0 pointer-events-none"
+                aria-hidden
+              />
+              <Spike
+                stage={next}
+                mood="happy"
+                size={270}
+                className="hatch-pop relative z-10 filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.22)] select-none pointer-events-none max-h-[38vh]"
+              />
             </div>
           </div>
-          <div className="absolute right-5 bottom-[50px] left-5"><Btn onClick={() => dispatch({ type: 'HATCH_CONTINUE' })} icon="arrowRight" variant="primary">Seguir</Btn></div>
-        </>
+
+          {/* Bottom Pedestal Base (#FF4F1A, ref 691 × 825) - Taller, extends higher behind Dino */}
+          <div
+            className="relative z-20 w-[88%] max-w-[348px] sm:max-w-[364px] mx-auto flex flex-col items-center rounded-t-[32px] sm:rounded-t-[36px] pt-16 sm:pt-20 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] px-3 sm:px-3.5 shadow-[0_-8px_32px_rgba(0,0,0,0.2)] shrink-0 bg-[#FF4F1A] min-h-[40vh] sm:min-h-[44vh]"
+            style={{ backgroundColor: baseColor }}
+          >
+            <div className="flex w-full gap-2.5 sm:gap-3 items-center justify-center">
+              {/* Sellos de maestro card (ref: 257 × 216) with enlarged numbers and icons */}
+              <div
+                className="flex flex-1 flex-col items-center justify-center rounded-[24px] sm:rounded-[28px] bg-[#FDFDFE] border-[2.5px] border-[#FF8001] py-4 sm:py-5 px-2 sm:px-3 shadow-[0_4px_16px_rgba(0,0,0,0.08)] aspect-[257/216]"
+              >
+                <div className="flex items-center justify-center gap-2 font-display text-[42px] sm:text-[48px] leading-none font-black text-[#4A5A8C]">
+                  <CountUp value={levelMasterCount} />
+                  <img src="/art/spike-medal.png" alt="" className="size-9 sm:size-11 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.14)]" />
+                </div>
+                <span className="font-sans text-[12px] sm:text-[13px] font-black text-[#6A7187] mt-1.5 text-center leading-tight tracking-tight">
+                  Sellos de maestro
+                </span>
+              </div>
+
+              {/* Aprendidos card with unified flame icon (ref: 257 × 216) with enlarged numbers and icons */}
+              <div
+                className="flex flex-1 flex-col items-center justify-center rounded-[24px] sm:rounded-[28px] bg-[#FDFDFE] border-[2.5px] border-[#FF8001] py-4 sm:py-5 px-2 sm:px-3 shadow-[0_4px_16px_rgba(0,0,0,0.08)] aspect-[257/216]"
+              >
+                <div className="flex items-center justify-center gap-2 font-display text-[42px] sm:text-[48px] leading-none font-black text-[#4A5A8C]">
+                  <CountUp value={levelLearnedCount} />
+                  <span className="text-[36px] sm:text-[42px] leading-none select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.14)]" aria-hidden="true">🔥</span>
+                </div>
+                <span className="font-sans text-[12px] sm:text-[13px] font-black text-[#6A7187] mt-1.5 text-center leading-tight tracking-tight">
+                  Aprendidos
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating Navigation Bar */}
+          <NavBar />
+        </div>
       )}
-      <XButton />
     </Screen>
   )
 }
