@@ -60,6 +60,7 @@ export function PrimaryActionButton({
   return (
     <button
       type="button"
+      aria-label={label}
       onClick={onClick}
       disabled={disabled}
       className={`btn3d mx-auto flex h-[58px] sm:h-[62px] w-full max-w-[280px] sm:max-w-[300px] items-center justify-center gap-3 rounded-full font-bold cursor-pointer select-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
@@ -330,25 +331,53 @@ export function LearnedWordBadge({ count, plus = false, className = '' }: { coun
   )
 }
 
-/** Canonical instruction capsule: who signs → who guesses (Figma 659:2283). */
-export function InstructionStrip({ round, className = '' }: { round: Round; className?: string }) {
-  const r = ROUND_INFO[round]
-  const isDirecta = round === 'directa'
-  const signerBg = isDirecta ? '#FF8001' : '#FFC700'
-  const guesserBg = isDirecta ? '#FFC700' : '#45C1FF'
-  const handColor = '#FF8001'
+export interface InstructionStripProps {
+  round?: Round
+  signer?: Person
+  guesser?: Person
+  text?: string
+  action?: 'adivina' | 'escribe'
+  className?: string
+}
+
+/** Canonical instruction capsule: who signs → who guesses/writes (Figma 659:2283 & 659:1601). */
+export function InstructionStrip({
+  round,
+  signer: propSigner,
+  guesser: propGuesser,
+  text: propText,
+  action,
+  className = '',
+}: InstructionStripProps) {
+  const { s } = useGame()
+  const r = round ? ROUND_INFO[round] : ROUND_INFO[s?.queue?.[Math.min(s.idx, (s.queue?.length ?? 1) - 1)]?.round ?? 'directa']
+  const signerWho: Person = propSigner ?? r?.signer ?? 'papa'
+  const guesserWho: Person = propGuesser ?? r?.guesser ?? 'nino'
+
+  // Regla de color estricta: Padre = azul (#45C1FF), Niño = naranja (#FF8001). NUNCA amarillo.
+  const signerBg = signerWho === 'papa' ? '#45C1FF' : '#FF8001'
+  const guesserBg = guesserWho === 'papa' ? '#45C1FF' : '#FF8001'
+  const handColor = signerWho === 'papa' ? '#45C1FF' : '#FF8001'
+
+  const act = action ?? ((s?.level === 5 || s?.screen === 'write') ? 'escribe' : 'adivina')
+  const defaultText = propText ?? (
+    signerWho === 'papa'
+      ? `Padre hace seña - niño ${act}`
+      : `Niño hace seña - padre ${act}`
+  )
+
   return (
     <div
       className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white px-2.5 sm:px-3.5 h-[42px] sm:h-[46px] shadow-[0_4px_14px_rgba(0,0,0,0.08)] select-none shrink-0 max-w-full ${className}`}
     >
       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-        <Avatar who={r.signer} size={25} bg={signerBg} />
+        <Avatar who={signerWho} size={25} bg={signerBg} />
         <Icon name="hand" size={19} color={handColor} solid />
         <Icon name="arrowRight" size={13} color="#4A5A8C" />
-        <Avatar who={r.guesser} size={25} bg={guesserBg} />
+        <Avatar who={guesserWho} size={25} bg={guesserBg} />
       </div>
       <span className="font-sans font-bold text-[12px] sm:text-[13px] text-[#4A5A8C] whitespace-nowrap pl-0.5 sm:pl-1">
-        {r.short.replace(' · ', ' - ')}
+        {defaultText}
       </span>
     </div>
   )
@@ -367,6 +396,7 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
   const round = s.queue[Math.min(s.idx, total - 1)].round
   const isColors = s.level === 2
   const isNumbers = s.level === 3
+  const isWrite = s.level === 5
   return (
     <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
       {x && <XButton />}
@@ -393,6 +423,15 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
                 />
               )
             }
+            if (isWrite) {
+              return (
+                <span
+                  key={k}
+                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                  style={{ background: isDoneOrCurrent ? '#C48243' : '#F9F9F9' }}
+                />
+              )
+            }
             return (
               <span
                 key={k}
@@ -408,7 +447,7 @@ export function GameHeader({ chip = true, x = true, onWhite = false }: { chip?: 
           })}
         </div>
       </div>
-      {chip && <InstructionStrip round={round} className="mt-3" />}
+      {chip && <InstructionStrip round={round} action={isWrite ? 'escribe' : 'adivina'} className="mt-3" />}
     </div>
   )
 }

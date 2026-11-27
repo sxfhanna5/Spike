@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useGame } from '../game/context'
 import { ALPHABET, MODULES, STAGES, plainLetters, type ModuleId } from '../game/data'
 import { boxControls, countTotalLearned, current, interpreter, signer, teacherMode, teacherOf, teacherPicker } from '../game/engine'
@@ -6,7 +6,7 @@ import { CloudsBlue } from '../art/CloudsBlue'
 import { CloudsOrange } from '../art/CloudsOrange'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Btn, Dock, GameHeader, ModuleBadge, NavBar, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
+import { Avatar, Btn, Dock, GameHeader, InstructionStrip, ModuleBadge, NavBar, PrimaryActionButton, Screen, Sparkles, Spike, XButton, CountUp, usePausedTimeout } from '../components/ui'
 import { Badge, Icon, Pictogram, hasPictogram } from '../components/glyphs'
 import { ContentBig, HelpButton, OptionCard } from './Play'
 
@@ -141,124 +141,532 @@ function WriteBoard({ compact }: { compact?: boolean }) {
   )
 }
 
+/** Illustrated Mamá character matching Figma 659:1601 */
+export function MamaCharacter({ size = 120 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Mamá" className="select-none pointer-events-none shrink-0">
+      {/* Back wavy hair */}
+      <path
+        d="M26 62C22 52 24 38 34 26C42 16 52 14 60 14C68 14 78 16 86 26C96 38 98 52 94 62C91 69 95 78 90 86C86 92 80 94 76 94L44 94C40 94 34 92 30 86C25 78 29 69 26 62Z"
+        fill="#8C532B"
+      />
+      {/* Pink Blouse */}
+      <path
+        d="M34 92C34 82 46 76 60 76C74 76 86 82 86 92C86 102 34 102 34 92Z"
+        fill="#F46083"
+      />
+      {/* Neck */}
+      <rect x="53" y="66" width="14" height="15" rx="7" fill="#FAD0B1" />
+      {/* Head */}
+      <circle cx="60" cy="50" r="21" fill="#FAD0B1" />
+      {/* White Pearl Earrings */}
+      <circle cx="38" cy="53" r="3.5" fill="#FFFFFF" />
+      <circle cx="82" cy="53" r="3.5" fill="#FFFFFF" />
+      {/* Front Hair Bangs */}
+      <path
+        d="M39 42C44 32 52 36 60 41C68 36 76 32 81 42C79 30 70 24 60 24C50 24 41 30 39 42Z"
+        fill="#8C532B"
+      />
+      {/* Cheerful White Smile */}
+      <path
+        d="M52 54C52 60 68 60 68 54Z"
+        fill="#FFFFFF"
+      />
+    </svg>
+  )
+}
+
+export function getLetterBank(word: string): string[] {
+  const target = plainLetters(word)
+  if (word === 'MAMÁ' || word === 'MAMA') {
+    return ['A', 'E', 'I', 'O', 'M', 'P', 'D', 'N']
+  }
+  const defaultRow1 = ['A', 'E', 'I', 'O']
+  const defaultRow2 = ['M', 'P', 'D', 'N']
+  const unique = Array.from(new Set(target))
+
+  // Separate unique target letters into vowels and consonants
+  const targetVowels = unique.filter((l) => ['A', 'E', 'I', 'O', 'U'].includes(l))
+  const targetConsonants = unique.filter((l) => !['A', 'E', 'I', 'O', 'U'].includes(l))
+
+  // Build row 1 (vowels preferred)
+  const row1 = [...targetVowels]
+  for (const v of defaultRow1) {
+    if (!row1.includes(v) && row1.length < 4) row1.push(v)
+  }
+  while (row1.length < 4) {
+    const extra = ['U', 'Y'].find((l) => !row1.includes(l)) || 'A'
+    row1.push(extra)
+  }
+
+  // Build row 2 (consonants)
+  const row2 = [...targetConsonants]
+  for (const c of defaultRow2) {
+    if (!row2.includes(c) && !row1.includes(c) && row2.length < 4) row2.push(c)
+  }
+  const fallbackConsonants = ['S', 'L', 'R', 'T', 'B', 'C', 'G']
+  for (const fc of fallbackConsonants) {
+    if (row2.length >= 4) break
+    if (!row2.includes(fc) && !row1.includes(fc)) row2.push(fc)
+  }
+  return [...row1.slice(0, 4), ...row2.slice(0, 4)]
+}
+
+/** Interactive drag-and-drop letter slots board matching Figma 659:1467 */
+export function ChildWriteSlotsBoard() {
+  const { s, dispatch } = useGame()
+  const c = current(s)
+  const targetLetters = plainLetters(c.content)
+  const [slots, setSlots] = useState<(string | null)[]>(() => Array(targetLetters.length).fill(null))
+  const [activeSlot, setActiveSlot] = useState(0)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [isError, setIsError] = useState(false)
+  const bank = getLetterBank(c.content)
+
+  // Floating drag preview state for touch & pointer drag
+  const [dragState, setDragState] = useState<{
+    letter: string
+    x: number
+    y: number
+  } | null>(null)
+  const dragStartRef = useRef<{ x: number; y: number; letter: string; moved: boolean } | null>(null)
+
+  // Reset slots when challenge content changes
+  useEffect(() => {
+    setSlots(Array(targetLetters.length).fill(null))
+    setActiveSlot(0)
+    setIsSuccess(false)
+    setIsError(false)
+  }, [c.content])
+
+  const placeLetterAt = (index: number, letter: string) => {
+    if (index < 0 || index >= targetLetters.length) return
+    const nextSlots = [...slots]
+    nextSlots[index] = letter
+    setSlots(nextSlots)
+
+    // Advance active slot to next empty slot
+    const nextEmpty = nextSlots.findIndex((s, idx) => idx > index && s === null)
+    if (nextEmpty !== -1) {
+      setActiveSlot(nextEmpty)
+    } else {
+      const anyEmpty = nextSlots.findIndex((s) => s === null)
+      setActiveSlot(anyEmpty !== -1 ? anyEmpty : index)
+    }
+
+    // Check completion
+    if (nextSlots.every((s) => s !== null)) {
+      const entered = nextSlots.join('')
+      const target = targetLetters.join('')
+      if (entered === target) {
+        setIsSuccess(true)
+        setIsError(false)
+        dispatch({ type: 'SET_TYPED', typed: nextSlots as string[] })
+        setTimeout(() => {
+          dispatch({ type: 'CHECK' })
+        }, 850)
+      } else {
+        setIsError(true)
+        setTimeout(() => setIsError(false), 900)
+      }
+    }
+  }
+
+  const handleLetterTap = (letter: string) => {
+    if (dragStartRef.current?.moved) return
+    // Target slot: active slot if empty, or first empty slot
+    let targetIdx = activeSlot
+    if (targetIdx >= targetLetters.length || slots[targetIdx] !== null) {
+      const firstEmpty = slots.findIndex((s) => s === null)
+      if (firstEmpty !== -1) {
+        targetIdx = firstEmpty
+      }
+    }
+    placeLetterAt(targetIdx, letter)
+  }
+
+  const handleSlotTap = (index: number) => {
+    if (slots[index] !== null) {
+      // Remove letter from slot and make it active
+      const nextSlots = [...slots]
+      nextSlots[index] = null
+      setSlots(nextSlots)
+      setActiveSlot(index)
+      setIsSuccess(false)
+      setIsError(false)
+    } else {
+      setActiveSlot(index)
+    }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent, letter: string) => {
+    if (e.button !== 0) return
+    dragStartRef.current = { x: e.clientX, y: e.clientY, letter, moved: false }
+  }
+
+  useEffect(() => {
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragStartRef.current) return
+      const dx = Math.abs(e.clientX - dragStartRef.current.x)
+      const dy = Math.abs(e.clientY - dragStartRef.current.y)
+      if (!dragStartRef.current.moved && (dx > 6 || dy > 6)) {
+        dragStartRef.current.moved = true
+      }
+      if (dragStartRef.current.moved) {
+        setDragState({
+          letter: dragStartRef.current.letter,
+          x: e.clientX,
+          y: e.clientY,
+        })
+      }
+    }
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!dragStartRef.current) return
+      const { moved, letter } = dragStartRef.current
+      dragStartRef.current = null
+      setDragState(null)
+
+      if (moved) {
+        const el = document.elementFromPoint(e.clientX, e.clientY)
+        const slotEl = el?.closest('[data-slot-index]')
+        if (slotEl) {
+          const slotIdx = Number(slotEl.getAttribute('data-slot-index'))
+          if (!isNaN(slotIdx)) {
+            placeLetterAt(slotIdx, letter)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
+    }
+  }, [slots, activeSlot, targetLetters])
+
+  const handleHtmlDragStart = (e: React.DragEvent, letter: string) => {
+    e.dataTransfer.setData('text/plain', letter)
+    e.dataTransfer.effectAllowed = 'copy'
+  }
+
+  const handleHtmlDrop = (e: React.DragEvent, slotIdx: number) => {
+    e.preventDefault()
+    const letter = e.dataTransfer.getData('text/plain')
+    if (letter) {
+      placeLetterAt(slotIdx, letter)
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center w-full">
+      {/* Top target letter slots */}
+      <div className="flex justify-center items-center gap-2.5 sm:gap-3.5 mb-8 sm:mb-10 w-full" aria-label="Casillas de la palabra">
+        {targetLetters.map((_, k) => {
+          const isActive = activeSlot === k
+          const char = slots[k]
+          return (
+            <button
+              key={k}
+              type="button"
+              data-slot-index={k}
+              onClick={() => handleSlotTap(k)}
+              onDragOver={(e) => {
+                e.preventDefault()
+                e.dataTransfer.dropEffect = 'copy'
+              }}
+              onDrop={(e) => handleHtmlDrop(e, k)}
+              aria-label={`Casilla ${k + 1}${char ? `: ${char}` : ' vacía'}`}
+              className={`relative grid size-[66px] sm:size-[74px] md:size-[78px] place-items-center rounded-[20px] bg-white transition-all duration-200 cursor-pointer shadow-[0_4px_14px_rgba(0,0,0,0.06)] ${
+                isSuccess
+                  ? 'border-[3px] border-[#73D83A] shadow-[0_0_12px_rgba(115,216,58,0.35)]'
+                  : isError
+                  ? 'border-[3px] border-[#FF4F1A] shadow-[0_0_12px_rgba(255,79,26,0.35)] shake'
+                  : isActive
+                  ? 'border-[3px] border-[#C48243]'
+                  : 'border-[3px] border-transparent'
+              }`}
+            >
+              {char ? (
+                <span className="font-sans font-black text-[34px] sm:text-[38px] text-[#4E596F] leading-none select-none pop">
+                  {char}
+                </span>
+              ) : null}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 4x2 Letter Bank Cards (Figma 659:1467) */}
+      <div className="grid grid-cols-4 gap-3 sm:gap-3.5 md:gap-4 justify-items-center w-full max-w-[340px] sm:max-w-[360px]">
+        {bank.map((letter, idx) => (
+          <button
+            key={idx}
+            type="button"
+            draggable
+            onDragStart={(e) => handleHtmlDragStart(e, letter)}
+            onPointerDown={(e) => handlePointerDown(e, letter)}
+            onClick={() => handleLetterTap(letter)}
+            aria-label={`Letra ${letter}`}
+            className="btn3d size-[64px] sm:size-[72px] md:size-[76px] rounded-[20px] bg-white font-sans font-black text-[32px] sm:text-[36px] text-[#4E596F] select-none cursor-pointer active:scale-95 transition-transform flex items-center justify-center shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
+            style={{
+              '--bg': '#FFFFFF',
+              '--edge': '#E5E9F2',
+              '--fg': '#4E596F',
+              minHeight: 64,
+              padding: 0,
+            } as React.CSSProperties}
+          >
+            {letter}
+          </button>
+        ))}
+      </div>
+
+      {/* Floating Drag Preview for Touch / Pointer Dragging */}
+      {dragState && (
+        <div
+          className="fixed z-50 pointer-events-none -translate-x-1/2 -translate-y-1/2 size-[68px] sm:size-[76px] rounded-[20px] bg-white shadow-2xl flex items-center justify-center font-sans font-black text-[34px] text-[#4E596F] scale-110 border-2 border-[#C48243]"
+          style={{ left: dragState.x, top: dragState.y }}
+        >
+          {dragState.letter}
+        </div>
+      )}
+
+      {/* Canonical Help Button: "No entendí" */}
+      <div className="mt-7 sm:mt-9 flex justify-center">
+        <HelpButton />
+      </div>
+    </div>
+  )
+}
+
 export function WriteScreen() {
   const { s, dispatch } = useGame()
   const c = current(s)
   const letters = plainLetters(c.content)
   const spellBy = signer(c.round)
-  const writer = interpreter(c.round)
-  const full = s.write.typed.length === letters.length
-  usePausedTimeout(() => dispatch({ type: 'CHECK' }), 850, s.write.stage === 'write' && full, [s.write.typed.length])
+  const totalChallenges = MODULES[5].challenges.length
+  const currentProgressIdx = Math.min(totalChallenges, s.casilla - MODULES[5].first + 1)
+
+  // Video playback state for stage 'sign'
+  const [playing, setPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  const handlePlayToggle = () => {
+    if (videoRef.current && videoRef.current.currentSrc) {
+      if (playing) {
+        videoRef.current.pause()
+        setPlaying(false)
+      } else {
+        videoRef.current
+          .play()
+          .then(() => setPlaying(true))
+          .catch(() => setPlaying(true))
+      }
+    } else {
+      setPlaying((prev) => !prev)
+    }
+  }
 
   if (s.write.stage === 'sign') {
-    const papa = spellBy === 'papa'
     return (
-      <Screen bg={papa ? '#45C1FF' : '#FF8001'} className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
-        {papa ? <CloudsBlue /> : <CloudsOrange />}
-        <GameHeader />
+      <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
+        {/* Continuous sky gradient */}
+        <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
 
-        {/* Unified card & controls centered vertically */}
-        <div className="my-auto mx-auto w-full max-w-[340px] sm:max-w-[354px] px-4 pt-7 sm:pt-9 z-10 flex flex-col items-center">
-          {/* Centered white card */}
-          <div className="relative w-full rounded-[36px] bg-white px-4 pt-12 pb-5 sm:px-5 sm:pt-14 sm:pb-6 shadow-[0_16px_36px_rgba(0,0,0,0.14)] flex flex-col items-center">
-            {/* Top perched Avatar with white border */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2">
-              <div className={`relative size-[76px] overflow-hidden rounded-full border-[6px] border-white flex items-end justify-center shadow-[0_4px_12px_rgba(0,0,0,0.1)] ${papa ? 'bg-[#45C1FF]' : 'bg-[#FF8001]'}`}>
-                {papa ? (
-                  <img
-                    src="/people/padre.png"
-                    alt="Padres"
-                    draggable={false}
-                    className="w-[124%] max-w-none translate-y-[2%] select-none pointer-events-none"
-                  />
-                ) : (
-                  <img
-                    src="/assets/dac2e.svg"
-                    alt="Niño"
-                    draggable={false}
-                    className="w-[84%] max-w-none translate-y-[1%] select-none pointer-events-none"
-                  />
-                )}
-              </div>
-            </div>
+        {/* Standard outdoor landscape ground */}
+        <SkyHills />
 
-            {/* Letter-by-letter carousel */}
-            <div className="flex items-start justify-center gap-1.5 py-2">
-              {c.content.split('').map((ch, k) => {
-                const L = letters[Math.min(k, letters.length - 1)]
-                const now = k === s.write.letter
+        {/* Top Close Button (standard XButton: white circle with orange close icon, no return arrow) */}
+        <XButton />
+
+        {/* Top Header: Module 5 brown disc badge + 5-segment progress bar + canonical InstructionStrip */}
+        <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
+          <ModuleBadge id={5} size={50} />
+
+          {/* Segmented Progress Bar: 5 segments */}
+          <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
+            <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
+              {Array.from({ length: totalChallenges }, (_, k) => {
+                const isDoneOrCurrent = k < currentProgressIdx
                 return (
-                  <div key={k} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${now ? 'scale-110' : 'opacity-70'}`}>
-                    <span className={`rounded-xl px-1 font-sans leading-[1.05] font-black ${now ? 'bg-[#FFE44C]' : ''}`} style={{ fontSize: letters.length > 5 ? 42 : 52 }}>{ch}</span>
-                    <span title={`Foto mano: ${L}`} aria-label={`Foto mano: ${L}`} className={`grid h-[52px] w-[42px] place-items-center rounded-[14px] ${now ? 'bg-[#FFF4C2] shadow-[0_3px_0_#FFE44C]' : 'bg-[#EEF1FA]'}`}>
-                      <Icon name="hand" size={22} color={spellBy === 'papa' ? '#45C1FF' : '#FF8001'} solid />
-                      <span className="-mt-1 font-sans text-[14px] leading-none font-black">{L}</span>
+                  <span
+                    key={k}
+                    className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                    style={{ background: isDoneOrCurrent ? '#C48243' : '#FFFFFF' }}
+                  />
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Canonical Instruction Strip: Padre hace seña - niño escribe */}
+          <InstructionStrip round={c.round} action="escribe" className="mt-3" />
+        </div>
+
+        {/* Central Area: White Card + Nav controls below */}
+        <div className="my-auto mx-auto w-full max-w-[340px] sm:max-w-[356px] px-3 z-20 flex flex-col items-center">
+          {/* Main White Card with rounded corners */}
+          <div className="w-full rounded-[34px] sm:rounded-[38px] bg-white px-5 sm:px-6 pt-6 sm:pt-7 pb-6 sm:pb-7 shadow-[0_16px_36px_rgba(0,0,0,0.12)] flex flex-col items-center">
+            {/* Word: Active letter in brown rounded square, others in slate bold */}
+            <div className="flex items-center justify-center gap-2 sm:gap-2.5 pb-4 sm:pb-5">
+              {c.content.split('').map((char, k) => {
+                const isActive = k === s.write.letter
+                if (isActive) {
+                  return (
+                    <span
+                      key={k}
+                      className="grid size-[54px] sm:size-[60px] place-items-center rounded-[16px] sm:rounded-[18px] bg-[#C48243] font-sans font-black text-[34px] sm:text-[38px] text-white shadow-sm leading-none"
+                    >
+                      {char}
                     </span>
-                  </div>
+                  )
+                }
+                return (
+                  <span
+                    key={k}
+                    className="font-sans font-black text-[34px] sm:text-[38px] text-[#4E596F] px-1 sm:px-1.5 leading-none"
+                  >
+                    {char}
+                  </span>
                 )
               })}
             </div>
 
-            {/* Current letter indicator / purple rectangle */}
-            <div className="mt-3.5 w-full h-[52px] rounded-[26px] bg-[#E7B3FF] flex items-center justify-center gap-2 shadow-[inset_0_-2px_0_rgba(191,94,235,0.25)]">
-              <span className="font-sans font-bold text-[16px] text-[#BF5EEB]">Foto mano:</span>
-              <span className="font-sans font-black text-[26px] text-[#BF5EEB] leading-none">{letters[s.write.letter]}</span>
-            </div>
-
-            {hasPictogram(c.content) && (
-              <div className="mt-3">
-                <span className="grid size-[58px] place-items-center rounded-[18px] bg-[#F6F8FB]">
-                  <Pictogram content={c.content} size={42} />
-                </span>
+            {/* Horizontal Composition: Character Illustration on left + Playable Video on right */}
+            <div className="flex items-center justify-between w-full gap-3 pt-1">
+              {/* Left: Illustrated Character */}
+              <div className="flex-1 flex items-center justify-center">
+                {c.content === 'MAMÁ' ? (
+                  <MamaCharacter size={128} />
+                ) : hasPictogram(c.content) ? (
+                  <Pictogram content={c.content} size={110} />
+                ) : (
+                  <Avatar who={spellBy} size={104} />
+                )}
               </div>
-            )}
+
+              {/* Right: Playable Signing Video with rounded corners and play button overlay */}
+              <div className="relative flex-1 aspect-[4/3] rounded-[22px] overflow-hidden bg-[#EAF1F8] shadow-inner flex items-center justify-center">
+                <video
+                  ref={videoRef}
+                  playsInline
+                  className={`size-full object-cover ${playing ? 'block' : 'hidden'}`}
+                  onEnded={() => setPlaying(false)}
+                />
+                <img
+                  src="/assets/110ea.png"
+                  alt="Seña LSC"
+                  draggable={false}
+                  className={`size-full object-cover ${playing ? 'hidden' : 'block'}`}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={handlePlayToggle}
+                    aria-label={playing ? 'Pausar' : 'Reproducir'}
+                    className="btn3d grid size-12 sm:size-14 place-items-center rounded-full transition-transform active:scale-95 cursor-pointer shadow-[0_6px_18px_rgba(0,0,0,0.22)]"
+                    style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0 } as React.CSSProperties}
+                  >
+                    <Icon
+                      name={playing ? 'pause' : 'play'}
+                      size={24}
+                      solid
+                      color="#FF8001"
+                      className={playing ? '' : 'translate-x-0.5'}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Steppers & instruction below card */}
-          <div className="mt-4 flex items-center justify-center gap-3 select-none">
+          {/* Controls Below Card: Left arrow + Letra por letra capsule + Right arrow */}
+          <div className="mt-4 sm:mt-5 flex items-center justify-center gap-3 select-none">
             <button
               type="button"
               aria-label="Letra anterior"
               disabled={s.write.letter === 0}
               onClick={() => dispatch({ type: 'LETTER_STEP', dir: -1 })}
-              className="btn3d grid size-12 place-items-center rounded-full disabled:opacity-40"
-              style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 48 } as React.CSSProperties}
+              className="grid size-11 sm:size-12 place-items-center rounded-full bg-[#E0F2FE] text-[#0284C7] shadow-sm active:scale-95 disabled:opacity-30 cursor-pointer transition-all"
             >
-              <Icon name="arrowLeft" size={22} />
+              <Icon name="chevronLeft" size={22} solid color="#0284C7" />
             </button>
-            <div className="flex items-center gap-2 text-white font-medium text-[16px] sm:text-[18px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
-              <Icon name="hand" size={22} color="#fff" solid />
-              <span>{papa ? 'Haz la seña letra por letra' : 'Haz la seña frente a papá'}</span>
+
+            <div className="flex h-11 sm:h-12 items-center gap-2 rounded-full bg-white px-5 sm:px-6 shadow-[0_4px_14px_rgba(74,90,140,0.1)] border border-[#E8ECF4]">
+              <Icon name="hand" size={20} color="#4E596F" solid />
+              <span className="font-sans text-[15px] sm:text-[16px] font-bold text-[#4E596F]">
+                Letra por letra
+              </span>
             </div>
+
             <button
               type="button"
               aria-label="Letra siguiente"
               disabled={s.write.letter === letters.length - 1}
               onClick={() => dispatch({ type: 'LETTER_STEP', dir: 1 })}
-              className="btn3d grid size-12 place-items-center rounded-full disabled:opacity-40"
-              style={{ '--bg': '#fff', '--edge': '#FFD2A8', '--fg': '#FF8001', padding: 0, minHeight: 48 } as React.CSSProperties}
+              className="grid size-11 sm:size-12 place-items-center rounded-full bg-[#E0F2FE] text-[#0284C7] shadow-sm active:scale-95 disabled:opacity-30 cursor-pointer transition-all"
             >
-              <Icon name="arrowRight" size={22} />
+              <Icon name="chevronRight" size={22} solid color="#0284C7" />
             </button>
           </div>
         </div>
 
-        {/* Bottom Listo button */}
-        <div className="w-full flex items-center justify-center pb-5 sm:pb-7 z-20 px-4">
-          <PrimaryActionButton onClick={() => dispatch({ type: 'SIGN_DONE' })} />
+        {/* Bottom Orange Listo button */}
+        <div className="w-full flex items-center justify-center pb-6 sm:pb-8 z-20 px-4">
+          <PrimaryActionButton label="Listo" icon="check" onClick={() => dispatch({ type: 'SIGN_DONE' })} />
         </div>
       </Screen>
     )
   }
+
+  // stage === 'write': "El niño escribe" matching Figma 659:1467 exactly
   return (
-    <Screen bg="#BCEDFF">
+    <Screen bg="#BCEDFF" className="relative flex h-full w-full flex-col justify-between overflow-hidden select-none">
+      {/* Continuous sky gradient */}
+      <div className="absolute inset-0 bg-linear-to-b from-[#0095FF] via-[#45C1FF] via-[35%] to-[#BCEDFF]" />
+
+      {/* Standard outdoor landscape ground */}
       <SkyHills />
-      <GameHeader />
-      <div className="absolute top-[212px] left-5 w-[350px]">
-        {writer === 'papa' && <p className="mb-3 text-center font-display text-[18px] font-medium text-white drop-shadow-[0_2px_0_rgba(0,123,185,.55)]">Escribe lo que deletrea tu hijo</p>}
-        {writer === 'nino' && <p className="mb-3 flex justify-center"><Avatar who="nino" size={44} halo /></p>}
-        <WriteBoard />
+
+      {/* Top Close Button (standard XButton: white circle with orange close icon, no return arrow) */}
+      <XButton />
+
+      {/* Top Header: Module 5 brown disc badge + 5-segment progress bar + canonical InstructionStrip */}
+      <div className="relative z-20 flex flex-col items-center pt-[calc(1.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2rem+env(safe-area-inset-top,0px))]">
+        <ModuleBadge id={5} size={50} />
+
+        {/* Segmented Progress Bar: 5 segments */}
+        <div className="mt-2.5 flex w-full max-w-[280px] sm:max-w-[320px] items-center justify-center px-2">
+          <div className="flex flex-1 gap-1.5 justify-center" aria-hidden>
+            {Array.from({ length: totalChallenges }, (_, k) => {
+              const isDoneOrCurrent = k < currentProgressIdx
+              return (
+                <span
+                  key={k}
+                  className="h-[6px] sm:h-[7px] flex-1 max-w-[32px] overflow-hidden rounded-full transition-colors duration-300"
+                  style={{ background: isDoneOrCurrent ? '#C48243' : '#FFFFFF' }}
+                />
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Canonical Instruction Strip: Padre hace seña - niño escribe */}
+        <InstructionStrip round={c.round} action="escribe" className="mt-3" />
       </div>
+
+      {/* Main Drag-and-Drop / Interactive Letter Slots Area */}
+      <div className="my-auto mx-auto w-full max-w-[356px] sm:max-w-[380px] px-3 z-20 flex flex-col items-center">
+        <ChildWriteSlotsBoard />
+      </div>
+
+      {/* Bottom spacer / padding */}
+      <div className="pb-6 sm:pb-8 z-10" />
     </Screen>
   )
 }

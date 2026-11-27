@@ -49,22 +49,11 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
 /** Start of a module: same disc as the retos, with the module icon instead of a number. Not a reto, not counted in the 46. Completely static. */
 function ModuleTile({ id, state, onTap }: { id: ModuleId; state: TileState; onTap: () => void }) {
   const m = MODULES[id]
-  const isDone = state === 'done'
   return (
     <button type="button" onClick={onTap} aria-label={`Módulo ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'en curso' : 'completado'}`} className="relative block" style={{ width: TILE_W, height: TILE_H }}>
       <span className="relative block" style={{ transformOrigin: '50% 40%' }}>
         <ModuleArt id={id} size={TILE_W} locked={false} />
       </span>
-      {isDone && (
-        <span
-          className="absolute -top-1 right-2 z-10 grid size-[26px] sm:size-[28px] place-items-center rounded-full bg-[#46C016] border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.22)] select-none pointer-events-none"
-          aria-hidden
-        >
-          <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
-            <path d="M1.5 5.5L5 9L12.5 1.5" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-      )}
     </button>
   )
 }

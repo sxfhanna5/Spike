@@ -100,7 +100,7 @@ export type Action =
   | { type: 'OPEN_RETO'; casilla: number } | { type: 'OPEN_MODULE'; module: ModuleId } | { type: 'PLAY' } | { type: 'RESTART' } | { type: 'EXIT_TO_MAP' }
   | { type: 'MAP_ANIM_DONE' } | { type: 'HATCH_CONTINUE' } | { type: 'PLAY_CASILLA'; casilla: number } | { type: 'TICK'; seconds: number }
   | { type: 'SIGN_DONE' } | { type: 'INTRO_DONE' } | { type: 'COLOR'; index: number } | { type: 'HELP' } | { type: 'CHECK' }
-  | { type: 'AUTO_NEXT' } | { type: 'TEACHER_NEXT' } | { type: 'TYPE'; letter: string } | { type: 'ERASE' }
+  | { type: 'AUTO_NEXT' } | { type: 'TEACHER_NEXT' } | { type: 'TYPE'; letter: string } | { type: 'ERASE' } | { type: 'SET_TYPED'; typed: string[] }
   | { type: 'LETTER_STEP'; dir: 1 | -1 }
   | { type: 'TOGGLE_KEYBOARD' } | { type: 'TOGGLE_SIMFAIL' } | { type: 'RESET' }
 
@@ -173,10 +173,12 @@ export function loadState(): GameState {
       ? (paramOverlay as Overlay)
       : null
     const paramConnected = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('connected') === 'true' : false
+    const paramStage = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('stage') as 'sign' | 'write' | null) : null
     const paramTutorialMode = typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('mode') as 'initial' | 'standalone' | null) : null
     const initialTutorialMode = paramTutorialMode ?? (param === 'tutorialKid' || param === 'tutorialParent' ? 'initial' : undefined)
+    const initialWriteStage: 'sign' | 'write' = paramStage === 'write' ? 'write' : 'sign'
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx }
+    if (!raw) return { ...base, screen: initialScreen, tutorialMode: initialTutorialMode, connected: paramConnected, intro: initialIntro, facing: initialFacing, level: initialLevel, queue: buildQueue(initialLevel, false), overlay: initialOverlay, selectedCasilla: initialCasilla, casilla: initialCasilla, idx: initialIdx, write: { stage: initialWriteStage, typed: [], letter: 0 } }
     const saved = JSON.parse(raw) as Partial<GameState>
     const done = Math.max(0, Math.min(TOTAL_CASILLAS, saved.done ?? 0))
     const effLevel = (!isNaN(paramLevelRaw) ? initialLevel : param ? initialLevel : paramIntro ? initialLevel : (saved.level ?? 1)) as ModuleId
@@ -196,6 +198,7 @@ export function loadState(): GameState {
       selectedCasilla: initialCasilla,
       casilla: initialCasilla,
       idx: initialIdx,
+      write: { stage: initialWriteStage, typed: [], letter: 0 },
       selected: null,
       fx: fx('none'),
     }
@@ -544,6 +547,9 @@ export function reducer(s: GameState, a: Action): GameState {
     case 'ERASE':
       if (!['master', 'write'].includes(s.screen)) return s
       return { ...s, write: { ...s.write, typed: s.write.typed.slice(0, -1) } }
+    case 'SET_TYPED':
+      if (!['master', 'write'].includes(s.screen)) return s
+      return { ...s, write: { ...s.write, typed: a.typed } }
     case 'LETTER_STEP': {
       const max = plainLetters(current(s).content).length
       return { ...s, write: { ...s.write, letter: Math.max(0, Math.min(max - 1, s.write.letter + a.dir)) } }

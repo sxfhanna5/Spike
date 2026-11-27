@@ -13,7 +13,13 @@ import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 /* ============================== shared pieces ============================== */
 
 /** Font size that keeps the learning content readable and inside its card. */
-const fit = (text: string, big: number) => (text.length <= 1 ? big : text.length <= 5 ? big * 0.72 : text.length <= 8 ? big * 0.58 : text.length <= 12 ? big * 0.46 : big * 0.34)
+const fit = (text: string, big: number) => {
+  if (text.length <= 1) return big
+  if (text.length <= 4) return Math.round(big * 0.72)
+  if (text.length <= 7) return Math.round(big * 0.48)
+  if (text.length <= 10) return Math.round(big * 0.38)
+  return Math.round(big * 0.30)
+}
 
 /** What the child (or the parent) has to recognise: letter, colour, number or word with its picture. */
 export function ContentBig({ c, size = 150 }: { c: Challenge; size?: number }) {
@@ -64,14 +70,19 @@ export function OptionCard({ index, c, selected, dim, onClick, compact }: { inde
       type="button"
       onClick={onClick}
       aria-label={`${o.label}: ${label}`}
-      className={`flex w-full items-center gap-4 sm:gap-5 rounded-full pr-6 pl-3 sm:pl-3.5 text-left shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
+      className={`flex w-full items-center justify-between gap-2.5 sm:gap-3.5 rounded-full pr-5 pl-3 sm:pl-3.5 shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
       style={{ height: h, background: selected ? o.color : '#fff' }}
     >
       <OptionBadge index={index} size={compact ? 50 : 56} />
-      <span className="flex-1 font-sans leading-none font-extrabold text-[#4A5A8C]" style={{ fontSize: fit(label, compact ? 40 : 46), color: selected ? '#4A5A8C' : undefined }}>{label}</span>
-      {c.kind === 'color' && hex && <span className="size-9 rounded-full" style={{ background: hex }} aria-hidden />}
-      {c.kind === 'number' && <span className="font-sans text-[30px] font-black text-[#4A5A8C]">{NUMBER_DIGIT[label]}</span>}
-      {c.kind === 'word' && hasPictogram(label) && <Pictogram content={label} size={46} />}
+      <span
+        className="flex-1 flex items-center justify-center text-center font-sans leading-tight font-extrabold text-[#4A5A8C] px-1 line-clamp-2"
+        style={{ fontSize: fit(label, compact ? 36 : 42), color: selected ? '#4A5A8C' : undefined }}
+      >
+        {label}
+      </span>
+      {c.kind === 'color' && hex && <span className="size-9 rounded-full shrink-0" style={{ background: hex }} aria-hidden />}
+      {c.kind === 'number' && <span className="font-sans text-[30px] font-black text-[#4A5A8C] shrink-0">{NUMBER_DIGIT[label]}</span>}
+      {c.kind === 'word' && hasPictogram(label) && <span className="shrink-0 flex items-center justify-center"><Pictogram content={label} size={46} /></span>}
     </button>
   )
 }
@@ -352,11 +363,13 @@ function TurnCard() {
           <InstructionStrip round={c.round} className="mx-auto" />
         </div>
 
-        {/* Prompt right below card */}
-        <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2 text-[#71717A] text-[15px] sm:text-[16px] font-medium select-none">
-          <span>{who === 'papa' ? 'Gira el celular hacia tu padre' : 'Gira el celular hacia el niño'}</span>
-          <Icon name="arrowRight" size={18} color="#71717A" solid />
-        </div>
+        {/* Prompt right below card: ONLY for father turns, NEVER for child turns */}
+        {who === 'papa' && (
+          <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-2 text-[#71717A] text-[15px] sm:text-[16px] font-medium select-none">
+            <span>Gira el celular hacia tu padre</span>
+            <Icon name="arrowRight" size={18} color="#71717A" solid />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -627,15 +640,20 @@ export function GoodScreen() {
             </div>
 
             {/* Bottom Reward Badges: Content white pill & Level Learned Droplet pill */}
-            <div className="relative z-10 flex w-full items-center justify-center gap-3.5 mt-1">
-              {/* Content Badge (e.g. "A") */}
-              <div className="flex h-[46px] sm:h-[50px] min-w-[108px] sm:min-w-[120px] items-center justify-center rounded-full bg-white px-5 shadow-[0_4px_14px_rgba(0,0,0,0.08)]">
-                <span className="font-display text-[24px] sm:text-[26px] font-bold text-[#C48243]">
+            <div className="relative z-10 flex w-full items-center justify-center gap-3 mt-1 px-2">
+              {/* Content Badge (e.g. "A", "GRACIAS", "PERDÓN") */}
+              <div className="flex h-[46px] sm:h-[50px] min-w-[96px] max-w-[170px] sm:max-w-[185px] items-center justify-center rounded-full bg-white px-3.5 sm:px-4 shadow-[0_4px_14px_rgba(0,0,0,0.08)] shrink">
+                <span
+                  className="font-display font-bold text-[#C48243] text-center truncate leading-none"
+                  style={{
+                    fontSize: c.content.length > 10 ? 14 : c.content.length > 5 ? 17 : 24,
+                  }}
+                >
                   {c.content}
                 </span>
               </div>
               {/* Level Learned Droplet Badge (e.g. 💧 +1, 💧 +2...) */}
-              <LearnedWordBadge count={levelLearnedCount} plus />
+              <LearnedWordBadge count={levelLearnedCount} plus className="shrink-0" />
             </div>
           </div>
         </div>
