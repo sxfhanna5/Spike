@@ -392,9 +392,9 @@ export function HatchScreen() {
         </div>
       ) : (
         <div className="relative z-20 flex flex-col h-full w-full justify-between items-center">
-          {/* Top Title Area: enlarged title centered */}
-          <div className="flex w-full flex-col items-center pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(6rem+env(safe-area-inset-top,0px))] px-4 text-center shrink-0 z-30">
-            <h1 className="hatch-pop font-display text-[46px] sm:text-[54px] leading-tight font-black text-white drop-shadow-[0_3px_8px_rgba(0,0,0,.22)]">
+          {/* Top Title Area: lowered and enlarged title centered with ample breathing room from top pill */}
+          <div className="flex w-full flex-col items-center pt-[calc(7.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(8rem+env(safe-area-inset-top,0px))] px-4 text-center shrink-0 z-30">
+            <h1 className="hatch-pop font-display text-[50px] sm:text-[58px] leading-tight font-black text-white drop-shadow-[0_3px_8px_rgba(0,0,0,.22)]">
               {final ? '¡Terminaste todo!' : '¡Eclosionó!'}
             </h1>
           </div>
@@ -402,8 +402,8 @@ export function HatchScreen() {
           {/* Central Area: Dino resting on top of the extended pedestal, with stageName immediately above its head */}
           <div className="relative flex flex-1 items-end justify-center w-full z-30 pb-0">
             <div className="relative flex flex-col items-center -mb-12 sm:-mb-16">
-              {/* Stage Name right above dino head */}
-              <span className="font-sans text-[20px] sm:text-[23px] font-bold text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)] mb-2 sm:mb-2.5 tracking-wide">
+              {/* Stage Name right above dino head in regular non-bold typography */}
+              <span className="font-sans text-[20px] sm:text-[23px] font-normal text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)] mb-2 sm:mb-2.5 tracking-wide">
                 {stageName}
               </span>
 
