@@ -40,6 +40,7 @@
     overscroll-behavior-y: none;
     overscroll-behavior: none;
     -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     touch-action: pan-x pan-y;
   }
   body {
@@ -51,6 +52,7 @@
   button {
     cursor: pointer;
     font-family: inherit;
+    touch-action: manipulation;
   }
   button:disabled {
     cursor: default;
@@ -109,11 +111,11 @@
 @keyframes screen-in {
   from {
     opacity: 0;
-    transform: translateX(22px);
+    transform: translateY(10px) scale(0.995);
   }
 }
 .screen-in {
-  animation: screen-in 340ms cubic-bezier(0.3, 1.25, 0.5, 1) both;
+  animation: screen-in 300ms cubic-bezier(0.3, 1.15, 0.5, 1) both;
 }
 @keyframes card-in {
   from {
@@ -160,6 +162,73 @@
 }
 .rise {
   animation: rise 400ms ease-out both;
+}
+@keyframes scene-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.997);
+  }
+}
+.scene-enter {
+  animation: scene-enter 340ms cubic-bezier(0.3, 1.1, 0.5, 1) both;
+}
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.96);
+  }
+}
+.tile-in {
+  animation: tile-in 420ms cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes turn-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  70% {
+    transform: scale(1.02) translateY(0);
+  }
+}
+.turn-pop {
+  animation: turn-pop 420ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes turn-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+.turn-countdown {
+  transform-origin: left center;
+  animation-name: turn-countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes option-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+.option-in {
+  animation: option-in 360ms cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes option-pop {
+  0% {
+    transform: scale(1.03);
+  }
+  45% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1.03);
+  }
+}
+.option-pop {
+  animation: option-pop 320ms cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 
 /* Spike moods */
@@ -472,11 +541,16 @@
     transition-duration: 1ms !important;
   }
   .screen-in,
+  .scene-enter,
+  .tile-in,
+  .turn-pop,
   .sheet-up,
   .pop,
   .rise,
   .card-in,
   .card,
+  .option-in,
+  .option-pop,
   .toast {
     animation: fade-in 220ms ease-out both !important;
   }
@@ -578,22 +652,45 @@
 
 /* ---------- map layers ---------- */
 /* Map layers live inside the art scaled to 0.37, so these distances are in design units. */
-@keyframes drift {
-  from { transform: translateX(-70px); }
-  to { transform: translateX(70px); }
+.map-art {
+  contain: layout paint;
 }
-.drift { animation: drift 26s ease-in-out infinite alternate; }
+/* Expensive filter animations are disabled on the huge map art; ambient lights use opacity instead. */
+.map-art .shimmer {
+  animation: map-glow 4.6s ease-in-out infinite;
+  will-change: opacity;
+}
+.map-art .shine {
+  animation: map-glow 5.2s ease-in-out infinite;
+  will-change: opacity;
+}
+@keyframes map-glow {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* Selective ambient motion: water, leaves, clouds and lights move; the path, tiles and
+   key structures stay static so the map is still easy to read on a phone. */
+@keyframes drift {
+  from { transform: translateX(-84px); }
+  to { transform: translateX(84px); }
+}
+.drift { animation: drift 24s ease-in-out infinite alternate; }
 @keyframes waves {
   0%, 100% { transform: translateX(0) scaleY(1); opacity: 1; }
-  50% { transform: translateX(16px) scaleY(1.07); opacity: 0.9; }
+  50% { transform: translateX(20px) scaleY(1.09); opacity: 0.92; }
 }
-.waves { animation: waves 5.5s ease-in-out infinite; }
+.waves { animation: waves 5s ease-in-out infinite; }
 @keyframes sway {
-  from { transform: rotate(-1.6deg); }
-  to { transform: rotate(1.6deg); }
+  from { transform: rotate(-2.2deg); }
+  to { transform: rotate(2.2deg); }
 }
-.sway { transform-origin: 50% 100%; animation: sway 4.6s ease-in-out infinite alternate; }
-.sway-s { animation-duration: 3.4s; }
+.sway { transform-origin: 50% 100%; animation: sway 4.2s ease-in-out infinite alternate; }
+.sway-s { animation-duration: 3.1s; }
 @keyframes shimmer {
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(1.07); }
@@ -603,7 +700,7 @@
 .v2 { animation-delay: -3.1s !important; animation-duration: 6.2s; }
 .drift.v1 { animation-duration: 31s; }
 .drift.v2 { animation-duration: 37s; animation-direction: alternate-reverse; }
-.par { position: absolute; inset: 0; pointer-events: none; }
+.par { position: absolute; inset: 0; pointer-events: none; will-change: transform; backface-visibility: hidden; }
 .par-1 { transform: translateY(calc(var(--py, 0px) * 2.677)); }
 .par-2 { transform: translateY(calc(var(--py, 0px) * 1.34)); }
 @keyframes shine {

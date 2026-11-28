@@ -468,10 +468,28 @@ export function ChildWriteSlotsBoard() {
   return (
     <div className="flex flex-col items-center w-full">
       {/* Top target letter slots */}
-      <div className="flex justify-center items-center gap-2.5 sm:gap-3.5 mb-8 sm:mb-10 w-full" aria-label="Casillas de la palabra">
+      <div
+        className={`flex justify-center items-center mb-8 sm:mb-10 w-full ${
+          targetLetters.length >= 6 ? 'gap-1.5 sm:gap-2' : targetLetters.length === 5 ? 'gap-2 sm:gap-2.5' : 'gap-2.5 sm:gap-3.5'
+        }`}
+        aria-label="Casillas de la palabra"
+      >
         {targetLetters.map((_, k) => {
           const isActive = activeSlot === k
           const char = slots[k]
+          const len = targetLetters.length
+          const slotSizeCls =
+            len >= 6
+              ? 'flex-1 max-w-[54px] aspect-square rounded-[13px] sm:rounded-[15px]'
+              : len === 5
+              ? 'flex-1 max-w-[62px] sm:max-w-[68px] aspect-square rounded-[18px] sm:rounded-[20px]'
+              : 'size-[66px] sm:size-[74px] md:size-[78px] rounded-[20px]'
+          const letterTextCls =
+            len >= 6
+              ? 'text-[22px] sm:text-[26px]'
+              : len === 5
+              ? 'text-[28px] sm:text-[32px]'
+              : 'text-[34px] sm:text-[38px]'
           return (
             <button
               key={k}
@@ -484,7 +502,7 @@ export function ChildWriteSlotsBoard() {
               }}
               onDrop={(e) => handleHtmlDrop(e, k)}
               aria-label={`Casilla ${k + 1}${char ? `: ${char}` : ' vacía'}`}
-              className={`relative grid size-[66px] sm:size-[74px] md:size-[78px] place-items-center rounded-[20px] bg-white transition-all duration-200 cursor-pointer shadow-[0_4px_14px_rgba(0,0,0,0.06)] ${
+              className={`relative grid place-items-center bg-white transition-all duration-200 cursor-pointer shadow-[0_4px_14px_rgba(0,0,0,0.06)] ${slotSizeCls} ${
                 isSuccess
                   ? 'border-[3px] border-[#73D83A] shadow-[0_0_12px_rgba(115,216,58,0.35)]'
                   : isError
@@ -495,7 +513,7 @@ export function ChildWriteSlotsBoard() {
               }`}
             >
               {char ? (
-                <span className="font-sans font-black text-[34px] sm:text-[38px] text-[#4E596F] leading-none select-none pop">
+                <span className={`font-sans font-black ${letterTextCls} text-[#4E596F] leading-none select-none pop`}>
                   {char}
                 </span>
               ) : null}

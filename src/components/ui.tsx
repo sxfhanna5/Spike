@@ -568,6 +568,7 @@ export function NavBar() {
   const { s, dispatch } = useGame()
   const idx = Math.max(0, TABS.findIndex((t) => t.id === s.screen))
   const cx = TABS[idx].cx
+  const dx = cx - TABS[0].cx
   return (
     <nav className="absolute left-1/2 z-40 -translate-x-1/2 origin-bottom max-w-[95vw] drop-shadow-[0_10px_20px_rgba(74,90,140,.25)]" style={{ width: NAV_W * NAV_K, height: NAV_H * NAV_K, bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }} aria-label="Navegación">
       <div className="card-in absolute top-0 left-0 origin-top-left rounded-[111px] bg-white" style={{ width: NAV_W, height: NAV_H, transform: `scale(${NAV_K})` }}>
@@ -588,7 +589,18 @@ export function NavBar() {
           <img src="/nav/perfil.svg" alt="" className={fill} draggable={false} />
         </div>
         {/* sliding indicator */}
-        <div className="absolute rounded-[48px] bg-[#FF8001]" style={{ left: cx - 38.5, top: 176, width: 77, height: 13, transition: 'left 420ms cubic-bezier(.3,1.4,.5,1)' }} aria-hidden />
+        <div
+          className="pointer-events-none absolute rounded-[48px] bg-[#FF8001] will-change-transform"
+          style={{
+            left: TABS[0].cx - 38.5,
+            top: 176,
+            width: 77,
+            height: 13,
+            transform: `translate3d(${dx}px, 0, 0)`,
+            transition: 'transform 460ms cubic-bezier(.34,1.56,.64,1)',
+          }}
+          aria-hidden
+        />
         {TABS.map((t) => (
           <button
             key={t.id}

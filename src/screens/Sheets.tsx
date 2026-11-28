@@ -3,7 +3,7 @@ import { MODULES, ROUND_INFO, ROLE_COLOR, moduleOf } from '../game/data'
 import { stageOf } from '../game/engine'
 import { Avatar, Btn, ModuleBadge, RoundChip, Sheet, Spike } from '../components/ui'
 import { ModuleArt } from '../components/glyphs'
-import { moduleState } from './MapScreen'
+import { moduleState } from '../game/data'
 import { Icon } from '../components/glyphs'
 import { BigEgg, useConnectFlow } from './Entry'
 

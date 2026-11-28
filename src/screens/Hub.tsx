@@ -5,7 +5,7 @@ import { stageOf, stageUnlocked, toCSV } from '../game/engine'
 import { moduleOf } from '../game/data'
 import { SkyHills } from '../art/SkyHills'
 import { activeCasilla } from '../game/engine'
-import { Bar, Btn, ConnDot, CountUp, ModuleBadge, NavBar, ProfileFace, Screen, Spike } from '../components/ui'
+import { Bar, Btn, ConnDot, CountUp, ModuleBadge, ProfileFace, Screen, Spike } from '../components/ui'
 import { Badge, Icon, type IconName } from '../components/glyphs'
 import { EggBox } from '../components/EggBox'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
@@ -166,7 +166,7 @@ export function Album() {
   return (
     <Screen bg="#BCEDFF">
       <SkyHills />
-      <div className="no-scrollbar absolute inset-0 overflow-y-auto px-5 pt-8 sm:pt-9 pb-[120px]">
+      <div className="no-scrollbar absolute inset-0 overflow-y-auto overscroll-contain touch-pan-y px-5 pt-8 sm:pt-9 pb-[120px]">
         <h1 className="mb-4 px-1 font-display text-[34px] leading-10 font-bold text-white drop-shadow-[0_3px_0_rgba(0,123,185,.5)]">Progreso</h1>
         {/* always visible: Spike in his current stage and the overall bar */}
         <section className="card mb-3 flex items-center gap-3 p-4">
@@ -220,7 +220,6 @@ export function Album() {
           </Accordion>
         </div>
       </div>
-      <NavBar />
     </Screen>
   )
 }
@@ -265,7 +264,7 @@ export function Profile() {
   return (
     <Screen bg="#BCEDFF">
       <SkyHills />
-      <div className="no-scrollbar absolute inset-0 overflow-y-auto px-5 pt-8 sm:pt-9 pb-[120px]">
+      <div className="no-scrollbar absolute inset-0 overflow-y-auto overscroll-contain touch-pan-y px-5 pt-8 sm:pt-9 pb-[calc(12.5rem+env(safe-area-inset-bottom,0px))]">
         <h1 className="mb-4 px-1 font-display text-[36px] leading-10 font-bold text-white drop-shadow-[0_3px_0_rgba(0,123,185,.5)]">Perfil</h1>
         <div className="flex flex-col items-center">
           <div className="relative grid size-[150px] place-items-center rounded-full bg-white shadow-[0_10px_26px_rgba(0,0,0,.14)]">
@@ -312,7 +311,6 @@ export function Profile() {
           <Btn icon="exit" onClick={() => void logout()}>Cerrar sesión</Btn>
         </div>
       </div>
-      <NavBar />
     </Screen>
   )
 }

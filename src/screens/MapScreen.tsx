@@ -1,11 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useGame } from '../game/context'
-import { MODULES, MODULE_IDS, SLOTS, TOTAL_CASILLAS, moduleOf, slotOfModule, slotOfReto, type ModuleDef, type ModuleId } from '../game/data'
+import { MODULES, MODULE_IDS, SLOTS, TOTAL_CASILLAS, moduleOf, moduleState, slotOfModule, slotOfReto, type ModuleDef, type ModuleId } from '../game/data'
 import { stageOf } from '../game/engine'
 import { FRAME_H, FRAME_W, K, MAP_H, PATH_D, getGeometry } from '../game/mapGeometry'
 import { MapArt } from '../art/MapArt'
 import { Badge, Icon, ModuleArt } from '../components/glyphs'
-import { ModuleBadge, NavBar, Screen, Spike } from '../components/ui'
+import { ModuleBadge, Screen, Spike } from '../components/ui'
 
 type TileState = 'locked' | 'active' | 'done'
 
@@ -17,17 +17,15 @@ const CX = 66 * TILE_SCALE
 const CY = 58.286 * TILE_SCALE
 const TILE_H = 143.571 * TILE_SCALE
 
-export const moduleState = (id: ModuleId, done: number): TileState => (done >= MODULES[id].last ? 'done' : done >= MODULES[id].first - 1 ? 'active' : 'locked')
-
 /** One reto: 3D disc. Locked = grey + lock · active and done = purple disc matching the "Aa" module button + centered flat white star. */
-function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m: ModuleDef; shaking: boolean; onTap: () => void }) {
+const Tile = memo(function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m: ModuleDef; shaking: boolean; onTap: (n: number) => void }) {
   const isLocked = state === 'locked'
   const top = isLocked ? '#D9DEE7' : m.color
   const side = isLocked ? '#9AA5B1' : m.accent
   const ring = '#FFFFFF'
   const label = `Reto ${n - m.first + 1} de ${m.challenges.length}, ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'siguiente' : 'completado'}`
   return (
-    <button type="button" onClick={onTap} aria-label={label} className={`relative block ${shaking ? 'shake' : ''}`} style={{ width: TILE_W, height: TILE_H }}>
+    <button type="button" onClick={() => onTap(n)} aria-label={label} className={`relative block transition-transform duration-150 active:scale-95 ${shaking ? 'shake' : ''}`} style={{ width: TILE_W, height: TILE_H }}>
       <svg width={TILE_W} height={TILE_H} viewBox="0 0 132 143.571" className={`relative ${state === 'active' ? 'active-level-pulse' : ''}`} style={{ transformOrigin: '50% 40%' }} aria-hidden>
         <path d="M0 94.285V58.79L132 58.285V94.285S132 143.571 66 143.571 0 94.285 0 94.285z" fill={side} />
         <ellipse cx="66" cy="58.286" rx="66" ry="58.286" fill={top} />
@@ -44,19 +42,19 @@ function Tile({ n, state, m, shaking, onTap }: { n: number; state: TileState; m:
       )}
     </button>
   )
-}
+})
 
 /** Start of a module: same disc as the retos, with the module icon instead of a number. Not a reto, not counted in the 46. Completely static. */
-function ModuleTile({ id, state, onTap }: { id: ModuleId; state: TileState; onTap: () => void }) {
+const ModuleTile = memo(function ModuleTile({ id, state, onTap }: { id: ModuleId; state: TileState; onTap: (id: ModuleId) => void }) {
   const m = MODULES[id]
   return (
-    <button type="button" onClick={onTap} aria-label={`Módulo ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'en curso' : 'completado'}`} className="relative block" style={{ width: TILE_W, height: TILE_H }}>
+    <button type="button" onClick={() => onTap(id)} aria-label={`Módulo ${m.name}, ${state === 'locked' ? 'bloqueado' : state === 'active' ? 'en curso' : 'completado'}`} className="relative block transition-transform duration-150 active:scale-95" style={{ width: TILE_W, height: TILE_H }}>
       <span className="relative block" style={{ transformOrigin: '50% 40%' }}>
         <ModuleArt id={id} size={TILE_W} locked={false} />
       </span>
     </button>
   )
-}
+})
 
 /** 3D disc matching the locked levels style on the map: grey body, white stroke, flat white lock. */
 export function LockedLevelButton({ size = 54 }: { size?: number }) {
@@ -114,6 +112,7 @@ export function MapScreen() {
   const slotArcs = geo.arcs
   const activeSlot = Math.max(0, Math.min(slotArcs.length - 1, slotOfReto(active) >= 0 ? slotOfReto(active) : 0))
   const stage = stageOf(s.done)
+  const SPIKE = stage === 1 ? 54 : 70
 
   const safeSlotIndex = (n: number) => {
     const idx = slotOfReto(n)
@@ -133,14 +132,15 @@ export function MapScreen() {
     return () => window.removeEventListener('resize', updateScale)
   }, [])
 
-  // Spike's position along the path (arc) and the hop height.
-  const initialArc = slotArcs[anim ? safeSlotIndex(anim.from) : activeSlot] ?? slotArcs[0] ?? 0
-  const [pos, setPos] = useState(() => ({ arc: initialArc, hop: 0 }))
+  // Spike's position is animated directly on the DOM node: the map never re-renders per frame.
+  const spikeRef = useRef<HTMLDivElement>(null)
   const [shake, setShake] = useState<number | null>(null)
   const [toast, setToast] = useState<{ key: number; text: string; icon: 'lock' | 'cloud' } | null>(null)
 
   const px = (p: { x: number; y: number }) => ({ x: p.x * K, y: p.y * K })
   const pts = useMemo(() => slotArcs.map((a) => px(geo.pointAt(a))), [geo, slotArcs])
+  const spikeArc = slotArcs[anim ? safeSlotIndex(anim.from) : activeSlot] ?? slotArcs[0] ?? 0
+  const spikePt = px(geo.pointAt(spikeArc))
 
   const scrollToArc = (arc: number, smooth: boolean, offset = 0) => {
     const el = scroller.current
@@ -188,14 +188,20 @@ export function MapScreen() {
 
   // After a reto: Spike hops from casilla to casilla (also over a module casilla) and the path fills with the module colour.
   useEffect(() => {
+    const el = spikeRef.current
+    const place = (arc: number, hop = 0) => {
+      if (!el) return
+      const p = px(geo.pointAt(arc))
+      el.style.transform = `translate3d(${p.x - SPIKE / 2}px, ${p.y - CY + 16 - SPIKE - hop}px, 0)`
+    }
     if (!anim) {
-      setPos({ arc: slotArcs[activeSlot] ?? 0, hop: 0 })
+      place(slotArcs[activeSlot] ?? 0)
       return
     }
     const a = safeSlotIndex(anim.from)
     const b = safeSlotIndex(anim.to)
     if (b <= a) {
-      setPos({ arc: slotArcs[b] ?? 0, hop: 0 })
+      place(slotArcs[b] ?? 0)
       dispatch({ type: 'MAP_ANIM_DONE' })
       return
     }
@@ -204,21 +210,20 @@ export function MapScreen() {
     const start = performance.now() + 600
     let raf = 0
     const tick = (now: number) => {
-      const el = Math.max(0, Math.min(total, now - start))
-      const seg = Math.min(b - a - 1, Math.floor(el / HOP))
-      const t = (el - seg * HOP) / HOP
+      const elapsed = Math.max(0, Math.min(total, now - start))
+      const seg = Math.min(b - a - 1, Math.floor(elapsed / HOP))
+      const t = (elapsed - seg * HOP) / HOP
       const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
       const arc0 = slotArcs[a + seg] ?? 0
       const arc1 = slotArcs[a + seg + 1] ?? arc0
-      const arc = arc0 + (arc1 - arc0) * e
-      setPos({ arc, hop: Math.sin(Math.PI * t) * 20 })
-      if (el < total) {
+      place(arc0 + (arc1 - arc0) * e, Math.sin(Math.PI * t) * 20)
+      if (elapsed < total) {
         raf = requestAnimationFrame(tick)
       } else {
         dispatch({ type: 'MAP_ANIM_DONE' })
       }
     }
-    setPos({ arc: slotArcs[a] ?? 0, hop: 0 })
+    place(slotArcs[a] ?? 0)
     raf = requestAnimationFrame(tick)
     const sc = window.setTimeout(() => scrollToArc(slotArcs[b] ?? 0, true), 700)
     return () => {
@@ -234,7 +239,7 @@ export function MapScreen() {
     return () => window.clearTimeout(t)
   }, [toast])
 
-  const tap = (n: number) => {
+  const tap = useCallback((n: number) => {
     if (n > active && !finished) {
       setShake(n)
       setToast({ key: Date.now(), text: 'Primero juega el reto anterior', icon: 'lock' })
@@ -242,13 +247,12 @@ export function MapScreen() {
       return
     }
     dispatch({ type: 'OPEN_RETO', casilla: n })
-  }
+  }, [active, finished, dispatch])
+  const openModule = useCallback((id: ModuleId) => dispatch({ type: 'OPEN_MODULE', module: id }), [dispatch])
 
   const m = moduleOf(active)
   const doneInModule = Math.max(0, Math.min(m.challenges.length, s.done - m.first + 1))
-  const fillArc = finished ? slotArcs[SLOTS.length - 1] : pos.arc
-  const spikePt = px(geo.pointAt(pos.arc))
-  const SPIKE = stage === 1 ? 54 : 70
+  const fillArc = finished ? slotArcs[SLOTS.length - 1] : slotArcs[anim ? safeSlotIndex(anim.to) : activeSlot] ?? 0
 
   return (
     <Screen bg="#45C1FF" className="animate-none">
@@ -267,6 +271,8 @@ export function MapScreen() {
               width: 390,
               height: TOTAL_MAP_H,
               transform: `scale(${scale})`,
+              contain: 'layout paint',
+              willChange: 'transform',
               '--py': '0px',
             } as CSSProperties}
           >
@@ -282,7 +288,7 @@ export function MapScreen() {
                 const a = slotArcs[slotOfModule(id)]
                 const b = slotArcs[slotOfReto(mod.last)]
                 const len = Math.max(0, Math.min(fillArc - a, b - a))
-                return <path key={id} d={PATH_D} fill="none" stroke={mod.color} strokeWidth={86} strokeLinecap="round" strokeDasharray={`${len} ${geo.total}`} strokeDashoffset={-a} style={{ transition: anim ? undefined : 'stroke-dasharray 600ms ease-out' }} />
+                return <path key={id} d={PATH_D} fill="none" stroke={mod.color} strokeWidth={86} strokeLinecap="round" strokeDasharray={`${len} ${geo.total}`} strokeDashoffset={-a} style={{ transition: 'stroke-dasharray 600ms ease-out' }} />
               })}
             </svg>
 
@@ -290,16 +296,16 @@ export function MapScreen() {
               const q = pts[i]
               if (slot.kind === 'module') {
                 return (
-                  <div key={`m${slot.id}`} className="absolute z-10" style={{ left: q.x - CX, top: q.y - CY }}>
-                    <ModuleTile id={slot.id} state={moduleState(slot.id, s.done)} onTap={() => dispatch({ type: 'OPEN_MODULE', module: slot.id })} />
+                  <div key={`m${slot.id}`} className="tile-in absolute z-10" style={{ left: q.x - CX, top: q.y - CY, animationDelay: `${i * 7}ms` }}>
+                    <ModuleTile id={slot.id} state={moduleState(slot.id, s.done)} onTap={openModule} />
                   </div>
                 )
               }
               const n = slot.n
               const st: TileState = n <= s.done ? 'done' : n === active ? 'active' : 'locked'
               return (
-                <div key={n} className="absolute z-10" style={{ left: q.x - CX, top: q.y - CY }}>
-                  <Tile n={n} state={st} m={moduleOf(n)} shaking={shake === n} onTap={() => tap(n)} />
+                <div key={n} className="tile-in absolute z-10" style={{ left: q.x - CX, top: q.y - CY, animationDelay: `${i * 7}ms` }}>
+                  <Tile n={n} state={st} m={moduleOf(n)} shaking={shake === n} onTap={tap} />
                 </div>
               )
             })}
@@ -330,7 +336,11 @@ export function MapScreen() {
             />
 
             {!finished && (
-              <div className="pointer-events-none absolute z-20" style={{ left: spikePt.x - SPIKE / 2, top: spikePt.y - CY + 16 - SPIKE - pos.hop }}>
+              <div
+                ref={spikeRef}
+                className="pointer-events-none absolute left-0 top-0 z-20 will-change-transform"
+                style={{ transform: `translate3d(${spikePt.x - SPIKE / 2}px, ${spikePt.y - CY + 16 - SPIKE}px, 0)` }}
+              >
                 <div className={anim ? '' : 'egg-bob'}>
                   <Spike stage={stage} mood="calm" size={SPIKE} animate={false} className="drop-shadow-[0_6px_6px_rgba(0,0,0,.25)]" />
                 </div>
@@ -363,7 +373,6 @@ export function MapScreen() {
           {toast.text}
         </div>
       )}
-      <NavBar />
     </Screen>
   )
 }

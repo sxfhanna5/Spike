@@ -7,7 +7,7 @@ import { CloudsOrange } from '../art/CloudsOrange'
 import { GoodScene } from '../art/GoodScene'
 import { LevelRays } from '../art/LevelRays'
 import { SkyHills } from '../art/SkyHills'
-import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ListoBtn, ModuleBadge, PrimaryActionButton, ProgressBar, RoundChip, Screen, Spike, XButton, usePausedTimeout } from '../components/ui'
+import { Avatar, Dock, GameHeader, InstructionStrip, LearnedWordBadge, ListoBtn, ModuleBadge, PrimaryActionButton, ProgressBar, RoundChip, Screen, Sparkles, Spike, XButton, usePausedTimeout } from '../components/ui'
 import { Icon, Pictogram, Shape, hasPictogram } from '../components/glyphs'
 
 /* ============================== shared pieces ============================== */
@@ -65,6 +65,7 @@ export function OptionCard({ index, c, selected, dim, onClick, compact }: { inde
   const o = OPTION_META[index]
   const h = compact ? 72 : 78
   const hex = COLOR_HEX[label]
+  const isLetter = c.kind === 'letter'
   return (
     <button
       type="button"
@@ -74,12 +75,12 @@ export function OptionCard({ index, c, selected, dim, onClick, compact }: { inde
         onClick?.()
       }}
       aria-label={`${o.label}: ${label}`}
-      className={`touch-manipulation flex w-full items-center justify-between gap-2.5 sm:gap-3.5 rounded-full pr-5 pl-3 sm:pl-3.5 shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
-      style={{ height: h, background: selected ? o.color : '#fff' }}
+      className={`option-in touch-manipulation flex w-full items-center justify-between gap-2.5 sm:gap-3.5 rounded-full pr-5 pl-3 sm:pl-3.5 shadow-[0_4px_16px_rgba(74,90,140,0.12)] border border-[#E8ECF4]/60 transition-all duration-300 ease-[cubic-bezier(.3,1.5,.5,1)] active:scale-[0.98] ${selected ? 'option-pop scale-[1.03] shadow-[0_12px_24px_rgba(0,0,0,.18)]' : ''} ${dim ? 'opacity-40' : ''}`}
+      style={{ height: h, background: selected ? o.color : '#fff', animationDelay: selected ? '0ms' : `${index * 55}ms` }}
     >
       <OptionBadge index={index} size={compact ? 50 : 56} />
       <span
-        className="flex-1 flex items-center justify-center text-center font-sans leading-tight font-extrabold text-[#4A5A8C] px-1 line-clamp-2"
+        className={`flex-1 flex items-center justify-start text-left ${isLetter ? 'pl-1 leading-none translate-y-[1px]' : 'leading-tight'} font-sans font-extrabold text-[#4A5A8C] px-1 line-clamp-2`}
         style={{ fontSize: fit(label, compact ? 36 : 42), color: selected ? '#4A5A8C' : undefined }}
       >
         {label}
@@ -124,16 +125,36 @@ function Thinking() {
 
 /* ============================== intro cards (level · turn · maestro) ============================== */
 
+const LEVEL_MS = 2400
+const TURN_MS = 3800
+const TEACHER_TURN_MS = 4200
+
 export function IntroCard() {
   const { s, dispatch } = useGame()
   const intro = s.intro!
   const done = () => dispatch({ type: 'INTRO_DONE' })
   const isFrozen = typeof window !== 'undefined' && window.location.search.includes('freeze=true')
-  usePausedTimeout(done, isFrozen ? 999999 : (intro.kind === 'level' ? 2000 : 1800), true, [intro.kind, s.idx, intro.who, s.teacherPhase, s.teacherLoops, s.screen])
   const isMaster = s.screen === 'master' || intro.kind === 'teacher'
+  const ms = isFrozen ? 999999 : intro.kind === 'level' ? LEVEL_MS : isMaster ? TEACHER_TURN_MS : TURN_MS
+  usePausedTimeout(done, ms, true, [intro.kind, s.idx, intro.who, s.teacherPhase, s.teacherLoops, s.screen])
   return (
     <div role="button" tabIndex={0} aria-label="Toca para saltar" onClick={done} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && done()} className="screen-in absolute inset-0 z-50 cursor-pointer outline-none">
-      {intro.kind === 'level' ? <LevelCard /> : isMaster ? <TeacherTurnCard who={intro.who} /> : <TurnCard />}
+      {intro.kind === 'level' ? <LevelCard /> : isMaster ? <TeacherTurnCard who={intro.who} durationMs={ms} /> : <TurnCard durationMs={ms} />}
+    </div>
+  )
+}
+
+/** Discreet thin bar showing how long the turn card will stay on screen. */
+function TurnCountdown({ ms }: { ms: number }) {
+  return (
+    <div
+      className="pointer-events-none absolute bottom-[calc(1.1rem+env(safe-area-inset-bottom,0px))] left-1/2 h-1 w-28 -translate-x-1/2 overflow-hidden rounded-full bg-black/10"
+      aria-hidden
+    >
+      <span
+        className="turn-countdown block h-full w-full rounded-full bg-[#4A5A8C]/45"
+        style={{ animationDuration: `${ms}ms` }}
+      />
     </div>
   )
 }
@@ -248,7 +269,7 @@ function LevelCard() {
   )
 }
 
-function TeacherTurnCard({ who }: { who: Person }) {
+function TeacherTurnCard({ who, durationMs }: { who: Person; durationMs: number }) {
   const { s } = useGame()
   const isPapa = who === 'papa'
   const isSecondTurn = s.teacherPhase === 'retry'
@@ -290,7 +311,7 @@ function TeacherTurnCard({ who }: { who: Person }) {
       <div className="my-auto flex flex-col items-center w-full max-w-[340px] sm:max-w-[356px]">
         {/* Large Rounded Card */}
         <div
-          className={`w-full rounded-[34px] sm:rounded-[38px] px-6 pt-7 pb-8 ${cardShadow} flex flex-col items-center text-center`}
+          className={`turn-pop w-full rounded-[34px] sm:rounded-[38px] px-6 pt-7 pb-8 ${cardShadow} flex flex-col items-center text-center`}
           style={{ backgroundColor: cardBg }}
         >
           {/* Title */}
@@ -353,11 +374,12 @@ function TeacherTurnCard({ who }: { who: Person }) {
           </div>
         )}
       </div>
+      <TurnCountdown ms={durationMs} />
     </div>
   )
 }
 
-function TurnCard() {
+function TurnCard({ durationMs }: { durationMs: number }) {
   const { s } = useGame()
   const intro = s.intro!
   const c = current(s)
@@ -399,7 +421,7 @@ function TurnCard() {
       <div className="my-auto flex flex-col items-center w-full max-w-[350px] sm:max-w-[364px]">
         {/* Main Card */}
         <div
-          className="w-full h-[390px] sm:h-[430px] rounded-[32px] sm:rounded-[36px] flex flex-col items-center justify-between py-5 sm:py-6 px-3 sm:px-4 shadow-[0_14px_36px_rgba(0,0,0,0.12)]"
+          className="turn-pop w-full h-[390px] sm:h-[430px] rounded-[32px] sm:rounded-[36px] flex flex-col items-center justify-between py-5 sm:py-6 px-3 sm:px-4 shadow-[0_14px_36px_rgba(0,0,0,0.12)]"
           style={{ backgroundColor: cardBg }}
         >
           {/* Card Header: Title & Subtitle */}
@@ -451,6 +473,7 @@ function TurnCard() {
           </div>
         )}
       </div>
+      <TurnCountdown ms={durationMs} />
     </div>
   )
 }
@@ -623,7 +646,7 @@ export function GuessScreen({ isMasterMode = false }: { isMasterMode?: boolean }
       <div className="relative z-10 my-auto mx-auto flex w-full max-w-[356px] sm:max-w-[380px] flex-col gap-3.5 sm:gap-4 px-3 sm:px-4">
         {optionsToRender.map((k) => (
           <OptionCard
-            key={k}
+            key={`${s.casilla}-${k}`}
             index={k}
             c={c}
             selected={isMasterMode ? s.teacherSelected === k : s.selected === k}
@@ -707,6 +730,7 @@ export function GoodScreen() {
                 className="size-[900px] max-w-none object-cover opacity-65 mix-blend-screen pointer-events-none"
               />
             </div>
+            <Sparkles color="#FFFFFF" className="opacity-70" />
 
             {/* ¡Bien! Text (below stars, bold white with soft shadow) */}
             <h1
@@ -720,7 +744,7 @@ export function GoodScreen() {
 
             {/* Egg / Character in center with purple spots - enlarged & protagonist */}
             <div className="relative my-3 sm:my-4 flex items-center justify-center z-10">
-              <div className="relative size-[210px] sm:size-[235px] flex items-center justify-center">
+              <div className="spike-bounce relative size-[210px] sm:size-[235px] flex items-center justify-center">
                 <img
                   src="/spike/1-feliz.svg"
                   alt="Huevo Spike"
@@ -776,9 +800,9 @@ export function AlmostScreen() {
         className="absolute inset-0 size-full object-cover object-bottom pointer-events-none select-none"
       />
 
-      {/* Top Header: Circular Purple "Aa" Disc Badge + Title + Subtitle */}
+      {/* Top Header: Current Module Disc Badge + Title + Subtitle */}
       <div className="relative z-20 flex flex-col items-center pt-[calc(1.8rem+env(safe-area-inset-top,0px))] sm:pt-[calc(2.2rem+env(safe-area-inset-top,0px))]">
-        <ModuleBadge id={1} size={50} />
+        <ModuleBadge id={s.level} size={50} />
 
         <div className="flex flex-col items-center text-center px-4 mt-3 sm:mt-4">
           <h1

@@ -222,11 +222,12 @@ export function IconDefs() {
 export function Icon({ name, size = 24, className = '', color, solid = false }: { name: IconName; size?: number; className?: string; color?: string; solid?: boolean }) {
   const P = PATHS[name]
   const paint = color || 'currentColor'
+  const flat = solid || name === 'bluetooth' || name === 'bluetoothOff'
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={`shrink-0 ${className}`} style={color ? { color } : undefined} aria-hidden>
       {P(paint)}
-      {!solid && P('url(#ico-tone)')}
-      {!solid && P('url(#ico-gloss)')}
+      {!flat && P('url(#ico-tone)')}
+      {!flat && P('url(#ico-gloss)')}
     </svg>
   )
 }

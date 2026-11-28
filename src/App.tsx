@@ -1,4 +1,4 @@
-import { Component, useEffect, useReducer, useRef, type ErrorInfo, type ReactNode } from 'react'
+import { Component, useEffect, useMemo, useReducer, useRef, type ErrorInfo, type ReactNode } from 'react'
 import { ALPHABET } from './game/data'
 import { disconnectedSheet, getUserStorageKey, isPaused, isPlay, loadState, reducer, saveState, signer, type Account, type GameState, type Screen as ScreenName } from './game/engine'
 import { GameContext } from './game/context'
@@ -12,6 +12,7 @@ import { AlmostScreen, GoodScreen, GuessScreen, IntroCard, SignScreen } from './
 import { HatchScreen, MasterScreen, WriteScreen } from './screens/Master'
 import { Album, Investigator, Profile } from './screens/Hub'
 import { DisconnectedSheet, ExitSheet, ModuleSheet, RetoSheet, TutorialsSheet } from './screens/Sheets'
+import { NavBar } from './components/ui'
 import { fetchUserProgress, isSupabaseConfigured, saveUserProgress, supabase } from './lib/supabase'
 
 interface ErrorBoundaryProps {
@@ -152,6 +153,11 @@ export default function App() {
   const View = VIEWS[s.screen]
   const paused = isPaused(s)
   const play = isPlay(s)
+  const showNav = s.screen === 'map' || s.screen === 'album' || s.screen === 'profile'
+  const sceneKey = isPlay(s)
+    ? `${s.screen}-${s.casilla}-${s.screen === 'write' ? s.write.stage : ''}-${s.screen === 'master' ? s.teacherPhase : ''}`
+    : s.screen
+  const ctx = useMemo(() => ({ s, dispatch, paused }), [s, paused])
   useEggSync(s, dispatch)
 
   useEffect(() => saveState(s), [s])
@@ -374,7 +380,7 @@ export default function App() {
                 : 'bg-[#45C1FF]'
 
   return (
-    <GameContext.Provider value={{ s, dispatch, paused }}>
+    <GameContext.Provider value={ctx}>
       <IconDefs />
       <div
         className={`relative flex h-dvh w-full justify-center overflow-hidden text-ink select-none ${screenBgClass}`}
@@ -383,7 +389,10 @@ export default function App() {
           <main
             className={`relative flex h-full w-full flex-col overflow-hidden max-w-none shadow-none sm:max-w-[440px] ${screenBgClass}`}
           >
-            <View />
+            <div key={sceneKey} className="scene-enter relative flex h-full w-full flex-col">
+              <View />
+            </div>
+            {showNav && <NavBar />}
             {s.intro && isPlay(s) && (
               <IntroCard
                 key={`${s.intro.kind}-${s.idx}-${s.intro.who}-${s.screen}-${s.teacherPhase}-${s.teacherLoops}`}

@@ -112,6 +112,8 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
 export const MODULE_IDS: ModuleId[] = [1, 2, 3, 4, 5]
 
 export const moduleOf = (casilla: number): ModuleDef => MODULE_IDS.map((i) => MODULES[i]).find((m) => casilla >= m.first && casilla <= m.last) ?? MODULES[5]
+export type ModuleState = 'locked' | 'active' | 'done'
+export const moduleState = (id: ModuleId, done: number): ModuleState => (done >= MODULES[id].last ? 'done' : done >= MODULES[id].first - 1 ? 'active' : 'locked')
 export const plainLetters = (word: string) => word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-ZÑ]/gi, '').toUpperCase().split('')
 export const ALPHABET = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('')
 

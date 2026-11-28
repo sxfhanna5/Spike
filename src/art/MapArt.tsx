@@ -128,7 +128,7 @@ const imgFrame39 = '/assets/1c1be.svg'
 
 export const MapArt = memo(function MapArt() {
   return (
-    <div className="pointer-events-none absolute top-0 left-0 overflow-hidden" style={{ width: 390, height: 3753 }} aria-hidden>
+    <div className="map-art pointer-events-none absolute top-0 left-0 overflow-hidden" style={{ width: 390, height: 3753 }} aria-hidden>
       <div className="absolute top-0 left-0 origin-top-left" style={{ width: 1044, height: 10046, transform: 'scale(0.37356)' }}>
       <div className="absolute bg-linear-to-b from-[#0095ff] h-[1109px] left-[-2px] to-[#c0d2ff] top-0 via-[#45c1ff] via-[34.615%] w-[1044px]" />
       <div className="-translate-x-1/2 -translate-y-1/2 absolute contents left-[-28px] top-[calc(50%-5008px)]">
